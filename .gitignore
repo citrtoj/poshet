@@ -1,0 +1,7 @@
+dovecot-2.3.21
+thunderbird
+*/.vscode
+*/build
+
+poshet/build
+*/CMakeFiles/*
