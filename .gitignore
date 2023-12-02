@@ -1,7 +1,17 @@
 dovecot-2.3.21
 thunderbird
-*/.vscode
+.vscode
+.vscode/*
 */build
 
 poshet/build
 */CMakeFiles/*
+
+poshet_documentation/*
+# poshet_documentation/*.fdb_latexmk
+# poshet_documentation/*.synctex.gz
+# poshet_documentation/*.log
+# poshet_documentation/*.fls
+
+tmp/*
+TODO
