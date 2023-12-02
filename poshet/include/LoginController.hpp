@@ -1,12 +1,12 @@
 #pragma once
-#include "LoginView.hpp"
-#include "LoginModel.hpp"
 
+#include "LoginModel.hpp"
+#include "LoginView.hpp"
 
 class LoginController {
-private:
-    LoginModel* _loginModel;
-    LoginView* _loginView;
+protected:
+    LoginModel& _model;
+    LoginView&  _view;
 public:
-    LoginController(LoginModel* model, LoginView* view);
+    LoginController(LoginModel& model, LoginView& view);
 };

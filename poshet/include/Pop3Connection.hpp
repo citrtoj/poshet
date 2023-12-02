@@ -13,6 +13,7 @@
 #include <sys/wait.h>
 
 #include "Utils.hpp"
+#include "DatabaseConnection.hpp"
 
 #include <string>
 #include <iostream>
@@ -46,18 +47,17 @@ namespace POP3 {
     };
 
     static constexpr int DEFAULT_SIZE = 512 + 1;
+    static constexpr int TIMEOUT_SECS = 180;
 }
 
 class Pop3Connection {
 protected:
     int _socket;
-    const char* _host;
-    const char* _port;
+    std::string _host, _port;
     POP3::State _state;
     bool _connected;
 
     std::mutex _mutex;
-
     std::thread noopThread;
     std::condition_variable cv;
     bool shouldExitNoopThread;
@@ -66,12 +66,17 @@ protected:
     std::tuple<int, std::string> readSingleLineResponse();
     std::tuple<int, std::string> readMultiLineResponse();
 
-    std::tuple<int, std::string> retrieveMail(unsigned int id);
+    std::tuple<int, std::string> retrieveMail(unsigned int id) = delete; // TODO
 
     void keepAlive();
 
 public:
-    Pop3Connection(const char* host, const char* port);
+    Pop3Connection(const std::string& host, const std::string& port);
+    Pop3Connection();
+
+    void setHost(const std::string& host);
+    void setPort(const std::string& port);
+
     int connectToPop3Server();
 
     std::tuple<int, std::string> execCommand(const std::string& command, bool expectsMultiline = false);

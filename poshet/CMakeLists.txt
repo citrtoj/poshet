@@ -10,6 +10,7 @@ set(SOURCES
     src/GUIComponents.cpp
     src/Utils.cpp
     src/Pop3Connection.cpp
+    src/DatabaseConnection.cpp
 )
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})

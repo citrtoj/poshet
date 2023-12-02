@@ -1,8 +1,18 @@
 #include "Pop3Connection.hpp"
 
-Pop3Connection::Pop3Connection(const char* host, const char* port) :
+Pop3Connection::Pop3Connection(const std::string& host, const std::string& port) :
     _host(host),
-    _port(port) {}
+    _port(port)
+{}
+
+Pop3Connection::Pop3Connection() : Pop3Connection("", "") {}
+
+void Pop3Connection::setHost(const std::string& host) {
+    _host = host;
+}
+void Pop3Connection::setPort(const std::string& port) {
+    _port = port;
+}
 
 int Pop3Connection::openSocket() {
     _socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -21,7 +31,7 @@ int Pop3Connection::connectToPop3Server() {
     memset(&hints, 0, sizeof(struct addrinfo));
 
     hints.ai_family = AF_INET;
-    int status = getaddrinfo(_host, _port, &hints, &result);
+    int status = getaddrinfo(_host.c_str(), _port.c_str(), &hints, &result);
     if (status != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
         exit(EXIT_FAILURE);
@@ -97,14 +107,14 @@ std::tuple<int, std::string> Pop3Connection::readMultiLineResponse() {
 }
 
 void Pop3Connection::keepAlive() {
-    std::cout << "started noop thread\n";
+    std::cout << "Started noop thread\n";
     while(true) {
         execCommand("NOOP");
         std::cout << "Executed noop\n";
         {
             std::unique_lock<std::mutex> lock(_mutex);
-            if (cv.wait_for(lock, std::chrono::milliseconds(180), [this] { return shouldExitNoopThread; })) {
-                std::cout << "Quitting thread...\n";
+            if (cv.wait_for(lock, std::chrono::seconds(POP3::TIMEOUT_SECS), [this] { return shouldExitNoopThread; })) {
+                std::cout << "Exiting noop thread loop...\n";
                 break;
             }
         }

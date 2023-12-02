@@ -4,7 +4,9 @@
 #include "Pop3Connection.hpp"
 
 int main() {
-    Pop3Connection connection("pop3.localhost", "110");
+    Pop3Connection connection;
+    connection.setHost("localhost");
+    connection.setPort("110");
     connection.connectToPop3Server();
     std::tuple<int, std::string> tmp = connection.execCommand("user john");
     std::cout << std::get<0>(tmp) << " " << std::get<1>(tmp);
