@@ -10,7 +10,14 @@ int main() {
     std::cout << std::get<0>(tmp) << " " << std::get<1>(tmp);
     tmp = connection.execCommand("pass john");
     std::cout << std::get<0>(tmp) << " " << std::get<1>(tmp);
-    tmp = connection.execCommand("list");
+    tmp = connection.execCommand("list", true);
     std::cout << std::get<0>(tmp) << " " << std::get<1>(tmp);
 
+    sleep(4);
+    tmp = connection.execCommand("list", true);
+    std::cout << std::get<0>(tmp) << " " << std::get<1>(tmp);
+    sleep(1);
+    tmp = connection.execCommand("list", true);
+    std::cout << std::get<0>(tmp) << " " << std::get<1>(tmp);
+    connection.closeConnection();
 }

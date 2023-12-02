@@ -17,8 +17,12 @@
 #include <string>
 #include <iostream>
 #include <unordered_map>
-
 #include <tuple>
+
+#include <thread>
+#include <chrono>
+#include <mutex>
+#include <condition_variable>
 
 namespace POP3 {
     enum Command {
@@ -41,7 +45,6 @@ namespace POP3 {
         UPDATE  //after issuing QUIT from TRANSACTION
     };
 
-
     static constexpr int DEFAULT_SIZE = 512 + 1;
 }
 
@@ -51,18 +54,26 @@ protected:
     const char* _host;
     const char* _port;
     POP3::State _state;
-
     bool _connected;
 
-    int openSocket();
+    std::mutex _mutex;
 
+    std::thread noopThread;
+    std::condition_variable cv;
+    bool shouldExitNoopThread;
+
+    int openSocket();
+    std::tuple<int, std::string> readSingleLineResponse();
+    std::tuple<int, std::string> readMultiLineResponse();
+
+    std::tuple<int, std::string> retrieveMail(unsigned int id);
+
+    void keepAlive();
 
 public:
     Pop3Connection(const char* host, const char* port);
     int connectToPop3Server();
 
     std::tuple<int, std::string> execCommand(const std::string& command, bool expectsMultiline = false);
-    std::tuple<int, std::string> readSingleLineResponse();
-    std::tuple<int, std::string> readMultiLineResponse();
-
+    void closeConnection();
 };
