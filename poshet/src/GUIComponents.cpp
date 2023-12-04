@@ -1,7 +1,7 @@
 #include "GUIComponents.hpp"
 
-void GUIComponent::render(sf::RenderWindow& window) {
-    this->draw(window);
+void GUIComponent::render(sf::RenderTarget& window, const sf::RenderStates &states) {
+    this->draw(window, states);
     _updated = false;
 }
 
@@ -17,8 +17,8 @@ Rectangle::Rectangle(sf::Vector2f size, sf::Vector2f origin, sf::Color color):
 Rectangle::Rectangle(sf::Vector2f size, sf::Vector2f origin) :
     Rectangle(size, origin, sf::Color::White) {}
 
-void Rectangle::draw(sf::RenderWindow& window) {
-    window.draw(_bg);
+void Rectangle::draw(sf::RenderTarget& window, const sf::RenderStates &states) {
+    window.draw(_bg, states);
 }
 
 sf::FloatRect Rectangle::getGlobalBounds() {
@@ -51,9 +51,9 @@ TextLabel::TextLabel (sf::Vector2f size, sf::Vector2f origin, const char* text, 
     std::cout << _origin.x;
 }
 
-void TextLabel::draw(sf::RenderWindow& window) {
-    Rectangle::draw(window);
-    window.draw(_text);
+void TextLabel::draw(sf::RenderTarget& window, const sf::RenderStates &states) {
+    Rectangle::draw(window, states);
+    window.draw(_text, states);
 }
 
 void TextLabel::updateProps() {
@@ -83,9 +83,9 @@ TextButton::TextButton(sf::Vector2f size, sf::Vector2f origin, const char* text,
     TextLabel(sf::Color::Blue, size, origin, text, font, GUI::DEFAULT_TEXT_SIZE, sf::Color::Black) {}
 
 
-void TextButton::draw(sf::RenderWindow& window) {
+void TextButton::draw(sf::RenderTarget& window, const sf::RenderStates &states) {
     // add code for isHovered
-    TextLabel::draw(window);
+    TextLabel::draw(window, states);
 }
 
 void TextButton::handleEvent(const sf::Event& event) {
@@ -125,9 +125,9 @@ void Textbox::refreshText() {
     updateText(_buffer);
 }
 
-void Textbox::draw(sf::RenderWindow& window) {
+void Textbox::draw(sf::RenderTarget& window, const sf::RenderStates &states) {
     refreshText();
-    TextLabel::draw(window);
+    TextLabel::draw(window, states);
 }
 
 std::string Textbox::buffer() {
@@ -160,9 +160,9 @@ void Textbox::handleEvent(const sf::Event& event) {
     }
 }
 
-void ComponentContainer::draw(sf::RenderWindow& window) {
+void ComponentContainer::draw(sf::RenderTarget& window, const sf::RenderStates &states) {
     for (auto* comp : components) {
-        comp->draw(window);
+        comp->draw(window, states);
     }
 }
 

@@ -18,12 +18,12 @@ protected:
     bool _updated = true;
 public:
     GUIComponent() {}
-    virtual void draw(sf::RenderWindow& window) = 0;
+    virtual void draw(sf::RenderTarget& window, const sf::RenderStates &states = sf::RenderStates::Default) = 0;
     virtual void handleEvent(const sf::Event& event) = 0;
 
     void update();
     bool updated() { return _updated; }
-    void render(sf::RenderWindow& window);
+    void render(sf::RenderTarget& window, const sf::RenderStates &states = sf::RenderStates::Default);
 };
 
 class Rectangle : public GUIComponent {
@@ -37,7 +37,7 @@ public:
     Rectangle(sf::Vector2f size, sf::Vector2f origin, sf::Color color);
     Rectangle(sf::Vector2f size, sf::Vector2f origin);
 
-    void draw(sf::RenderWindow& window) override;
+    void draw(sf::RenderTarget& window, const sf::RenderStates &states = sf::RenderStates::Default) override;
     void handleEvent(const sf::Event& event) override {}
 
     sf::FloatRect getGlobalBounds();
@@ -55,7 +55,7 @@ public:
 
     TextLabel(sf::Vector2f size, sf::Vector2f origin, const char* text, sf::Font& font);
 
-    void draw(sf::RenderWindow& window) override;
+    void draw(sf::RenderTarget& window, const sf::RenderStates &states = sf::RenderStates::Default) override;
     void handleEvent(const sf::Event& event) {}
 
     void updateText(const std::string& text);
@@ -73,7 +73,7 @@ public:
 
     TextButton(sf::Vector2f size, sf::Vector2f origin, const char* text, sf::Font& font);
 
-    void draw(sf::RenderWindow& window) override;
+    void draw(sf::RenderTarget& window, const sf::RenderStates &states = sf::RenderStates::Default) override;
     void handleEvent(const sf::Event& event) override;
     bool isClicked();
 };
@@ -93,8 +93,8 @@ public:
 
     Textbox(sf::Vector2f size, sf::Vector2f origin, const char* text, sf::Font& font);
 
-    void draw(sf::RenderWindow&);
-    void handleEvent(const sf::Event& event);
+    void draw(sf::RenderTarget& window, const sf::RenderStates &states = sf::RenderStates::Default) override;
+    void handleEvent(const sf::Event& event) override;
 
     std::string buffer();
 };
@@ -104,8 +104,8 @@ protected:
     std::vector<GUIComponent*> components;
 public:
     ComponentContainer() {};
-    void draw(sf::RenderWindow& window);
+    void draw(sf::RenderTarget& window, const sf::RenderStates &states = sf::RenderStates::Default) override;
     void add(GUIComponent* comp);
-    void handleEvent(const sf::Event& event);
+    void handleEvent(const sf::Event& event) override;
     ComponentContainer& operator<<(GUIComponent& comp);
 };
