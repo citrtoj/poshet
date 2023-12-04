@@ -1,25 +1,17 @@
 #include <iostream>
 #include "GUIComponents.hpp"
 #include "Utils.hpp"
+#include "Config.hpp"
 #include "Pop3Connection.hpp"
+#include "LoginController.hpp"
+
+#include <SFML/Graphics.hpp>
+
 
 int main() {
-    Pop3Connection connection;
-    connection.setHost("localhost");
-    connection.setPort("110");
-    connection.connectToPop3Server();
-    std::tuple<int, std::string> tmp = connection.execCommand("user john");
-    std::cout << std::get<0>(tmp) << " " << std::get<1>(tmp);
-    tmp = connection.execCommand("pass john");
-    std::cout << std::get<0>(tmp) << " " << std::get<1>(tmp);
-    tmp = connection.execCommand("list", true);
-    std::cout << std::get<0>(tmp) << " " << std::get<1>(tmp);
+    sf::RenderWindow window(sf::VideoMode(Config::getInstance().RES_WIDTH, Config::getInstance().RES_HEIGHT), Config::getInstance().APP_NAME);
 
-    sleep(4);
-    tmp = connection.execCommand("list", true);
-    std::cout << std::get<0>(tmp) << " " << std::get<1>(tmp);
-    sleep(1);
-    tmp = connection.execCommand("list", true);
-    std::cout << std::get<0>(tmp) << " " << std::get<1>(tmp);
-    connection.closeConnection();
+    LoginController controller(window);
+    auto x = controller.getUserInfo();
+    std::cout << x._user;
 }

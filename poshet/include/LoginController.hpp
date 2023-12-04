@@ -5,8 +5,11 @@
 
 class LoginController {
 protected:
-    LoginModel& _model;
-    LoginView&  _view;
+    sf::RenderWindow& _window;
+    LoginModel _model;
+    LoginView  _view;
 public:
-    LoginController(LoginModel& model, LoginView& view);
+    LoginController(sf::RenderWindow& window);
+
+    LoginModel getUserInfo();
 };

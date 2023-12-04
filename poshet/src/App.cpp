@@ -1,7 +1,4 @@
 #include "App.hpp"
+#include "Config.hpp"
 
-App::App(): _window(sf::VideoMode(800, 600), Info::APP_NAME),
-            _loginModel(),
-            _loginView(&_window),
-            _loginController(&_loginModel, &_loginView)
-            {}
+App::App() : _window(sf::VideoMode(Config::getInstance().RES_HEIGHT, Config::getInstance().RES_WIDTH), Config::getInstance().APP_NAME) {}

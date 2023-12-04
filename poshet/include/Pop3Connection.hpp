@@ -66,7 +66,7 @@ protected:
     std::tuple<int, std::string> readSingleLineResponse();
     std::tuple<int, std::string> readMultiLineResponse();
 
-    std::tuple<int, std::string> retrieveMail(unsigned int id) = delete; // TODO
+    std::tuple<int, std::string> retrieveMail(unsigned int id) = delete;
 
     void keepAlive();
 
