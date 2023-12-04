@@ -12,6 +12,8 @@ int main() {
     sf::RenderWindow window(sf::VideoMode(Config::getInstance().RES_WIDTH, Config::getInstance().RES_HEIGHT), Config::getInstance().APP_NAME);
 
     LoginController controller(window);
+
     auto x = controller.getUserInfo();
-    std::cout << x._user;
+
+    auto y = controller.getUserInfo();
 }

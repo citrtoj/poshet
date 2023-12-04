@@ -7,15 +7,39 @@ void GUIComponent::render(sf::RenderWindow& window) {
 
 void GUIComponent::update() {
     _updated = true;
-    std::cout << "updated\n";
+}
+
+Rectangle::Rectangle(sf::Vector2f size, sf::Vector2f origin, sf::Color color):
+    _size(size), _origin(origin), _bgColor(color) {
+    updateProps();
+}
+
+Rectangle::Rectangle(sf::Vector2f size, sf::Vector2f origin) :
+    Rectangle(size, origin, sf::Color::White) {}
+
+void Rectangle::draw(sf::RenderWindow& window) {
+    window.draw(_bg);
+}
+
+sf::FloatRect Rectangle::getGlobalBounds() {
+    return _bg.getGlobalBounds();
+}
+
+void Rectangle::setBackgroundColor(const sf::Color color) {
+    _bgColor = color;
+    updateProps();
+}
+
+void Rectangle::updateProps() {
+    _bg.setFillColor(_bgColor);
+    _bg.setPosition(_origin);
+    _bg.setSize(_size);
+    _updated = true;
 }
 
 TextLabel::TextLabel(sf::Color backgroundColor, sf::Vector2f size, sf::Vector2f origin, const char* text, sf::Font& font, int fontSize, sf::Color textColor) :
-    _size(size),
-    _origin(origin),
-    _bg(size),
+    Rectangle(size, origin, backgroundColor),
     _text(text, font, fontSize),
-    _bgColor(backgroundColor),
     _textColor(textColor)
 {
     updateProps();
@@ -28,7 +52,7 @@ TextLabel::TextLabel (sf::Vector2f size, sf::Vector2f origin, const char* text, 
 }
 
 void TextLabel::draw(sf::RenderWindow& window) {
-    window.draw(_bg);
+    Rectangle::draw(window);
     window.draw(_text);
 }
 
@@ -46,15 +70,6 @@ void TextLabel::updateText(const std::string& text) {
     _text.setString(text);
 }
 
-sf::FloatRect TextLabel::getGlobalBounds() {
-    return _bg.getGlobalBounds();
-}
-
-void TextLabel::setBackgroundColor(const sf::Color color) {
-    _bgColor = color;
-    updateProps();
-}
-
 void TextLabel::setTextColor(const sf::Color color) {
     _textColor = color;
     updateProps();
@@ -65,7 +80,7 @@ TextButton::TextButton(sf::Color backgroundColor, sf::Vector2f size, sf::Vector2
     TextLabel(backgroundColor, size, origin, text, font, fontSize, textColor) {}
 
 TextButton::TextButton(sf::Vector2f size, sf::Vector2f origin, const char* text, sf::Font& font) :
-    TextLabel(size, origin, text, font) {}
+    TextLabel(sf::Color::Blue, size, origin, text, font, GUI::DEFAULT_TEXT_SIZE, sf::Color::Black) {}
 
 
 void TextButton::draw(sf::RenderWindow& window) {
@@ -73,28 +88,25 @@ void TextButton::draw(sf::RenderWindow& window) {
     TextLabel::draw(window);
 }
 
-void ComponentContainer::handleEvent(const sf::Event& event) {
-    for (auto* comp : components) {
-        comp->handleEvent(event);
-        if (comp->updated()) {
-            _anyUpdated = true; //at least one element of the view needs to be redrawn
+void TextButton::handleEvent(const sf::Event& event) {
+    _isClicked = false;
+
+    if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+        sf::Vector2f mousePos = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
+
+        if (_bg.getGlobalBounds().contains(mousePos)) {
+            _isClicked = true;
         }
+    }
+    else if (event.type == sf::Event::MouseMoved) {
+        sf::Vector2f mousePos = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
+
+        _isHovered = _bg.getGlobalBounds().contains(mousePos);
     }
 }
 
-void ComponentContainer::render(sf::RenderWindow& window) {
-    if (_anyUpdated) {
-        for (auto* comp : components) {
-            comp->render(window);
-        }
-        std::cout << "drew all again\n";
-        _anyUpdated = false;
-        window.display();
-    }
-}
-
-void ComponentContainer::add(GUIComponent* comp) {
-    components.push_back(comp);
+bool TextButton::isClicked() {
+    return _isClicked; 
 }
 
 Textbox::Textbox(sf::Color backgroundColor, sf::Vector2f size, sf::Vector2f origin, const char* text, sf::Font& font, int fontSize, sf::Color textColor) :
@@ -128,7 +140,7 @@ void Textbox::handleEvent(const sf::Event& event) {
         sf::Vector2f mousePos = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
         if (_bg.getGlobalBounds().contains(mousePos)) {
             _isSelected = true;
-            std::cout << "Textbox Selected!" << std::endl;
+            std::cout << "Textbox selected!" << std::endl;
         } else {
             _isSelected = false;
         }
@@ -144,6 +156,30 @@ void Textbox::handleEvent(const sf::Event& event) {
             }
             else {_buffer += newChar;}
             std::cout << _buffer << "\n";
+        }
+    }
+}
+
+void ComponentContainer::draw(sf::RenderWindow& window) {
+    for (auto* comp : components) {
+        comp->draw(window);
+    }
+}
+
+void ComponentContainer::add(GUIComponent* comp) {
+    components.push_back(comp);
+}
+
+ComponentContainer& ComponentContainer::operator<<(GUIComponent& comp) {
+    add(&comp);
+    return *this;
+}
+
+void ComponentContainer::handleEvent(const sf::Event& event) {
+    for (auto* comp : components) {
+        comp->handleEvent(event);
+        if (comp->updated()) {
+            update(); //at least one element of the view needs to be redrawn. we'll redraw everything
         }
     }
 }

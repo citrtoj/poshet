@@ -6,6 +6,7 @@ LoginController::LoginController(sf::RenderWindow& window) :
 {}
 
 LoginModel LoginController::getUserInfo() {
+    LoginModel model;
     while (_window.isOpen()) {
         sf::Event tmpEvent;
         if(_window.pollEvent(tmpEvent)) {
@@ -17,12 +18,17 @@ LoginModel LoginController::getUserInfo() {
                     _view.handleEvent(tmpEvent);
                     if (_view.hasBeenSubmitted()) {
                         // TODO grab all info from view
-                        _model._submitted = true;
+                        model._submitted = true;
                         break;
                     }
             }
+            if (model._submitted) {
+                break;
+            }
         }
+        _window.clear();
         _view.render();
+        _window.display();
     }
-    return _model;
+    return model;
 }

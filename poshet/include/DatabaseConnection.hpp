@@ -6,6 +6,6 @@ class DatabaseConnection {
 protected:
     SQLite::Database _db;
 public:
-    DatabaseConnection(const char* dbName);
+    DatabaseConnection(const std::string& dbName);
     void initTables();
 };

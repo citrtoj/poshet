@@ -2,12 +2,12 @@
 
 LoginView::LoginView(sf::RenderWindow& window) :
     _window(window),
-    _submit({200, 100}, {0, 0}, "Login", _font),
-    _loginText({300,  100}, {300, 100}, "Login", _font)
+    _background({window.getSize().x, window.getSize().y}, {0, 0}, sf::Color(255, 200, 145)),
+    _loginText({300,  50}, {(window.getSize().x - 300) / 2, 0}, "Login to Poshet", _font),
+    _submit({200, 100}, {(window.getSize().x - 200) / 2, 500}, "Login", _font)
 {
-    _font.loadFromFile("../utils/fonts/montserrat/static/Montserrat-Bold.ttf");
-    _container.add(&_submit);
-    _container.add(&_loginText);
+    _font.loadFromFile("../thirdparty/SpaceMono/SpaceMono-Regular.ttf");
+    _container << _background << _submit << _loginText;
 }
 
 void LoginView::render() {

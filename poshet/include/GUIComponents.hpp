@@ -10,7 +10,7 @@ namespace GUI {
         CENTER_LEFT,
         CENTER_CENTER
     };
-    static const int DEFAULT_TEXT_SIZE = 12;
+    static const int DEFAULT_TEXT_SIZE = 24;
 }
 
 class GUIComponent {
@@ -20,18 +20,34 @@ public:
     GUIComponent() {}
     virtual void draw(sf::RenderWindow& window) = 0;
     virtual void handleEvent(const sf::Event& event) = 0;
+
     void update();
     bool updated() { return _updated; }
     void render(sf::RenderWindow& window);
 };
 
-class TextLabel : public GUIComponent {
+class Rectangle : public GUIComponent {
 protected:
     sf::RectangleShape _bg;
-    sf::Text _text;
-    sf::Color _bgColor, _textColor;
-
     sf::Vector2f _size, _origin;
+    sf::Color _bgColor;
+
+    virtual void updateProps();
+public:
+    Rectangle(sf::Vector2f size, sf::Vector2f origin, sf::Color color);
+    Rectangle(sf::Vector2f size, sf::Vector2f origin);
+
+    void draw(sf::RenderWindow& window) override;
+    void handleEvent(const sf::Event& event) override {}
+
+    sf::FloatRect getGlobalBounds();
+    void setBackgroundColor(const sf::Color);
+};
+
+class TextLabel : public Rectangle {
+protected:
+    sf::Text _text;
+    sf::Color _textColor;
 
     void updateProps();
 public:
@@ -39,13 +55,10 @@ public:
 
     TextLabel(sf::Vector2f size, sf::Vector2f origin, const char* text, sf::Font& font);
 
-    void draw(sf::RenderWindow& window);
+    void draw(sf::RenderWindow& window) override;
     void handleEvent(const sf::Event& event) {}
 
-    sf::FloatRect getGlobalBounds();
-
     void updateText(const std::string& text);
-    void setBackgroundColor(const sf::Color);
     void setTextColor(const sf::Color);
 };
 
@@ -60,34 +73,19 @@ public:
 
     TextButton(sf::Vector2f size, sf::Vector2f origin, const char* text, sf::Font& font);
 
-    void draw(sf::RenderWindow& window);
-    void handleEvent(const sf::Event& event) {
-        _isClicked = false;
-
-        if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-            sf::Vector2f mousePos = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
-
-            if (_bg.getGlobalBounds().contains(mousePos)) {
-                _isClicked = true;
-                std::cout << "clicked\n";
-            }
-        }
-        else if (event.type == sf::Event::MouseMoved) {
-            sf::Vector2f mousePos = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
-
-            _isHovered = _bg.getGlobalBounds().contains(mousePos);
-        }
-    }
-    bool isClicked() { return _isClicked; }
+    void draw(sf::RenderWindow& window) override;
+    void handleEvent(const sf::Event& event) override;
+    bool isClicked();
 };
 
 class Textbox : public TextLabel {
 protected:
     std::string _buffer;
+    std::string _placeholder;
     bool _isSelected;
 
-    bool _isCursorVisible;
-    sf::Clock _cursorClock;
+    // bool _isCursorVisible;
+    // sf::Clock _cursorClock;
 
     void refreshText();
 public:
@@ -101,14 +99,13 @@ public:
     std::string buffer();
 };
 
-class ComponentContainer {
+class ComponentContainer : public GUIComponent {
 protected:
     std::vector<GUIComponent*> components;
-    bool _anyUpdated;
 public:
     ComponentContainer() {};
-    void render(sf::RenderWindow& window);
+    void draw(sf::RenderWindow& window);
     void add(GUIComponent* comp);
-
     void handleEvent(const sf::Event& event);
+    ComponentContainer& operator<<(GUIComponent& comp);
 };

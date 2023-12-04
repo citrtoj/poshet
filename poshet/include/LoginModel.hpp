@@ -4,7 +4,7 @@
 
 class LoginModel {
 public:
-    bool _submitted;
+    bool _submitted = false;
 
     std::string _fullname,
                 _user,
