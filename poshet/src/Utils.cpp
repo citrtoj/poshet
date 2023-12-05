@@ -5,20 +5,20 @@
 
 namespace Utils {
     int readLoop(int fd, void* buffer, int nbytes) {
-        // returns readSoFar at first error/close (if error on first read returns -1, or 0 on close) or when finished. also returns -1 on bad params.
+        // if returned number is positive -- if equal to nbytes then succeeded writing, else it piped somewhere
+        // if returned number is negative then it's -readSofar-1 (to distinguish from error on first read)
         if (nbytes < 0 || buffer == NULL) {
             return -1;
         }
         int readSoFar = 0;
-        // uint8_t -- ca sa fim siguri ca scriem in bytes. De unde stiu eu ca char-ul e mereu 1 byte?
         while (nbytes - readSoFar > 0) {
             int readCode = read(fd, (uint8_t*)buffer + readSoFar, nbytes - readSoFar);
             if (readCode < 1) {
                 if (readSoFar == 0) {
-                    return -1;
+                    return readCode;
                 }
                 else {
-                    return readSoFar;
+                    return -readSoFar - 1;
                 }
             }
             readSoFar += readCode;
@@ -27,19 +27,19 @@ namespace Utils {
     }
 
     int writeLoop(int fd, const void* buffer, int nbytes) {
-        // returns writtenSoFar at first error/close (if error on first write returns -1, or 0 on close) or when finished. also returns -1 on bad params.
+        // same as writeLoop
         if (nbytes < 0 || buffer == NULL) {
             return -1;
         }
         int writtenSoFar = 0;
         while (nbytes - writtenSoFar > 0) {
             int writeCode = write(fd, (uint8_t*)buffer + writtenSoFar, nbytes - writtenSoFar);
-            if (writeCode <= 1) {
+            if (writeCode < 1) {
                 if (writtenSoFar == 0) {
                     return writeCode;
                 }
                 else {
-                    return writtenSoFar;
+                    return -writtenSoFar - 1;
                 }
             }
             writtenSoFar += writeCode;

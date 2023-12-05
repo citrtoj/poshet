@@ -47,74 +47,83 @@ int Pop3Connection::connectToPop3Server() {
     std::cout << "connected!\n";
     char buffer[512];
     read(_socket, buffer, 512);
-    std::cout << buffer;
 
     noopThread = std::thread(&Pop3Connection::keepAlive, this);
     
     return 0;
 }
 
-std::tuple<int, std::string> Pop3Connection::execCommand(const std::string& command, bool expectsMultiline) {
+std::string Pop3Connection::execCommand(const std::string& command, bool expectsMultiline) {
     std::lock_guard<std::mutex> lock(_mutex);
     std::string tmpCommand = command + "\r\n";  //CRLF ending
     int status = Utils::writeLoop(_socket, tmpCommand.c_str(), tmpCommand.length());
     if (status < 0) {
-        return {status, "Error writing command to POP3 server"};
+        throw POP3::Exception("Error writing command to server");
     }
 
     if (!expectsMultiline) {
-        return readSingleLineResponse();
+        return readLineResponse(POP3::SingleLineMessage::PROCESSED);
     }
     else {
         return readMultiLineResponse();
     }
 }
 
-std::tuple<int, std::string> Pop3Connection::readSingleLineResponse() {
-    char buffer[POP3::DEFAULT_SIZE];
+std::string Pop3Connection::readLineResponse(bool raw) {
     std::string finalResult = "";
+    bool error = false;
 
-    size_t found = finalResult.find("\r\n");
-    while (found == std::string::npos) {
-        // attempt reading from server
-        memset(buffer, 0, POP3::DEFAULT_SIZE);
-        int status = read(_socket, buffer, POP3::DEFAULT_SIZE);
-        if (status <= 0) {
-            return {-1, "Read failed."};
+    char buffer[2] = {0, 0};
+    while (not (buffer[0] == '\r' and buffer[1] == '\n')) {
+        char singleCharBuffer;
+        int readCode = Utils::readLoop(_socket, &singleCharBuffer, 1);
+        if (readCode <= 0) {
+            throw POP3::Exception("Error reading character from socket.");
         }
-        finalResult += buffer;
-        found = finalResult.find("\r\n");
+        buffer[0] = buffer[1];
+        buffer[1] = singleCharBuffer;
+        if (raw == POP3::SingleLineMessage::RAW or not (buffer[0] == '\r' and buffer[1] == '\n')) {
+            finalResult += singleCharBuffer;
+        }
+        else {
+            finalResult.pop_back();
+        }
+        
+        if (finalResult[0] == '-') {
+            error = true;
+        }
     }
-    return {0, finalResult};
+    if (error) {  // contains "-ERR ..."
+        throw POP3::Exception(finalResult.substr(5));
+    }
+    return finalResult;
 }
 
-std::tuple<int, std::string> Pop3Connection::readMultiLineResponse() {
-    char buffer[POP3::DEFAULT_SIZE];
-    std::string finalResult = "";
-
-    size_t found = finalResult.find("\r\n.\r\n");
-    while (found == std::string::npos) {
-        // attempt reading from server
-        memset(buffer, 0, POP3::DEFAULT_SIZE);
-        int status = read(_socket, buffer, POP3::DEFAULT_SIZE);
-        if (status <= 0) {
-            return {-1, "Read failed."};
+std::string Pop3Connection::readMultiLineResponse() {
+    std::string finalResult;
+    int bytesRead;
+    while (true) {
+        auto buffer = readLineResponse(POP3::SingleLineMessage::RAW);
+        if (buffer == "\r\n") {
+            finalResult += "\n";
         }
-        finalResult += buffer;
-        found = finalResult.find("\r\n.\r\n");
+        buffer.pop_back();
+        buffer.pop_back();
+        if (buffer == ".") {
+            break;
+        }
+        finalResult += buffer + "\n";
     }
-    return {0, finalResult};
+    return finalResult;
 }
 
 void Pop3Connection::keepAlive() {
     std::cout << "Started noop thread\n";
     while(true) {
         execCommand("NOOP");
-        std::cout << "Executed noop\n";
         {
             std::unique_lock<std::mutex> lock(_mutex);
-            if (cv.wait_for(lock, std::chrono::seconds(POP3::TIMEOUT_SECS), [this] { return shouldExitNoopThread; })) {
-                std::cout << "Exiting noop thread loop...\n";
+            if (cv.wait_for(lock, std::chrono::seconds(POP3::TIMEOUT_SECS), [this] { return _state == POP3::State::DISCONNECTING; })) {
                 break;
             }
         }
@@ -124,10 +133,15 @@ void Pop3Connection::keepAlive() {
 void Pop3Connection::closeConnection() {
     {
         std::unique_lock<std::mutex> lock(_mutex);
-        shouldExitNoopThread = true;
+        _state = POP3::State::DISCONNECTING;
     }
     cv.notify_all();
     noopThread.join();
-    std::cout << "Disconnected from POP3 server.\n";
     close(_socket);
+    _state = POP3::State::DISCONNECTED;
 }
+
+// std::vector<std::string> Pop3Connection::retrieveAllMail() {
+//     auto result = execCommand("LIST", true);
+    
+// }

@@ -18,7 +18,7 @@
 #include <string>
 #include <iostream>
 #include <unordered_map>
-#include <tuple>
+#include <vector>
 
 #include <thread>
 #include <chrono>
@@ -26,6 +26,16 @@
 #include <condition_variable>
 
 namespace POP3 {
+    class Exception : public std::exception {
+    protected:
+        std::string _message;
+    public:
+        Exception(const std::string& message) : _message(message) {}
+        const char * what () {
+            return _message.c_str();
+        }
+    };
+
     enum Command {
         UNDEFINED,
         QUIT,
@@ -41,9 +51,15 @@ namespace POP3 {
     };
 
     enum State {
-        AUTHORIZATION,
-        TRANSACTION,
-        UPDATE  //after issuing QUIT from TRANSACTION
+        DISCONNECTING,
+        DISCONNECTED,
+        AUTHORIZATION,  // after opening socket
+        TRANSACTION
+    };
+
+    enum SingleLineMessage { // should readSingleLineMessage replace \r\n with \n or not?
+        PROCESSED,
+        RAW
     };
 
     static constexpr int DEFAULT_SIZE = 512 + 1;
@@ -54,8 +70,9 @@ class Pop3Connection {
 protected:
     int _socket;
     std::string _host, _port;
-    POP3::State _state;
-    bool _connected;
+    std::string _user, _pass;
+    bool _needsAuthentication = true;
+    POP3::State _state = POP3::State::DISCONNECTED;
 
     std::mutex _mutex;
     std::thread noopThread;
@@ -63,10 +80,10 @@ protected:
     bool shouldExitNoopThread;
 
     int openSocket();
-    std::tuple<int, std::string> readSingleLineResponse();
-    std::tuple<int, std::string> readMultiLineResponse();
+    std::string readLineResponse(bool raw = POP3::SingleLineMessage::PROCESSED);
+    std::string readMultiLineResponse();
 
-    std::tuple<int, std::string> retrieveMail(unsigned int id) = delete;
+    //std::string retrieveMail(unsigned int id);
 
     void keepAlive();
 
@@ -79,6 +96,9 @@ public:
 
     int connectToPop3Server();
 
-    std::tuple<int, std::string> execCommand(const std::string& command, bool expectsMultiline = false);
+    std::string execCommand(const std::string& command, bool expectsMultiline = false);
+
+    std::vector<std::string> retrieveAllMail();
+
     void closeConnection();
 };
