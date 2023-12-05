@@ -3,6 +3,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(poshet VERSION 1.0)
+
+add_subdirectory(thirdparty/wxWidgets)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/thirdparty/SQLiteCpp)
 
 set(SOURCES
@@ -20,11 +22,10 @@ set(SOURCES
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 
-message(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/wxWidgets/include)
 
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-target_link_libraries(${CMAKE_PROJECT_NAME}
+target_link_libraries(${CMAKE_PROJECT_NAME} 
+  wx::net wx::core wx::base
   SQLiteCpp
   sqlite3
   pthread
