@@ -13,11 +13,10 @@ set(SOURCES
     src/Utils.cpp
     src/Pop3Connection.cpp
     src/DatabaseConnection.cpp
+    src/DashboardFrame.cpp
     src/Config.cpp
     src/App.cpp
-    src/LoginView.cpp
-    src/LoginController.cpp
-    src/LoginModel.cpp
+    src/LoginFrame.cpp
 )
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})

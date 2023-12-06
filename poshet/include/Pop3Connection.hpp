@@ -1,4 +1,3 @@
-#pragma once
 
 #include <poll.h>
 #include <sys/types.h>
@@ -69,6 +68,7 @@ namespace POP3 {
 class Pop3Connection {
 protected:
     int _socket;
+    
     std::string _host, _port;
     std::string _user, _pass;
     bool _needsAuthentication = true;

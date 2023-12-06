@@ -1,15 +1,12 @@
-#pragma once
+#include <wx/wx.h>
+#include "LoginFrame.hpp"
 
-#include <SFML/Graphics.hpp>
-#include "LoginView.hpp"
-#include "LoginModel.hpp"
-#include "LoginController.hpp"
-
-class App {
-private:
-    sf::RenderWindow _window;
-    //LoginController _loginInstance;
+class App: public wxApp
+{
 public:
-    App();
-    //void run();
+    virtual bool OnInit() {
+        LoginFrame* frame = new LoginFrame("Login Example");
+        frame->Show(true);
+        return true;
+    }
 };

@@ -1,7 +1,5 @@
 dovecot-2.3.21
 thunderbird
-.vscode
-.vscode/*
 
 poshet/build
 */CMakeFiles/*
