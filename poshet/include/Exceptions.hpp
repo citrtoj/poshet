@@ -7,7 +7,7 @@ protected:
     std::string _message;
 public:
     Exception(const std::string& message) : _message(message) {}
-    const char * what () {
+    const char* what () {
         return _message.c_str();
     }
 };
@@ -15,4 +15,7 @@ public:
 class ServerException : public Exception {
 public:
     ServerException(const std::string& message) : Exception(message) {}
+    const char* what () {
+        return _message.c_str();
+    }
 };

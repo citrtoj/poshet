@@ -51,5 +51,14 @@ void LoginFrame::OnLogin(wxCommandEvent& event) {
     for (auto& input : _textInputs) {
         loginDataDump.push_back(std::get<LoginView::TEXTCTRL>(input)->GetValue().ToStdString());
     }
-    LoginData data(loginDataDump);
+    // placeholder for an app-level Session class that keeps track of all the connections needed for a user session
+    try {
+        LoginData data(loginDataDump);
+        Session session(data);
+        session.login();
+    }
+    catch (Exception &e) {
+        _statusBar->SetStatusText(e.what());
+        wxMessageBox(e.what(), "Error", wxOK | wxICON_ERROR);
+    };
 }

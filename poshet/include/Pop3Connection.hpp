@@ -80,11 +80,12 @@ protected:
 public:
     Pop3Connection(const std::string& host);
     Pop3Connection();
+    ~Pop3Connection();
 
     void setHost(const std::string& host);
 
-    void connectToPop3Server(const std::string& user, const std::string& pass);
-
+    void connectToPop3Server();
+    void login(const std::string& user, const std::string& pass);
     std::string execCommand(const std::string& command, bool expectsMultiline = false);
 
     void closeConnection();

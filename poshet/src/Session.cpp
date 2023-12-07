@@ -2,12 +2,11 @@
 
 Session::Session(const LoginData& loginData) :
     _loginData(loginData),
-    _pop3(_loginData.pop3Domain())
+    _pop3(loginData.pop3Domain())
 {
-    std::cout << "session created\n";
 }
 
 void Session::login() {
-    _pop3.connectToPop3Server(_loginData.username(), _loginData.password());
-    std::cout << _pop3.execCommand("RETR");
+    _pop3.connectToPop3Server();
+    _pop3.login(_loginData.username(), _loginData.password());
 }

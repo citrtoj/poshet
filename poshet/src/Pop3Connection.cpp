@@ -4,7 +4,11 @@ Pop3Connection::Pop3Connection(const std::string& host) :
     _host(host)
 {}
 
-Pop3Connection::Pop3Connection() : Pop3Connection("localhost") {}
+Pop3Connection::Pop3Connection() : Pop3Connection("") {}
+
+Pop3Connection::~Pop3Connection() {
+    this->closeConnection();
+}
 
 void Pop3Connection::setHost(const std::string& host) {
     _host = host;
@@ -17,7 +21,7 @@ void Pop3Connection::openSocket() {
     }
 }
 
-void Pop3Connection::connectToPop3Server(const std::string& user, const std::string& pass) {
+void Pop3Connection::connectToPop3Server() {
     if (_state != POP3::DISCONNECTED) {
         return;
     }
@@ -29,7 +33,7 @@ void Pop3Connection::connectToPop3Server(const std::string& user, const std::str
     hints.ai_family = AF_INET;
     int status = getaddrinfo(_host.c_str(), _port.c_str(), &hints, &result);
     if (status != 0) {
-        throw Exception("Could not get address info of server");
+        throw Exception("Could not get address info of POP3 server");
     }
     status = connect(_socket, result->ai_addr, (int)result->ai_addrlen);
 
@@ -39,8 +43,17 @@ void Pop3Connection::connectToPop3Server(const std::string& user, const std::str
 
     freeaddrinfo(result);
     readLineResponse();
-
+    _state = POP3::AUTHORIZATION;
     noopThread = std::thread(&Pop3Connection::keepAlive, this);
+}
+
+void Pop3Connection::login(const std::string& user, const std::string& pass) {
+    if (_state != POP3::AUTHORIZATION) {
+        throw Exception("Unable to log in -- not connected to server");
+    }
+    execCommand("USER " + user); //todo: check if there isn't perhaps a risk of injection here
+    execCommand("PASS " + pass);
+    _state = POP3::TRANSACTION;
 }
 
 std::string Pop3Connection::execCommand(const std::string& command, bool expectsMultiline) {
@@ -107,7 +120,6 @@ std::string Pop3Connection::readMultiLineResponse() {
 }
 
 void Pop3Connection::keepAlive() {
-    std::cout << "Started noop thread\n";
     while(true) {
         execCommand("NOOP");
         {
