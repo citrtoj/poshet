@@ -9,14 +9,15 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/thirdparty/SQLiteCpp)
 
 set(SOURCES
     src/main.cpp
-    src/GUIComponents.cpp
     src/Utils.cpp
     src/Pop3Connection.cpp
     src/DatabaseConnection.cpp
     src/DashboardFrame.cpp
     src/Config.cpp
     src/App.cpp
+    src/LoginData.cpp
     src/LoginFrame.cpp
+    src/Session.cpp
 )
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
@@ -24,7 +25,7 @@ add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/wxWidgets/include)
 
 target_link_libraries(${CMAKE_PROJECT_NAME} 
-  wx::net wx::core wx::base
+  wx::net wx::core wx::base wx::richtext wx::html
   SQLiteCpp
   sqlite3
   pthread

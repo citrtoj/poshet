@@ -1,10 +1,11 @@
 #include <wx/wx.h>
 #include "LoginFrame.hpp"
 
-class App: public wxApp
-{
+class App: public wxApp {
+protected:
+    Session* session;
 public:
-    virtual bool OnInit() {
+    bool OnInit() {
         LoginFrame* frame = new LoginFrame("Login Example");
         frame->Show(true);
         return true;

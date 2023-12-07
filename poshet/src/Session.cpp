@@ -1,11 +1,13 @@
 #include "Session.hpp"
 
-// Session::Session(DashboardView& view, Pop3Connection& pop3, DatabaseConnection& db):
-//     _view(view),
-//     _pop3(pop3),
-//     _db(db)
-// {}
+Session::Session(const LoginData& loginData) :
+    _loginData(loginData),
+    _pop3(_loginData.pop3Domain())
+{
+    std::cout << "session created\n";
+}
 
-void Session::authenticateUser(const LoginModel& model) {
-    
+void Session::login() {
+    _pop3.connectToPop3Server(_loginData.username(), _loginData.password());
+    std::cout << _pop3.execCommand("RETR");
 }

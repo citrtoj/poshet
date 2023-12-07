@@ -1,31 +1,27 @@
 #include "Pop3Connection.hpp"
 
-Pop3Connection::Pop3Connection(const std::string& host, const std::string& port) :
-    _host(host),
-    _port(port)
+Pop3Connection::Pop3Connection(const std::string& host) :
+    _host(host)
 {}
 
-Pop3Connection::Pop3Connection() : Pop3Connection("", "") {}
+Pop3Connection::Pop3Connection() : Pop3Connection("localhost") {}
 
 void Pop3Connection::setHost(const std::string& host) {
     _host = host;
 }
-void Pop3Connection::setPort(const std::string& port) {
-    _port = port;
-}
 
-int Pop3Connection::openSocket() {
+void Pop3Connection::openSocket() {
     _socket = socket(AF_INET, SOCK_STREAM, 0);
     if (_socket == -1) {
-        return -1;
+        throw Exception("Could not initialize socket");
     }
-    return 0;
 }
 
-int Pop3Connection::connectToPop3Server() {
-    if (this->openSocket() == -1) {
-        return -1;
+void Pop3Connection::connectToPop3Server(const std::string& user, const std::string& pass) {
+    if (_state != POP3::DISCONNECTED) {
+        return;
     }
+    this->openSocket();
     struct addrinfo *result;
     struct addrinfo hints;
     memset(&hints, 0, sizeof(struct addrinfo));
@@ -33,24 +29,18 @@ int Pop3Connection::connectToPop3Server() {
     hints.ai_family = AF_INET;
     int status = getaddrinfo(_host.c_str(), _port.c_str(), &hints, &result);
     if (status != 0) {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
-        exit(EXIT_FAILURE);
+        throw Exception("Could not get address info of server");
     }
     status = connect(_socket, result->ai_addr, (int)result->ai_addrlen);
 
     if (status != 0) {
-        perror("connect");
-        exit(EXIT_FAILURE);
+        throw Exception("Could not connect to server");
     }
 
     freeaddrinfo(result);
-    std::cout << "connected!\n";
-    char buffer[512];
-    read(_socket, buffer, 512);
+    readLineResponse();
 
     noopThread = std::thread(&Pop3Connection::keepAlive, this);
-    
-    return 0;
 }
 
 std::string Pop3Connection::execCommand(const std::string& command, bool expectsMultiline) {
@@ -58,9 +48,8 @@ std::string Pop3Connection::execCommand(const std::string& command, bool expects
     std::string tmpCommand = command + "\r\n";  //CRLF ending
     int status = Utils::writeLoop(_socket, tmpCommand.c_str(), tmpCommand.length());
     if (status < 0) {
-        throw POP3::Exception("Error writing command to server");
+        throw Exception("Error writing command to server");
     }
-
     if (!expectsMultiline) {
         return readLineResponse(POP3::SingleLineMessage::PROCESSED);
     }
@@ -78,7 +67,7 @@ std::string Pop3Connection::readLineResponse(bool raw) {
         char singleCharBuffer;
         int readCode = Utils::readLoop(_socket, &singleCharBuffer, 1);
         if (readCode <= 0) {
-            throw POP3::Exception("Error reading character from socket.");
+            throw Exception("Error reading character from socket.");
         }
         buffer[0] = buffer[1];
         buffer[1] = singleCharBuffer;
@@ -94,7 +83,7 @@ std::string Pop3Connection::readLineResponse(bool raw) {
         }
     }
     if (error) {  // contains "-ERR ..."
-        throw POP3::Exception(finalResult.substr(5));
+        throw ServerException(finalResult.substr(5));
     }
     return finalResult;
 }
@@ -131,6 +120,9 @@ void Pop3Connection::keepAlive() {
 }
 
 void Pop3Connection::closeConnection() {
+    if (_state == POP3::DISCONNECTED) {
+        return;
+    }
     {
         std::unique_lock<std::mutex> lock(_mutex);
         _state = POP3::State::DISCONNECTING;
@@ -138,7 +130,7 @@ void Pop3Connection::closeConnection() {
     cv.notify_all();
     noopThread.join();
     close(_socket);
-    _state = POP3::State::DISCONNECTED;
+    _state = POP3::DISCONNECTED;
 }
 
 // std::vector<std::string> Pop3Connection::retrieveAllMail() {

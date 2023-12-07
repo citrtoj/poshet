@@ -2,16 +2,16 @@
 
 #include "Pop3Connection.hpp"
 #include "DatabaseConnection.hpp"
-#include "DashboardView.hpp"
 #include "Config.hpp"
-#include "LoginModel.hpp"
+#include "LoginData.hpp"
 
 class Session {
 protected:
-    DashboardView _view;
     Pop3Connection _pop3;
-    DatabaseConnection _db;
+    // SMTPConnection _smtp;
+    LoginData _loginData;
+    // todo: some sort of UserConfigData which I could perhaps CRUD in combo with the db.. such as "delete the mail after x days" and so on
 public:
-    Session() : _db(Config::getInstance().DB_PATH) {}
-    void authenticateUser(const LoginModel& model);
+    Session(const LoginData& loginData);
+    void login();
 };
