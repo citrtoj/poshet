@@ -11,10 +11,12 @@ public:
     static constexpr int MIN_ARGS = 5;
     
     //LoginData(const std::string& fullName, const std::string& username, const std::string& password, const std::string& pop3Domain, const std::string& smtpDomain);
+    LoginData() {}
     LoginData(const std::vector<std::string>& data);
     std::string fullName() const;
     std::string username() const;
     std::string password() const;
     std::string pop3Domain() const;
     std::string smtpDomain() const;
+
 };

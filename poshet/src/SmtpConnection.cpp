@@ -2,11 +2,10 @@
 
 SMTPConnection::SMTPConnection() {}
 
-SMTPConnection::SMTPConnection(const std::string& host) : _host(host) {
-    _hostSet = true;
+SMTPConnection::SMTPConnection(const std::string& host) {
+    setHost(host);
 }
 
-void SMTPConnection::setHost(const std::string& host) {
-    _host = host;
-    _hostSet = true;
+void SMTPConnection::setClientDomain(const std::string& domain) {
+    _clientDomain = domain;
 }

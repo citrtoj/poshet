@@ -1,15 +1,26 @@
+#pragma once
 #include <wx/wx.h>
-#include "LoginFrame.hpp"
+#include <string>
+#include "AppController.hpp"
+#include <iostream>
 
-class App: public wxApp {
+class App : public wxApp {
 protected:
-    Session* session;
+    AppController* controller;
 public:
     bool OnInit() {
-        LoginFrame* frame = new LoginFrame("Login Example");
-        frame->Show(true);
+        controller = new AppController(this);
         return true;
     }
+
+    void OnLogin(wxCommandEvent& e) {
+        std::cout << "logging\n";
+    }
+
+    void OnCloseLoginWindow(wxEvent& e) {
+        Exit();
+    }
+    
     void OnUnhandledException(){
         try {
             throw;

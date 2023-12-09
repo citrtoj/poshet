@@ -1,12 +1,16 @@
 #include "Session.hpp"
 
-Session::Session(const LoginData& loginData) :
-    _loginData(loginData),
-    _pop3(loginData.pop3Domain())
-{
+void Session::setLoginData(const LoginData& data) {
+    std::cout << "[Session] Setting login data\n";
+    _loginData = data;
+    std::cout << "[Session] Setting POP3 domain\n";
+    _pop3.setHost(_loginData.pop3Domain());
+    std::cout << "[Session] Set login data\n";
 }
 
 void Session::login() {
-    _pop3.connectToPop3Server();
+    _pop3.connectToServer();
+    std::cout << "[Session] Logging in to POP3 server\n";
     _pop3.login(_loginData.username(), _loginData.password());
+    std::cout << "[Session] Logged in to POP3 server\n";
 }

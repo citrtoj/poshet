@@ -15,19 +15,20 @@
 #include <iostream>
 #include <unordered_map>
 #include <vector>
-
 #include <thread>
 #include <chrono>
 #include <mutex>
 #include <condition_variable>
+#include <atomic>
 
 #include "Utils.hpp"
 #include "DatabaseConnection.hpp"
 #include "Exceptions.hpp"
+#include "ConnectionBase.hpp"
 
 namespace POP3 {
-
     enum Command {
+        // not sure if I'll need these
         UNDEFINED,
         QUIT,
         STAT,
@@ -40,38 +41,30 @@ namespace POP3 {
         USER,
         PASS
     };
-
     enum State {
-        DISCONNECTING,
         DISCONNECTED,
+        DISCONNECTING,
         AUTHORIZATION,  // after opening socket
         TRANSACTION
     };
-
     enum SingleLineMessage { // should readSingleLineMessage replace \r\n with \n or not?
         PROCESSED,
         RAW
     };
-
-    static constexpr int DEFAULT_SIZE = 512 + 1;
-    static constexpr int TIMEOUT_SECS = 180;
+    static constexpr int TIMEOUT_SECS = 3;
 }
 
-class Pop3Connection {
+class Pop3Connection : public ConnectionBase {
 protected:
-    int _socket;
-    
-    std::string _host, _port = "110";
     std::string _user, _pass;
 
     POP3::State _state = POP3::State::DISCONNECTED;
 
-    std::mutex _mutex;
     std::thread noopThread;
+    std::mutex _commandMutex;
+    std::mutex _shouldExitMutex;
     std::condition_variable cv;
-    bool shouldExitNoopThread;
 
-    void openSocket();
     std::string readLineResponse(bool raw = POP3::SingleLineMessage::PROCESSED);
     std::string readMultiLineResponse();
 
@@ -82,11 +75,12 @@ public:
     Pop3Connection();
     ~Pop3Connection();
 
-    void setHost(const std::string& host);
+    void setUser(const std::string& user);
+    void setPass(const std::string& pass);
 
-    void connectToPop3Server();
+    void connectToServer() override;
+    void closeConnection() override;
+
     void login(const std::string& user, const std::string& pass);
     std::string execCommand(const std::string& command, bool expectsMultiline = false);
-
-    void closeConnection();
 };

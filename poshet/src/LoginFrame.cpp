@@ -11,7 +11,7 @@ LoginFrame::LoginFrame(const wxString& title) :
     })
 {
     _statusBar = CreateStatusBar();
-    _statusBar->SetStatusText("Ready");
+    SetStatusText("Ready");
     const auto MARGIN = FromDIP(5);
 
     wxPanel* panel = new wxPanel(this, wxID_ANY);
@@ -43,22 +43,17 @@ LoginFrame::LoginFrame(const wxString& title) :
     SetSizerAndFit(frameSizer);
     Centre();
     
-    _loginButton->Bind(wxEVT_BUTTON, &LoginFrame::OnLogin, this);
+    //_loginButton->Bind(wxEVT_BUTTON, &LoginFrame::OnLogin, this);
 }
 
-void LoginFrame::OnLogin(wxCommandEvent& event) {
+std::vector<std::string> LoginFrame::userInput() {
     std::vector<std::string> loginDataDump;
     for (auto& input : _textInputs) {
         loginDataDump.push_back(std::get<LoginView::TEXTCTRL>(input)->GetValue().ToStdString());
     }
-    // placeholder for an app-level Session class that keeps track of all the connections needed for a user session
-    try {
-        LoginData data(loginDataDump);
-        Session session(data);
-        session.login();
-    }
-    catch (Exception &e) {
-        _statusBar->SetStatusText(e.what());
-        wxMessageBox(e.what(), "Error", wxOK | wxICON_ERROR);
-    };
+    return loginDataDump;
+}
+
+wxButton* LoginFrame::loginButton() {
+    return _loginButton;
 }

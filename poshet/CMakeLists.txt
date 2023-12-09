@@ -9,15 +9,18 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/thirdparty/SQLiteCpp)
 
 set(SOURCES
     src/main.cpp
+    src/Config.cpp
     src/Utils.cpp
+    src/App.cpp
+    src/AppController.cpp
+    src/Session.cpp
+    src/ConnectionBase.cpp
+    src/SmtpConnection.cpp
     src/Pop3Connection.cpp
     src/DatabaseConnection.cpp
-    src/DashboardFrame.cpp
-    src/Config.cpp
-    src/App.cpp
     src/LoginData.cpp
     src/LoginFrame.cpp
-    src/Session.cpp
+    src/DashboardFrame.cpp
 )
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
