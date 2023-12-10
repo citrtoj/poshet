@@ -1,12 +1,15 @@
 #pragma once
+
+#include <string>
+#include <wx/event.h>
+#include <iostream>
+
 #include "LoginFrame.hpp"
 #include "DashboardFrame.hpp"
 #include "Session.hpp"
 #include "Exceptions.hpp"
-#include <string>
-#include <iostream>
 
-class AppController : wxEvtHandler {
+class AppController {
 protected:
     Session* session;
     LoginFrame* loginFrame;
@@ -19,5 +22,7 @@ public:
     AppController(wxApp* app);
 
     void OnLogin(wxCommandEvent& e);
+    void login();
+
     void OnClose(wxEvent& e);
 };

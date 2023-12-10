@@ -8,5 +8,5 @@ protected:
     wxStaticText* _from;
     wxStaticText* _subject;
 public:
-    MailListItem(const MailInfo& info);
+    MailListItem(wxWindow* parent, const MailInfo& info);
 };

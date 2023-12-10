@@ -3,15 +3,21 @@
 AppController::AppController(wxApp* app) :
     mainApp(app),
     session(new Session()),
-    loginFrame(new LoginFrame("Login to Poshet")), dashboardFrame(new DashboardFrame("Poshet"))
+    loginFrame(new LoginFrame("Login to Poshet")),
+    dashboardFrame(new DashboardFrame("Poshet"))
 {
     loginFrame->Show(true);
     loginFrame->loginButton()->Bind(wxEVT_BUTTON, &AppController::OnLogin, this);
+    
+    loginFrame->Bind(wxEVT_TEXT_ENTER, [&](wxCommandEvent& e) {
+        this->login();
+    }, wxID_ANY);
+    
     loginFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::OnClose, this);
     dashboardFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::OnClose, this);
 }
 
-void AppController::OnLogin(wxCommandEvent& e) {
+void AppController::login() {
     try {
         LoginData data(loginFrame->userInput());
         session->setLoginData(data);
@@ -20,8 +26,12 @@ void AppController::OnLogin(wxCommandEvent& e) {
         dashboardFrame->Show();
     }
     catch (Exception& e) {
-        wxMessageBox(e.what(), "Error", wxOK | wxICON_ERROR);
+        loginFrame->showError(e.what());
     }
+}
+
+void AppController::OnLogin(wxCommandEvent& e) {
+    login();
 }
 
 void AppController::OnClose(wxEvent& e) {

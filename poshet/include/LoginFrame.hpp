@@ -6,7 +6,8 @@
 #include "Session.hpp"
 #include "LoginData.hpp"
 
-namespace LoginView {
+class LoginFrame : public wxFrame {
+protected:
     enum TextInputInfo {
         LABEL,
         STATICTEXT,
@@ -24,20 +25,18 @@ namespace LoginView {
         UNCENSORED,
         CENSORED
     };
-}
-
-
-class LoginFrame : public wxFrame {
-private:
-    std::vector<std::tuple<std::string, wxStaticText*, wxTextCtrl*, LoginView::InputType, LoginView::Censor>> _textInputs;
+    std::vector<std::tuple<std::string, wxStaticText*, wxTextCtrl*, InputType, Censor>> _textInputs;
     std::vector<wxStaticText*> _textLabels;
     std::vector<wxTextCtrl*> _textControls;
     wxButton* _loginButton;
     wxStatusBar* _statusBar;
 
     void OnLogin(wxCommandEvent& event);
+
 public:
     LoginFrame(const wxString& title);
     std::vector<std::string> userInput();
     wxButton* loginButton();
+    
+    void showError(const std::string& errorString);
 };

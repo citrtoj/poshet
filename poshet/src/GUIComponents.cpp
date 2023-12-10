@@ -1,5 +1,7 @@
 #include "GUIComponents.hpp"
 
-MailListItem::MailListItem(const MailInfo& info) {
+MailListItem::MailListItem(wxWindow* parent, const MailInfo& info):
+    wxPanel(parent)    
+{
 
 }
