@@ -43,7 +43,7 @@ void Pop3Connection::login(const std::string& user, const std::string& pass) {
     noopThread = std::thread(&Pop3Connection::keepAlive, this);
 }
 
-std::string Pop3Connection::execCommand(const std::string& command, bool expectsMultiline) {
+std::string Pop3Connection::execCommand(const std::string& command, bool expectsMultiline, POP3::SingleLineMessage processing) {
     std::lock_guard<std::mutex> lock(_commandMutex);
     std::string tmpCommand = command + "\r\n";  //CRLF ending
     int status = Utils::writeLoop(_socket, tmpCommand.c_str(), tmpCommand.length());
@@ -51,7 +51,7 @@ std::string Pop3Connection::execCommand(const std::string& command, bool expects
         throw Exception("Error writing command to server");
     }
     if (!expectsMultiline) {
-        auto x = readLineResponse(POP3::SingleLineMessage::PROCESSED);
+        auto x = readLineResponse(processing);
         return x;
     }
     else {
@@ -138,4 +138,37 @@ void Pop3Connection::closeConnection() {
     std::cout << "[POP3] Joined noop thread!!\n";
     closeSocket();
     _state = POP3::DISCONNECTED;
+}
+
+std::vector<POP3::MailData> Pop3Connection::retrieveMail() {
+    auto serverResponse = execCommand("LIST", true);
+    std::cout << serverResponse << "\n";
+    std::vector<POP3::MailData> mailVector;
+
+    std::string buffer;
+    size_t messageNumber;
+
+    std::stringstream strm(serverResponse, std::ios_base::in);
+    strm >> buffer >> messageNumber >> buffer;
+    
+    for (int i = 1; i <= messageNumber; ++i) {
+        int index, byteSize;
+        strm >> index >> byteSize;
+        std::cout << index << " " << byteSize << "\n";
+        mailVector.push_back(POP3::MailData(index, byteSize));
+        // incercam sa citim aici
+        // auto serverMailResponse = execCommand("RETR " + std::to_string(i), false);
+        // {
+        //     std::cout << "here\n";
+        //     std::lock_guard<std::mutex> lock(_commandMutex);
+        //     // I still have to read byteSize bytes
+        //     char* mailBuffer = new char[byteSize + 1];
+        //     int readCode = Utils::readLoop(_socket, mailBuffer, byteSize);
+        //     mailBuffer[byteSize] = 0;
+        //     std::cout << mailBuffer;
+        //     delete mailBuffer;
+        // }
+    }
+
+    return mailVector;
 }

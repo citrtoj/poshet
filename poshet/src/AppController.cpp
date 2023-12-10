@@ -1,40 +1,41 @@
 #include "AppController.hpp"
 
 AppController::AppController(wxApp* app) :
-    mainApp(app),
-    session(new Session()),
-    loginFrame(new LoginFrame("Login to Poshet")),
-    dashboardFrame(new DashboardFrame("Poshet"))
+    _mainApp(app),
+    _session(new Session()),
+    _loginFrame(new LoginFrame("Login to Poshet")),
+    _dashboardFrame(new DashboardFrame("Poshet"))
 {
-    loginFrame->Show(true);
-    loginFrame->loginButton()->Bind(wxEVT_BUTTON, &AppController::OnLogin, this);
+    _loginFrame->subscribe(this);
+    _dashboardFrame->subscribe(this);
+
+    _loginFrame->Show(true);
+
+    // _loginFrame->loginButton()->Bind(wxEVT_BUTTON, &AppController::OnLogin, this);
     
-    loginFrame->Bind(wxEVT_TEXT_ENTER, [&](wxCommandEvent& e) {
-        this->login();
-    }, wxID_ANY);
     
-    loginFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::OnClose, this);
-    dashboardFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::OnClose, this);
+    
+    // _loginFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::OnClose, this);
+    // _dashboardFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::OnClose, this);
 }
 
 void AppController::login() {
     try {
-        LoginData data(loginFrame->userInput());
-        session->setLoginData(data);
-        session->login();
-        loginFrame->Hide();
-        dashboardFrame->Show();
+        LoginData data(_loginFrame->userInput());
+        _session->setLoginData(data);
+        _session->login();
+        _loginFrame->Hide();
+        _dashboardFrame->Show();
+        _session->retrieveMail();
     }
     catch (Exception& e) {
-        loginFrame->showError(e.what());
+        _loginFrame->showError(e.what());
     }
 }
 
-void AppController::OnLogin(wxCommandEvent& e) {
-    login();
-}
-
-void AppController::OnClose(wxEvent& e) {
-    delete session;
-    mainApp->Exit();
+void AppController::onCloseAnyWindow() {
+    std::cout << "here\n";
+    delete _session;
+    std::cout << "here\n";
+    _mainApp->Exit();
 }

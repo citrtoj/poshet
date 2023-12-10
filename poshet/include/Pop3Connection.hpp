@@ -27,6 +27,15 @@
 #include "ConnectionBase.hpp"
 
 namespace POP3 {
+    class MailData {
+    public:
+        size_t index;
+        size_t byteSize;
+        std::string plainData;
+
+        MailData(size_t index, size_t byteSize) : index(index), byteSize(byteSize) {}
+        MailData() {}
+    };
     enum Command {
         // not sure if I'll need these
         UNDEFINED,
@@ -70,6 +79,8 @@ protected:
 
     void keepAlive();
 
+    std::string execCommand(const std::string& command, bool expectsMultiline = false, POP3::SingleLineMessage processing = POP3::SingleLineMessage::PROCESSED);
+
 public:
     Pop3Connection(const std::string& host);
     Pop3Connection();
@@ -82,5 +93,6 @@ public:
     void closeConnection() override;
 
     void login(const std::string& user, const std::string& pass);
-    std::string execCommand(const std::string& command, bool expectsMultiline = false);
+
+    std::vector<POP3::MailData> retrieveMail();
 };

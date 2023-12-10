@@ -19,6 +19,10 @@ public:
     void setLoginData(const LoginData& data);
     void login();
 
+    auto retrieveMail() {
+        return _pop3.retrieveMail();
+    }
+
     ~Session() {
         std::cout << "[Session] dtor\n";
     }

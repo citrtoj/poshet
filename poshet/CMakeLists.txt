@@ -21,6 +21,7 @@ set(SOURCES
     src/LoginData.cpp
     src/LoginFrame.cpp
     src/DashboardFrame.cpp
+    src/NewMailDialog.cpp
 )
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})

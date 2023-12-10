@@ -5,21 +5,26 @@
 #include <wx/splitter.h>
 #include <iostream>
 #include <string>
-#include "Session.hpp"
 
-enum
-{
-    ID_Quit = 1,
-    ID_About,
-};
+#include "FrameSubscribers.hpp"
 
 class DashboardFrame : public wxFrame {
 protected:
+    DashboardFrameSubscriber* _subscriber;
+
     wxPanel* _sidebarPanel;
+    wxButton* _newMailBtn;
     wxListView* _mailList;
     wxRichTextCtrl* _viewMailWindow;
+    wxStatusBar* _statusBar;
 public:
     DashboardFrame(const wxString& title);
+    void subscribe(DashboardFrameSubscriber* sub) {
+        _subscriber = sub;
+    }
+
     void OnListBoxEvent(wxCommandEvent& e);
+    void OnClose(wxEvent& e);
+
     void setMail();
 };

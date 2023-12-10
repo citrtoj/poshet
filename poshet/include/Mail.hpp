@@ -10,14 +10,14 @@ protected:
     std::unordered_map<std::string, std::string> _attachments;
     std::unordered_map<std::string, std::string> _headers;
 public:
-    Mail();
+    //Mail();
     Mail(const std::string& plaintextData) : _plainText(plaintextData) {}
 
-    std::string to();
-    std::string from();
-    std::string dump();
+    //std::string to();
+    //std::string from();
+    //std::string dump();
     bool attach(const std::string& filePath);
-    std::string& plainText();
+    //std::string& plainText();
 };
 
 class MailInfo {
@@ -26,9 +26,9 @@ protected:
     std::string _from;
     std::string _subject;
 public:
-    MailInfo(const Mail& mail) {
-        
-    }
+    MailInfo(const Mail& mail) {}
     std::string from() const;
     std::string subject() const;
+    void setFrom(const std::string& from);
+    void setSubject(const std::string& subject);
 };

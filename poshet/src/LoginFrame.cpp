@@ -43,7 +43,16 @@ LoginFrame::LoginFrame(const wxString& title) :
     SetSizerAndFit(frameSizer);
     Centre();
     
-    //_loginButton->Bind(wxEVT_BUTTON, &LoginFrame::OnLogin, this);
+    _loginButton->Bind(wxEVT_BUTTON, &LoginFrame::OnLogin, this);
+    this->Bind(wxEVT_CLOSE_WINDOW, &LoginFrame::OnClose, this);
+}
+
+void LoginFrame::OnLogin(wxCommandEvent& event) {
+    _subscriber->onLoginSubmit();
+}
+
+void LoginFrame::OnClose(wxEvent& event) {
+    _subscriber->onCloseAnyWindow();
 }
 
 std::vector<std::string> LoginFrame::userInput() {
