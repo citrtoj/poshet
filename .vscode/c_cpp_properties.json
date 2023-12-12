@@ -4,9 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/poshet/**",
-                "${workspaceFolder}/poshet/thirdparty/wxWidgets/include/**",
-                "${workspaceFolder}/poshet/build/thirdparty/wxWidgets/lib/wx/include/gtk3-unicode-3.3"
-            ],
+                "/usr/include/**"
+            ],  
             "defines": [
                 "__WXGTK__"
             ],

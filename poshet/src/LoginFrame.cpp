@@ -12,7 +12,6 @@ LoginFrame::LoginFrame(const wxString& title) :
 {
     _statusBar = CreateStatusBar();
     SetStatusText("Ready");
-    const auto MARGIN = FromDIP(5);
 
     wxPanel* panel = new wxPanel(this, wxID_ANY);
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);

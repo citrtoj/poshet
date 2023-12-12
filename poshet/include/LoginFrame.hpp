@@ -36,6 +36,8 @@ protected:
     wxButton* _loginButton;
     wxStatusBar* _statusBar;
 
+    const int MARGIN = 5;
+
     void OnLogin(wxCommandEvent& event);
     void OnClose(wxEvent& event);
 
