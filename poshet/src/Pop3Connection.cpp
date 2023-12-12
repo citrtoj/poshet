@@ -55,6 +55,7 @@ void POP3Connection::login(const std::string& user, const std::string& pass) {
 }
 
 void POP3Connection::sendCommand(const std::string& command) {
+    // todo: DUPLICATE in smtp -- worth moving over to ConnectionBase, perhaps?
     std::string tmpCommand = command + "\r\n";  //CRLF ending
     int status = Utils::writeLoop(_socket, tmpCommand.c_str(), tmpCommand.length());
     if (status < 0) {
@@ -97,7 +98,10 @@ std::string POP3Connection::readLineResponse(bool raw) {
         if (error == false and finalResult[0] == '-') {
             error = true;
         }
-    }
+    } 
+    // TODO -  move this from here to wherever we handle input
+    // maybe sometimes we don't simply want to exception out of this
+
     if (error) {  // contains "-ERR ..."
         throw ServerException(finalResult.substr(5));
     }
@@ -110,6 +114,7 @@ std::string POP3Connection::readMultiLineResponse() {
     while (true) {
         auto buffer = readLineResponse(SingleLineMessage::RAW);
         if (buffer.find("-ERR") != std::string::npos) {
+            // todo: same as a bit above
             throw ServerException(buffer.substr(5));
         }
         if (buffer == "\r\n") {

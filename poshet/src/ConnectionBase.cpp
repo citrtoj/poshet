@@ -33,18 +33,21 @@ bool ConnectionBase::isSocketOpen() {
 
 void ConnectionBase::connectSocket() {
     this->openSocket();
+    if (_host.empty()) {
+        throw Exception("Cannot resolve empty server address");
+    }
     struct addrinfo *result;
     struct addrinfo hints;
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_INET;
     int status = getaddrinfo(_host.c_str(), _port.c_str(), &hints, &result);
     if (status != 0) {
-        throw Exception("Could not resolve address of server");
+        throw Exception("Could not resolve address of server (" + _host + ":" + _port + ")");
     }
     status = connect(_socket, result->ai_addr, (int)result->ai_addrlen);
 
     if (status != 0) {
-        throw Exception("Could not connect to server");
+        throw Exception("Could not connect to server (" + _host + ":" + _port + ")");
     }
     freeaddrinfo(result);
 }

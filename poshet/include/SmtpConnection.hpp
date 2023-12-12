@@ -12,8 +12,7 @@
 
 #include "ConnectionBase.hpp"
 
-
-namespace SMTP {
+class SMTPConnection : public ConnectionBase {
     enum State {
         DISCONNECTED,
         DISCONNECTING, 
@@ -24,23 +23,17 @@ namespace SMTP {
         RAW
     };
     static constexpr int TIMEOUT_SECS = 3;
-}
-
-class SMTPConnection : public ConnectionBase {
 protected:
     int _socket;
 
     std::string _clientDomain = "localhost";
-
-    SMTP::State _state = SMTP::State::DISCONNECTED;
+    
+    State _state = State::DISCONNECTED;
 
     std::thread _noopThread;
     std::mutex _commandMutex;
     std::mutex _shouldExitMutex;
     std::condition_variable cv;
-
-    std::string readLineResponse(bool raw = SMTP::SingleLineMessage::PROCESSED);
-    std::string readMultiLineResponse();
 
     void keepAlive();
 public:
@@ -50,6 +43,9 @@ public:
 
     void setClientDomain(const std::string& domain);
 
-    void connectToServer() override {}
+    void connectToServer() override;
     void closeConnection() override {}
+
+    void sendCommand(const std::string& command);
+    std::string readResponse();
 };

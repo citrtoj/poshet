@@ -42,7 +42,7 @@ public:
     void onMailSend() override {}
     void onCloseMailCreator() override {
         _mailCreatorFrame->notifyToClose();
-        // todo: perhaps think this through better? lol
+        // todo: perhaps think of a better way to singletonify this class
         _isMailCreatorOpen = false;
     }
 };

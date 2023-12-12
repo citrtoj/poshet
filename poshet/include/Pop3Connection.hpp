@@ -60,7 +60,7 @@ class POP3Connection : public ConnectionBase {
         PROCESSED,
         RAW
     };
-    static constexpr int TIMEOUT_SECS = 3;
+    static constexpr int TIMEOUT_SECS = 60;
 protected:
     std::string _user, _pass;
 

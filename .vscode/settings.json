@@ -74,5 +74,6 @@
         "cfenv": "cpp",
         "variant": "cpp"
     },
-    "cmake.configureOnOpen": true
+    "cmake.configureOnOpen": true,
+    "todo-tree.tree.scanMode": "workspace only"
 }
