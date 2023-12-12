@@ -5,7 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/poshet/**",
                 "${workspaceFolder}/poshet/thirdparty/wxWidgets/include/**",
-                "${workspaceFolder}/poshet/build/thirdparty/wxWidgets/lib/wx/include/gtk3-unicode-static-3.3"
+                "${workspaceFolder}/poshet/build/thirdparty/wxWidgets/lib/wx/include/gtk3-unicode-3.3"
             ],
             "defines": [
                 "__WXGTK__"

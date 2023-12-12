@@ -1,4 +1,3 @@
-
 #include <poll.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -26,15 +25,15 @@
 #include "Exceptions.hpp"
 #include "ConnectionBase.hpp"
 
-namespace POP3 {
-    class MailData {
+class Pop3Connection : public ConnectionBase {
+    class RawMailData {
     public:
         size_t index;
         size_t byteSize;
         std::string plainData;
 
-        MailData(size_t index, size_t byteSize) : index(index), byteSize(byteSize) {}
-        MailData() {}
+        RawMailData(size_t index, size_t byteSize) : index(index), byteSize(byteSize) {}
+        RawMailData() {}
     };
     enum Command {
         // not sure if I'll need these
@@ -61,26 +60,27 @@ namespace POP3 {
         RAW
     };
     static constexpr int TIMEOUT_SECS = 3;
-}
-
-class Pop3Connection : public ConnectionBase {
 protected:
     std::string _user, _pass;
 
-    POP3::State _state = POP3::State::DISCONNECTED;
+    State _state = State::DISCONNECTED;
 
     std::thread noopThread;
     std::mutex _commandMutex;
     std::mutex _shouldExitMutex;
     std::condition_variable cv;
 
-    std::string readLineResponse(bool raw = POP3::SingleLineMessage::PROCESSED);
+    void sendCommand(const std::string& command);
+
+    std::string readLineResponse(bool raw = SingleLineMessage::PROCESSED);
     std::string readMultiLineResponse();
 
     void keepAlive();
 
-    std::string execCommand(const std::string& command, bool expectsMultiline = false, POP3::SingleLineMessage processing = POP3::SingleLineMessage::PROCESSED);
+    std::string execCommand(const std::string& command, bool expectsMultiline = false, SingleLineMessage processing = SingleLineMessage::PROCESSED);
 
+    std::string retrieveOneMail(size_t currentMailIndex, size_t byteSize);
+    std::string retrieveOneMailHeader(size_t currentMailIndex);
 public:
     Pop3Connection(const std::string& host);
     Pop3Connection();
@@ -91,8 +91,11 @@ public:
 
     void connectToServer() override;
     void closeConnection() override;
+    void resetConnection();
 
+    void login();
     void login(const std::string& user, const std::string& pass);
 
-    std::vector<POP3::MailData> retrieveMail();
+    std::vector<RawMailData> retrieveAllMail();
+    std::vector<RawMailData> retrieveAllMailHeaders();
 };

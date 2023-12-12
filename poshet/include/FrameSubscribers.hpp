@@ -14,4 +14,5 @@ class DashboardFrameSubscriber : virtual public FrameSubscriber {
 public:
     virtual void onNewMail() = 0;
     virtual void onReplyMail(/* un fel de a identifica mail-ul la care ma refer... vedem mai incolo*/) = 0;
+    virtual void onRefreshMailList() = 0;
 };

@@ -1,12 +1,9 @@
 #include "Utils.hpp"
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdint.h>
 
 namespace Utils {
     int readLoop(int fd, void* buffer, int nbytes) {
-        // if returned number is positive -- if equal to nbytes then succeeded writing, else it piped somewhere
-        // if returned number is negative then it's -readSofar-1 (to distinguish from error on first read)
+        // if returned number is positive: if equal to nbytes then succeeded writing, else it piped somewhere
+        // if returned number is negative: returns -readSofar - 1 (to distinguish from error on first read)
         if (nbytes < 0 || buffer == NULL) {
             return -1;
         }
@@ -47,4 +44,16 @@ namespace Utils {
         return writtenSoFar;
     }
 
+
+    std::string strip(const std::string& str) {
+        auto start = std::find_if(str.begin(), str.end(), [](char c) {
+            return !std::isspace(c);
+        });
+
+        auto end = std::find_if(str.rbegin(), str.rend(), [](char c) {
+            return !std::isspace(c);
+        }).base();
+
+        return (start < end) ? std::string(start, end) : std::string();
+    }
 }

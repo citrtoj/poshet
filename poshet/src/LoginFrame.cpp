@@ -44,6 +44,7 @@ LoginFrame::LoginFrame(const wxString& title) :
     Centre();
     
     _loginButton->Bind(wxEVT_BUTTON, &LoginFrame::OnLogin, this);
+    this->Bind(wxEVT_TEXT_ENTER, &LoginFrame::OnLogin, this);
     this->Bind(wxEVT_CLOSE_WINDOW, &LoginFrame::OnClose, this);
 }
 
