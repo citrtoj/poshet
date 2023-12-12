@@ -1,26 +1,26 @@
 #include "Pop3Connection.hpp"
 
-Pop3Connection::Pop3Connection() {
+POP3Connection::POP3Connection() {
     setPort("110"); //potentially modify to get the default from config etc etc
 }
 
-Pop3Connection::Pop3Connection(const std::string& host) : Pop3Connection() {
+POP3Connection::POP3Connection(const std::string& host) : POP3Connection() {
     setHost(host);
 }
 
-Pop3Connection::~Pop3Connection() {
+POP3Connection::~POP3Connection() {
     closeConnection();
 }
 
-void Pop3Connection::setUser(const std::string& user) {
+void POP3Connection::setUser(const std::string& user) {
     _user = user;
 }
 
-void Pop3Connection::setPass(const std::string& pass) {
+void POP3Connection::setPass(const std::string& pass) {
     _pass = pass;
 }
 
-void Pop3Connection::connectToServer() {
+void POP3Connection::connectToServer() {
     if (_state != DISCONNECTED) {
         return;
     }
@@ -29,7 +29,7 @@ void Pop3Connection::connectToServer() {
     _state = AUTHORIZATION;
 }
 
-void Pop3Connection::login() {
+void POP3Connection::login() {
     if (_state == TRANSACTION) {
         std::cout << "[POP3] Warning: already logged in!\n";
         return;
@@ -41,10 +41,10 @@ void Pop3Connection::login() {
     execCommand("USER " + _user);
     execCommand("PASS " + _pass);
     _state = TRANSACTION;
-    noopThread = std::thread(&Pop3Connection::keepAlive, this);
+    noopThread = std::thread(&POP3Connection::keepAlive, this);
 }
 
-void Pop3Connection::login(const std::string& user, const std::string& pass) {
+void POP3Connection::login(const std::string& user, const std::string& pass) {
     if (_state == TRANSACTION) {
         std::cout << "[POP3] Warning: already logged in!\n";
         return;
@@ -54,7 +54,7 @@ void Pop3Connection::login(const std::string& user, const std::string& pass) {
     login();
 }
 
-void Pop3Connection::sendCommand(const std::string& command) {
+void POP3Connection::sendCommand(const std::string& command) {
     std::string tmpCommand = command + "\r\n";  //CRLF ending
     int status = Utils::writeLoop(_socket, tmpCommand.c_str(), tmpCommand.length());
     if (status < 0) {
@@ -62,7 +62,7 @@ void Pop3Connection::sendCommand(const std::string& command) {
     }
 }
 
-std::string Pop3Connection::execCommand(const std::string& command, bool expectsMultiline, SingleLineMessage processing) {
+std::string POP3Connection::execCommand(const std::string& command, bool expectsMultiline, SingleLineMessage processing) {
     std::lock_guard<std::mutex> lock(_commandMutex);
     sendCommand(command);
     if (!expectsMultiline) {
@@ -74,7 +74,7 @@ std::string Pop3Connection::execCommand(const std::string& command, bool expects
     }
 }
 
-std::string Pop3Connection::readLineResponse(bool raw) {
+std::string POP3Connection::readLineResponse(bool raw) {
     std::string finalResult = "";
     bool error = false;
 
@@ -104,7 +104,7 @@ std::string Pop3Connection::readLineResponse(bool raw) {
     return finalResult;
 }
 
-std::string Pop3Connection::readMultiLineResponse() {
+std::string POP3Connection::readMultiLineResponse() {
     std::string finalResult;
     int bytesRead;
     while (true) {
@@ -125,7 +125,7 @@ std::string Pop3Connection::readMultiLineResponse() {
     return finalResult;
 }
 
-void Pop3Connection::keepAlive() {
+void POP3Connection::keepAlive() {
     bool stop = true;
     while(stop) {
         if (_state == DISCONNECTED)
@@ -141,7 +141,7 @@ void Pop3Connection::keepAlive() {
     }
 }
 
-void Pop3Connection::closeConnection() {
+void POP3Connection::closeConnection() {
     std::cout << "[POP3] Closing connection...\n";
     if (_state == DISCONNECTED) {
         std::cout << "[POP3] No need to, already disconnected\n";
@@ -158,7 +158,7 @@ void Pop3Connection::closeConnection() {
     _state = DISCONNECTED;
 }
 
-std::string Pop3Connection::retrieveOneMail(size_t currentMailIndex, size_t byteSize) {
+std::string POP3Connection::retrieveOneMail(size_t currentMailIndex, size_t byteSize) {
     std::lock_guard<std::mutex> lock(_commandMutex);
 
     sendCommand("RETR " + std::to_string(currentMailIndex));
@@ -176,13 +176,13 @@ std::string Pop3Connection::retrieveOneMail(size_t currentMailIndex, size_t byte
     return x;
 }
 
-std::string Pop3Connection::retrieveOneMailHeader(size_t currentMailIndex) {
+std::string POP3Connection::retrieveOneMailHeader(size_t currentMailIndex) {
     auto x = execCommand("TOP " + std::to_string(currentMailIndex) + " 0", true);
     // todo: trim "+ OK"
     return x;
 }
 
-std::vector<Pop3Connection::RawMailData> Pop3Connection::retrieveAllMailHeaders() {
+std::vector<POP3Connection::RawMailData> POP3Connection::retrieveAllMailHeaders() {
     auto serverResponse = execCommand("LIST", true);
     std::vector<RawMailData> mailVector;
 
@@ -206,7 +206,7 @@ std::vector<Pop3Connection::RawMailData> Pop3Connection::retrieveAllMailHeaders(
     return mailVector;
 }
 
-std::vector<Pop3Connection::RawMailData> Pop3Connection::retrieveAllMail() {
+std::vector<POP3Connection::RawMailData> POP3Connection::retrieveAllMail() {
     auto serverResponse = execCommand("LIST", true);
     std::vector<RawMailData> mailVector;
 
@@ -231,7 +231,7 @@ std::vector<Pop3Connection::RawMailData> Pop3Connection::retrieveAllMail() {
     return mailVector;
 }
 
-void Pop3Connection::resetConnection() {
+void POP3Connection::resetConnection() {
     bool shouldLogin = (_state == State::TRANSACTION);
     closeConnection();
     connectToServer();

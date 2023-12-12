@@ -29,3 +29,12 @@ void AppController::onCloseAnyWindow() {
     delete _session;
     _mainApp->Exit();
 }
+
+void AppController::onNewMail() {
+    if (!_isMailCreatorOpen) {
+        _mailCreatorFrame = new MailCreatorFrame();
+        _mailCreatorFrame->subscribe(this);
+        _mailCreatorFrame->Show();
+        _isMailCreatorOpen = true;
+    }
+}

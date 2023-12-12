@@ -16,3 +16,9 @@ public:
     virtual void onReplyMail(/* un fel de a identifica mail-ul la care ma refer... vedem mai incolo*/) = 0;
     virtual void onRefreshMailList() = 0;
 };
+
+class MailCreatorFrameSubscriber : virtual public FrameSubscriber {
+public:
+    virtual void onMailSend() = 0;
+    virtual void onCloseMailCreator() = 0;
+};

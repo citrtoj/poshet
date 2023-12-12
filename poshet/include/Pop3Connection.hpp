@@ -26,7 +26,7 @@
 #include "Exceptions.hpp"
 #include "ConnectionBase.hpp"
 
-class Pop3Connection : public ConnectionBase {
+class POP3Connection : public ConnectionBase {
     class RawMailData {
     public:
         size_t index;
@@ -83,9 +83,9 @@ protected:
     std::string retrieveOneMail(size_t currentMailIndex, size_t byteSize);
     std::string retrieveOneMailHeader(size_t currentMailIndex);
 public:
-    Pop3Connection(const std::string& host);
-    Pop3Connection();
-    ~Pop3Connection();
+    POP3Connection(const std::string& host);
+    POP3Connection();
+    ~POP3Connection();
 
     void setUser(const std::string& user);
     void setPass(const std::string& pass);

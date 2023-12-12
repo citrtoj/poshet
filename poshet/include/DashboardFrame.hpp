@@ -13,7 +13,7 @@
 
 class DashboardFrame : public wxFrame {
 protected:
-    const int MARGIN = 5;
+    static const int MARGIN = 5;
     DashboardFrameSubscriber* _subscriber;
 
     const std::vector<std::string> _fields = {

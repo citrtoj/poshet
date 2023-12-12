@@ -29,7 +29,7 @@ DashboardFrame::DashboardFrame(const wxString& title) :
 
     _splitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition,wxSize(600, -1));
 
-    _mailList = new wxListView(_splitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_SINGLE_SEL);
+    _mailList = new wxListView(_splitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_SINGLE_SEL | wxBORDER_SUNKEN);
     
     for (int i = 0; i < _fields.size(); ++i) {
         _mailList->InsertColumn(i, _fields[i]);
@@ -75,6 +75,7 @@ void DashboardFrame::initViewMailPanel() {
 
     _headerPanel->SetSizerAndFit(headerSizer);
 
+    // urmeaza :)
     //auto mailContentsPanel = new wxPanel(viewMailPanel(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SUNKEN);
 
     //auto mailAttachmentsPanel = new wxPanel(viewMailPanel(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SUNKEN);
@@ -112,7 +113,7 @@ void DashboardFrame::OnRefreshMailList(wxCommandEvent& e) {
 }
 
 void DashboardFrame::OnNewMail(wxCommandEvent& e) {
-    std:: cout << "should send mail\n";
+    _subscriber->onNewMail();
 }
 
 

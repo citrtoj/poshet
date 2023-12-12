@@ -8,17 +8,20 @@
 #include "LoginFrame.hpp"
 #include "DashboardFrame.hpp"
 #include "FrameSubscribers.hpp"
-#include "NewMailDialog.hpp"
+#include "MailCreatorFrame.hpp"
 #include "Session.hpp"
 #include "Exceptions.hpp"
 
-class AppController : public LoginFrameSubscriber, public DashboardFrameSubscriber {
+class AppController : public LoginFrameSubscriber, public DashboardFrameSubscriber, public MailCreatorFrameSubscriber {
 protected:
     Session* _session;
     LoginFrame* _loginFrame;
     DashboardFrame* _dashboardFrame;
+    MailCreatorFrame* _mailCreatorFrame;
     wxApp* _mainApp;
     size_t _selectedMail;
+
+    bool _isMailCreatorOpen = false;
 
     // internal methods
     void login();
@@ -34,6 +37,12 @@ public:
         const auto& mails = _session->retrieveMail();
         _dashboardFrame->setMailList(mails);
     }
-    void onNewMail() {}
-    void onReplyMail() {}
+    void onNewMail() override;
+    void onReplyMail() override {}
+    void onMailSend() override {}
+    void onCloseMailCreator() override {
+        _mailCreatorFrame->notifyToClose();
+        // todo: perhaps think this through better? lol
+        _isMailCreatorOpen = false;
+    }
 };

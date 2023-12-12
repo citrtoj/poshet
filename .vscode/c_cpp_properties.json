@@ -4,15 +4,17 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/poshet/**",
-                "/usr/include/**"
-            ],  
+                "/usr/include/wx-3.0",
+                "/usr/lib/x86_64-linux-gnu/wx/include/gtk3-unicode-3.0"
+            ],
             "defines": [
                 "__WXGTK__"
             ],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "intelliSenseMode": "linux-gcc-x64"
+            "intelliSenseMode": "linux-gcc-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4

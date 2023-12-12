@@ -4,6 +4,7 @@
 #include <unordered_set>
 
 #include "Pop3Connection.hpp"
+#include "SmtpConnection.hpp"
 #include "DatabaseConnection.hpp"
 #include "Config.hpp"
 #include "LoginData.hpp"
@@ -12,7 +13,8 @@
 
 class Session {
 protected:
-    Pop3Connection _pop3;
+    POP3Connection _pop3;
+    SMTPConnection _smtp;
     LoginData _loginData;
 
     std::vector<Mail> _mails;
