@@ -8,6 +8,10 @@ void ConnectionBase::setPort(const std::string& port) {
     _port = port;
 }
 
+void ConnectionBase::log(const std::string& logMessage) {
+    std::cout << "[" + _nameOfConnection + "] " + logMessage + "\n"; 
+}
+
 void ConnectionBase::openSocket() {
     if (isSocketOpen()) {
         return;

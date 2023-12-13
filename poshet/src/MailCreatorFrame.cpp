@@ -21,8 +21,8 @@ MailCreatorFrame::MailCreatorFrame() :
 
     //HEADER SIZER: To, Subject
 
-    auto headerSizer = new wxGridSizer(2, 2, MARGIN, MARGIN);
-    //headerSizer->AddGrowableCol(1);
+    auto headerSizer = new wxFlexGridSizer(2, 2, MARGIN, MARGIN);
+    headerSizer->AddGrowableCol(1);
 
     headerSizer->Add(new wxStaticText(mainPanel, wxID_ANY, "To"), 0, wxALIGN_CENTER_VERTICAL | wxALL, MARGIN);
     _toInput = new wxTextCtrl(mainPanel, wxID_ANY);
@@ -44,7 +44,6 @@ MailCreatorFrame::MailCreatorFrame() :
     mainSizer->AddStretchSpacer(1);
     mainSizer->Add(verticalSizer, 6);
     mainSizer->AddStretchSpacer(1);
-
 
     mainPanel->SetSizerAndFit(mainSizer);
 } 

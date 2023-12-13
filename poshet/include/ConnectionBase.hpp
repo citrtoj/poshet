@@ -27,6 +27,8 @@ enum SingleLineMessage { // should readSingleLineMessage leave in \r\n?
 
 class ConnectionBase {
 protected:
+    std::string _nameOfConnection;
+
     int _socket;
     bool _isSocketOpen;
 
@@ -42,11 +44,14 @@ protected:
 
 public:
     ConnectionBase() {}
+
     void setHost(const std::string& host);
     void setPort(const std::string& port);
 
     virtual void connectToServer() = 0;
     virtual void closeConnection() = 0;
+
+    void log(const std::string& logMessage);
 
     ~ConnectionBase();
 };

@@ -2,6 +2,7 @@
 
 POP3Connection::POP3Connection() {
     setPort("110"); //potentially modify to get the default from config etc etc
+    _nameOfConnection = "POP3 Connection";
 }
 
 POP3Connection::POP3Connection(const std::string& host) : POP3Connection() {
@@ -31,7 +32,7 @@ void POP3Connection::connectToServer() {
 
 void POP3Connection::login() {
     if (_state == TRANSACTION) {
-        std::cout << "[POP3] Warning: already logged in!\n";
+        log("Warning: already logged in!");
         return;
     }
     if (_state != AUTHORIZATION) {
@@ -41,13 +42,13 @@ void POP3Connection::login() {
     execCommand("USER " + _user);
     execCommand("PASS " + _pass);
     _state = TRANSACTION;
-    noopThread = std::thread(&POP3Connection::keepAlive, this);
+    _noopThread = std::thread(&POP3Connection::keepAlive, this);
     _threadStarted = true;
 }
 
 void POP3Connection::login(const std::string& user, const std::string& pass) {
     if (_state == TRANSACTION) {
-        std::cout << "[POP3] Warning: already logged in!\n";
+        log("Warning: already logged in!");
         return;
     }
     _user = user;
@@ -136,7 +137,7 @@ void POP3Connection::keepAlive() {
     while(stop) {
         if (_state == DISCONNECTED)
         execCommand("NOOP");
-        std::cout << "[POP3] Sent NOOP\n";
+        log("Sent NOOP");
         {
             std::unique_lock<std::mutex> lock(_shouldExitMutex);
             auto result = cv.wait_for(lock, std::chrono::seconds(TIMEOUT_SECS), [this]() {return _state != State::TRANSACTION;});
@@ -148,9 +149,9 @@ void POP3Connection::keepAlive() {
 }
 
 void POP3Connection::closeConnection() {
-    std::cout << "[POP3] Closing connection...\n";
+    log("Closing connection...");
     if (_state == DISCONNECTED) {
-        std::cout << "[POP3] No need to, already disconnected\n";
+        log("No need to, already disconnected");
         return;
     }
     {
@@ -159,8 +160,8 @@ void POP3Connection::closeConnection() {
     }
     if (_threadStarted) {
         cv.notify_all();
-        noopThread.join();
-        std::cout << "[POP3] Joined noop thread\n";
+        _noopThread.join();
+        log("Joined noop thread");
         _threadStarted = false;
     }
     closeSocket();
@@ -176,7 +177,7 @@ std::string POP3Connection::retrieveOneMail(size_t currentMailIndex, size_t byte
 
     buffer[byteSize] = 0;
     int readCode = Utils::readLoop(_socket, buffer, byteSize);
-    // todo: handle readCode!!!
+    // todo: handle readCode
     readMultiLineResponse(); // to read whatever other termination chars are at the end
     std::string x = buffer;
 
@@ -187,7 +188,7 @@ std::string POP3Connection::retrieveOneMail(size_t currentMailIndex, size_t byte
 
 std::string POP3Connection::retrieveOneMailHeader(size_t currentMailIndex) {
     auto x = execCommand("TOP " + std::to_string(currentMailIndex) + " 0", true);
-    // todo: trim "+ OK"
+    // todo: trim "+OK"
     return x;
 }
 

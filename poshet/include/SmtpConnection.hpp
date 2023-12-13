@@ -29,6 +29,7 @@ protected:
     State _state = State::DISCONNECTED;
 
     std::thread _noopThread;
+    bool _threadStarted = false;
     std::mutex _commandMutex;
     std::mutex _shouldExitMutex;
     std::condition_variable cv;
@@ -41,11 +42,11 @@ protected:
 public:
     SMTPConnection(const std::string& host);
     SMTPConnection();
-    ~SMTPConnection() {}
+    ~SMTPConnection();
 
     void setClientDomain(const std::string& domain);
 
     void connectToServer() override;
-    void closeConnection() override {}
+    void closeConnection() override;
     std::string readResponse();
 };

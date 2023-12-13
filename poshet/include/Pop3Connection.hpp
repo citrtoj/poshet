@@ -64,25 +64,26 @@ class POP3Connection : public ConnectionBase {
     };
     static constexpr int TIMEOUT_SECS = 60;
 protected:
+
     std::string _user, _pass;
 
     State _state = State::DISCONNECTED;
 
-    std::thread noopThread;
+    std::thread _noopThread;
     bool _threadStarted = false;
     
     std::mutex _commandMutex;
     std::mutex _shouldExitMutex;
     std::condition_variable cv;
 
-    void sendCommand(const std::string& command);
+    void sendCommand(const std::string& command); // NOT THREAD SAFE
 
     std::string readLineResponse(bool raw = SingleLineMessage::PROCESSED);
     std::string readMultiLineResponse();
 
     void keepAlive();
 
-    std::string execCommand(const std::string& command, bool expectsMultiline = false, SingleLineMessage processing = SingleLineMessage::PROCESSED);
+    std::string execCommand(const std::string& command, bool expectsMultiline = false, SingleLineMessage processing = SingleLineMessage::PROCESSED); // THREAD SAFE
 
     std::string retrieveOneMail(size_t currentMailIndex, size_t byteSize);
     std::string retrieveOneMailHeader(size_t currentMailIndex);
