@@ -13,7 +13,6 @@ void SMTPConnection::setClientDomain(const std::string& domain) {
 }
 
 std::string SMTPConnection::readResponse() {
-    // ceva e putred la mijloc
     std::string finalResult;
     while (true) {
         char buffer[4 + 1];
@@ -23,7 +22,7 @@ std::string SMTPConnection::readResponse() {
             throw Exception("Error reading status code from server");
         }
         finalResult += buffer;
-        while (!(finalResult[finalResult.size() - 2] == '\r' and finalResult[finalResult.size() - 2] == '\n')) {
+        while (!(finalResult[finalResult.size() - 2] == '\r' and finalResult[finalResult.size() - 1] == '\n')) {
             char oneCharBuffer;
             int readCode = Utils::readLoop(_socket, &oneCharBuffer, 1);
             std::cout << oneCharBuffer;
@@ -33,7 +32,6 @@ std::string SMTPConnection::readResponse() {
             finalResult += oneCharBuffer;
         }
         if (buffer[3] == '\r' or buffer[3] == ' ') {
-            // we were on the last damn line
             break;
         } 
     }
@@ -51,5 +49,13 @@ void SMTPConnection::sendCommand(const std::string& command) {
 void SMTPConnection::connectToServer() {
     connectSocket();
     std::cout << "[SMTP] Connected to socket\n";
-    //readResponse();
+    std::cout << readResponse();
+}
+
+
+std::string SMTPConnection::execCommand(const std::string& command) {
+    std::lock_guard<std::mutex> lock(_commandMutex);
+
+    sendCommand(command);
+    return readResponse();
 }

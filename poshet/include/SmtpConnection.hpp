@@ -24,8 +24,6 @@ class SMTPConnection : public ConnectionBase {
     };
     static constexpr int TIMEOUT_SECS = 3;
 protected:
-    int _socket;
-
     std::string _clientDomain = "localhost";
     
     State _state = State::DISCONNECTED;
@@ -34,6 +32,10 @@ protected:
     std::mutex _commandMutex;
     std::mutex _shouldExitMutex;
     std::condition_variable cv;
+
+    void sendCommand(const std::string& command); // NOT THREAD SAFE; only sends the command, without reading response
+
+    std::string execCommand(const std::string& command); // THREAD SAFE; sends commands, returns response
 
     void keepAlive();
 public:
@@ -45,7 +47,5 @@ public:
 
     void connectToServer() override;
     void closeConnection() override {}
-
-    void sendCommand(const std::string& command);
     std::string readResponse();
 };

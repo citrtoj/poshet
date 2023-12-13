@@ -1,3 +1,5 @@
+#pragma once
+
 #include <poll.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -67,6 +69,8 @@ protected:
     State _state = State::DISCONNECTED;
 
     std::thread noopThread;
+    bool _threadStarted = false;
+    
     std::mutex _commandMutex;
     std::mutex _shouldExitMutex;
     std::condition_variable cv;

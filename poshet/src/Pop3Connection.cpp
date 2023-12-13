@@ -42,6 +42,7 @@ void POP3Connection::login() {
     execCommand("PASS " + _pass);
     _state = TRANSACTION;
     noopThread = std::thread(&POP3Connection::keepAlive, this);
+    _threadStarted = true;
 }
 
 void POP3Connection::login(const std::string& user, const std::string& pass) {
@@ -99,9 +100,9 @@ std::string POP3Connection::readLineResponse(bool raw) {
             error = true;
         }
     } 
-    // TODO -  move this from here to wherever we handle input
+    
+    // todo:  move this from here to wherever we handle input
     // maybe sometimes we don't simply want to exception out of this
-
     if (error) {  // contains "-ERR ..."
         throw ServerException(finalResult.substr(5));
     }
@@ -156,9 +157,12 @@ void POP3Connection::closeConnection() {
         std::unique_lock<std::mutex> lock(_shouldExitMutex);
         _state = State::DISCONNECTING;
     }
-    cv.notify_all();
-    noopThread.join();
-    std::cout << "[POP3] Joined noop thread\n";
+    if (_threadStarted) {
+        cv.notify_all();
+        noopThread.join();
+        std::cout << "[POP3] Joined noop thread\n";
+        _threadStarted = false;
+    }
     closeSocket();
     _state = DISCONNECTED;
 }

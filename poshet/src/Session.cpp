@@ -16,7 +16,6 @@ void Session::login() {
     std::cout << "[Session] Logged in to POP3 server\n";
 
     _smtp.connectToServer();
-    //_smtp.readResponse();
-    //_smtp.sendCommand("EHLO localhost");
+    // _smtp.execCommand("EHLO localhost");
     //std::cout << _smtp.readResponse();
 }

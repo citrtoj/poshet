@@ -1,8 +1,9 @@
 #pragma once
 #include <wx/wx.h>
 #include <string>
-#include "AppController.hpp"
 #include <iostream>
+
+#include "AppController.hpp"
 
 class App : public wxApp {
 protected:
@@ -12,21 +13,18 @@ public:
         controller = new AppController(this);
         return true;
     }
-
-    void OnLogin(wxCommandEvent& e) {
-        std::cout << "logging\n";
-    }
-
-    void OnCloseLoginWindow(wxEvent& e) {
-        Exit();
-    }
+    
     
     void OnUnhandledException(){
         try {
             throw;
         }
         catch (Exception& e) {
-            std::cout << "Exception: " << e.what() << "\nQuitting...\n";
+            std::cout << "Poshet Exception: " << e.what() << "\nQuitting...\n";
+            exit(EXIT_FAILURE);
+        }
+        catch (std::exception& e) {
+            std::cout << "C++ Exception: " << e.what() << "\nQuitting...\n";
             exit(EXIT_FAILURE);
         }
     }
