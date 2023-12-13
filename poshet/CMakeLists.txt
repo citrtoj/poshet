@@ -4,9 +4,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(poshet VERSION 1.0)
 
-find_package(wxWidgets REQUIRED gl core base OPTIONAL_COMPONENTS net)
+find_package(wxWidgets REQUIRED gl core base std richtext OPTIONAL_COMPONENTS net)
 find_package(SQLite3 REQUIRED)
-
 
 set(SOURCES
     src/main.cpp
