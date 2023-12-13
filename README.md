@@ -4,11 +4,20 @@ Poshet este un client cu interfață grafică pentru serviciile de mail electron
 
 ## Compilare
 
-Librării externe necesare (alături de instrucțiuni de instalare pentru apt):
-- wxWidgets (`sudo apt install libwxgtk3.0-gtk3-0v5 libwxgtk3.0-gtk3-dev`)
-- SQLite3 (`sudo apt install sqlite3 libsqlite3-dev`)
+În acest folder se află un fișier `Makefile` în urma căruia ar trebui să apară executabilul `Poshet`. Acesta poate fi rulat prin comanda `./Poshet`.
 
-Pentru a construi și compila proiectul, presupunând că vă aflați în același folder cu acest fișier:
+Librării externe necesare:
+- CMake
+- wxWidgets
+- SQLite3
+
+Pentru a construi și compila proiectul fără fișierul `Makefile`, presupunând că vă aflați în același folder cu acest fișier:
+
+`sudo apt install cmake`
+
+`sudo apt install libwxgtk3.0-gtk3-0v5 libwxgtk3.0-gtk3-dev` (dacă au fost actualizate librăriile între timp, se recomandă căutarea `wxgtk` pe `apt` și instalarea noilor versiuni; pentru acest program sunt necesare atât Runtime Toolkit cât și Development Toolkit)
+
+`sudo apt install sqlite3 libsqlite3-dev`
 
 `cd poshet`
 
@@ -17,7 +26,5 @@ Pentru a construi și compila proiectul, presupunând că vă aflați în acela�
 `cd build`
 
 `make`
-
-Pentru a rula executabilul, aflat în folderul `build`:
 
 `./poshet`

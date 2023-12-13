@@ -1,4 +1,6 @@
 poshet/build
+./Poshet
+
 */CMakeFiles/*
 docs/*
 docs/*.fdb_latexmk
@@ -9,3 +11,4 @@ docs/*.fls
 tmp/*
 TODO
 poshet/mail.db
+Poshet

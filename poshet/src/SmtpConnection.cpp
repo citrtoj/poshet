@@ -17,7 +17,6 @@ std::string SMTPConnection::readResponse() {
     while (true) {
         char buffer[4 + 1];
         int readCode = Utils::readLoop(_socket, buffer, 4);
-        std::cout << buffer;
         if (readCode < 0) {
             throw Exception("Error reading status code from server");
         }
@@ -25,7 +24,6 @@ std::string SMTPConnection::readResponse() {
         while (!(finalResult[finalResult.size() - 2] == '\r' and finalResult[finalResult.size() - 1] == '\n')) {
             char oneCharBuffer;
             int readCode = Utils::readLoop(_socket, &oneCharBuffer, 1);
-            std::cout << oneCharBuffer;
             if (readCode < 0) {
                 throw Exception("Error reading SMTP response from server");
             }
@@ -48,8 +46,8 @@ void SMTPConnection::sendCommand(const std::string& command) {
 
 void SMTPConnection::connectToServer() {
     connectSocket();
-    std::cout << "[SMTP] Connected to socket\n";
     std::cout << readResponse();
+    std::cout << execCommand("EHLO " + _clientDomain);
 }
 
 
