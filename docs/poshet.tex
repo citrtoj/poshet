@@ -68,9 +68,9 @@ Proiectul folosește clase și OOP, având o structură inspirată în linii mar
 \subsection{Detalii despre clasele programului}
 
 
-Principala clasă care face legătura între interfețele aplicației și logica din spate (comunicarea cu servere, cu baza de date, etc.) este AppController. Aceasta administrează și comunică cu instanțe ale interfețelor LoginFrame, DashboardFrame și MailCreatorFrame, o instanță a clasei Session, dar și alte clase utilizate ocazional precum FileSaver (folosită când se dorește descărcarea unui atașament).
+Principala clasă care face legătura între interfețele aplicației și logica din spate (comunicarea cu servere, cu baza de date, etc.) este AppController. Aceasta administrează și comunică cu instanțe ale interfețelor LoginFrame, DashboardFrame și MailCreatorFrame și o instanță a clasei Session.
 
-Session este clasa care se ocupă de comunicarea cu resurse externe pentru a obține și furniza informații. Aceasta solicită și trimite informații către clase precum POP3Connection, SMTPConnection și DatabaseConnection, care realizează operații precum obținerea mail-urilor primite sau trimiterea unui mail nou.
+Session este clasa care se ocupă de comunicarea cu resurse externe pentru a obține și furniza informații. Aceasta solicită și trimite informații către instanțe ale altor clase specializate, care realizează operații precum obținerea mailurilor noi, salvarea lor în baza de date, trimiterea unui mail nou, sau salvarea locală a unui atașament.
 
 În momentul primirii de notificări de la interfețele la care AppController este "abonat", AppController se ocupă de interacțiunea cu clasa Session pentru a obține informații și a le transmite către interfețe, care trebuie să folosească datele pentru a se actualiza și a le afișa către utilizator.
 
@@ -84,11 +84,11 @@ Datele care aparțin unui mail sunt păstrate cu ajutorul clasei Mail, care con�
 De asemenea, mailurile primite sunt stocate într-o bază de date locală, într-o tabelă \texttt{Mail} (legată de tabela \texttt{Users} printr-o relație de tip "one-to-many"). Pe lângă datele "raw" ale mailurilor sunt stocate și informații adiționale precum headers importante (To, Subject, etc.) sau un "tag" prin care utilizatorul a marcat respectivul mail în client pentru a își organiza inboxul.
 
 
-
 \begin{figure}
 \includegraphics[width=\textwidth]{halfDiagram1.png}
 \caption{Diagrama secvențială a aplicației, partea 1: aici sunt ilustrate mecanismele de logare, afișare a mailurilor primite, și închidere a aplicației.} \label{firsthalf}
 \end{figure}
+
 \begin{figure}
 \includegraphics[width=\textwidth]{halfDiagram2.png}
 \caption{Diagrama secvențială a aplicației, partea 2: aici sunt ilustrate mecanismele de trimitere de mail nou și organizare de mail primit.} \label{secondhalf}

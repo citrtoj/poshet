@@ -7,3 +7,9 @@ tmp/*
 TODO
 poshet/mail.db
 Poshet
+
+docs/*.aux
+docs/*.fdb_latexmk
+docs/*.fls
+docs/*.log
+docs/*.synctex.gz
