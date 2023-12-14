@@ -2,11 +2,6 @@ poshet/build
 ./Poshet
 
 */CMakeFiles/*
-docs/*
-docs/*.fdb_latexmk
-docs/*.synctex.gz
-docs/*.log
-docs/*.fls
 
 tmp/*
 TODO

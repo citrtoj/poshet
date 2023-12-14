@@ -46,7 +46,6 @@ void AppController::onRefreshMailList() {
 void AppController::onSelectMail() {
     auto selected = _dashboardFrame->selected();
     const auto& mail = _session->getMail(selected);
-    std::cout << mail.plainText();
     _dashboardFrame->updateViewMailPanel(mail);
 }
 
