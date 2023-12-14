@@ -41,6 +41,7 @@ public:
     void onNewMail() override;
     void onReplyMail() override;
     void onForwardMail() override;
+    void onDeleteMail() override;
 
     void onMailCreatorSend() override;
     void onMailCreatorClose() override;

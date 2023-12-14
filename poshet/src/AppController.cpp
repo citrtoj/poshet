@@ -66,6 +66,14 @@ void AppController::onForwardMail() {
     warnUnimplemented();
 }
 
+void AppController::onDeleteMail() {
+    // get selected, delete
+    auto selected = _dashboardFrame->selected();
+    _session->deleteMail(selected);
+    auto mails = _session->retrieveMail();
+    _dashboardFrame->setMailList(mails);
+}
+
 void AppController::onMailCreatorSend() {
     auto to = _mailCreatorFrame->to();
     auto subject = _mailCreatorFrame->subject();

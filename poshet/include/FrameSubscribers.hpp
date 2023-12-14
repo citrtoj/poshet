@@ -16,6 +16,7 @@ public:
     virtual void onNewMail() = 0;
     virtual void onReplyMail() = 0;
     virtual void onForwardMail() = 0;
+    virtual void onDeleteMail() = 0;
     virtual void onRefreshMailList() = 0;
 };
 

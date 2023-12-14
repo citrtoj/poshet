@@ -18,8 +18,6 @@ protected:
     LoginData _loginData;
 
     std::vector<Mail> _mails;
-    //temporary solution to duplicate mail before I implement the databases part
-    std::unordered_set<std::string> _mailIds;
     int _currentMail;
 public:
     Session() {}
@@ -31,6 +29,7 @@ public:
 
     const std::vector<Mail>& retrieveMail();
     const Mail& getMail(long idx);
+    void deleteMail(long idx);
 
     void sendMail(const std::string& to, const std::string& subject, const std::string& rawBody);
 };

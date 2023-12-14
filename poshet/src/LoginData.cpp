@@ -25,7 +25,6 @@ LoginData::LoginData(const std::vector<std::string>& data) {
     _fullName = data[0];
     _emailAddress = data[1];
     auto splitAddress = splitEmailAddress(_emailAddress);
-    std::cout << splitAddress[0] << " " << splitAddress[1] << "\n";
     _password = data[2];
     _pop3Domain = data[3].empty() ? splitAddress[1] : data[3];
     _pop3Username = data[4].empty() ? splitAddress[0] : data[4];

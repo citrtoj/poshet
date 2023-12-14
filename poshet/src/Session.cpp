@@ -37,22 +37,16 @@ void Session::sendMail(const std::string& to, const std::string& subject, const 
 }
 
 const std::vector<Mail>& Session::retrieveMail() {
-
-    _pop3.resetConnection(); // pop3 won't see mail that was sent between start and end of connection
+    // clears vector, reads from POP3, populates vector
+    _pop3.resetConnection(); 
 
     auto rawMail = _pop3.retrieveAllMail();
 
+    _mails.clear();
+
     for (const auto& x : rawMail) {
-        Mail tempMail = Mail(x.plainData);  // todo: implement move operator
-        auto it = tempMail.headers().find("Message-Id");
-        if (it != tempMail.headers().cend()) {
-            auto it2 = _mailIds.find(it->second);
-            if (it2 == _mailIds.cend()) {
-                // mail not already in unordered set. add to unordered set, add to mail vector
-                _mailIds.emplace(it->second);
-                _mails.push_back(tempMail);
-            }
-        }
+        Mail tempMail = Mail(x.plainData);  // todo: implement move operator and all...
+        _mails.push_back(tempMail);
     }
     return _mails;
 }
@@ -63,4 +57,13 @@ const Mail& Session::getMail(long idx) {
     }
 
     return _mails[idx];
+}
+
+void Session::deleteMail(long idx) {
+    // temporary, just to demonstrate DELE communication with the POP3 server
+    if (idx < 0) {
+        throw Exception("Invalid mail index to delete");
+    }
+    _pop3.markMailForDeletion(idx + 1);
+    _pop3.resetConnection(); // in order to "commit" the changes
 }

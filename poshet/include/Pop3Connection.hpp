@@ -104,4 +104,6 @@ public:
 
     std::vector<RawMailData> retrieveAllMail();
     std::vector<RawMailData> retrieveAllMailHeaders();
+
+    void markMailForDeletion(long idx);
 };

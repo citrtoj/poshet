@@ -46,6 +46,8 @@ protected:
     void OnClose(wxEvent& e);
     void OnRefreshMailList(wxCommandEvent& e);
     void OnNewMail(wxCommandEvent& e);
+    void OnDeleteMail(wxCommandEvent& e);
+
 
     // internal getters
     wxPanel* viewMailPanel() const;

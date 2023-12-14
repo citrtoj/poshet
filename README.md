@@ -27,4 +27,4 @@ Pentru a construi și compila proiectul fără fișierul `Makefile`, presupunân
 
 `make`
 
-`./poshet`
+`./poshet` (nu `./Poshet`!)

@@ -73,6 +73,7 @@ void DashboardFrame::initViewMailPanel() {
     _replyMailBtn = new wxButton(_headerPanel, wxID_ANY, "Reply");
     _forwardMailBtn = new wxButton(_headerPanel, wxID_ANY, "Forward");
     _deleteMailBtn = new wxButton(_headerPanel, wxID_ANY, "Delete");
+    _deleteMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnDeleteMail, this);
     mailButtonSizer->Add(_replyMailBtn, 0, wxALL, MARGIN);
     mailButtonSizer->Add(_forwardMailBtn, 0, wxALL, MARGIN);
     mailButtonSizer->Add(_deleteMailBtn, 0, wxALL, MARGIN);
@@ -85,7 +86,7 @@ void DashboardFrame::initViewMailPanel() {
     auto mailContentsPanel = new wxPanel(viewMailPanel(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SUNKEN);
     auto mailContentsSizer = new wxBoxSizer(wxVERTICAL);
 
-    _mailContentsCtrl = new wxRichTextCtrl(mailContentsPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(400, 400));
+    _mailContentsCtrl = new wxRichTextCtrl(mailContentsPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(400, 400), wxTE_READONLY);
     mailContentsSizer->Add(_mailContentsCtrl, wxEXPAND);
     mailContentsPanel->SetSizer(mailContentsSizer);
 
@@ -125,6 +126,13 @@ void DashboardFrame::OnNewMail(wxCommandEvent& e) {
     _subscriber->onNewMail();
 }
 
+void DashboardFrame::OnDeleteMail(wxCommandEvent& e) {
+    if (selected() < 0) {
+        return;
+    }
+    _subscriber->onDeleteMail();
+}
+
 
 // ---- internal getters ---
 
@@ -160,6 +168,7 @@ void DashboardFrame::setMailList(const std::vector<Mail>& mails) {
         _mailList->SetColumnWidth(i, wxLIST_AUTOSIZE);
         _mailList->Update();
     }
+    _splitter->Unsplit(_viewMailPanel);
 
 }
 

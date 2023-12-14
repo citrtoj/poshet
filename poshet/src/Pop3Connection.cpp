@@ -103,6 +103,7 @@ std::string POP3Connection::readLineResponse(bool raw) {
     
     // todo:  move this from here to wherever we handle input
     // maybe sometimes we don't simply want to exception out of this
+
     if (error) {  // contains "-ERR ..."
         throw ServerException(finalResult.substr(5));
     }
@@ -162,6 +163,7 @@ void POP3Connection::closeConnection() {
         log("Joined no-op thread");
         _threadStarted = false;
     }
+    execCommand("QUIT");
     closeSocket();
     _state = DISCONNECTED;
 }
@@ -246,4 +248,11 @@ void POP3Connection::resetConnection() {
     if (shouldLogin) {
         login(_user, _pass);
     }
+}
+
+void POP3Connection::markMailForDeletion(long idx) {
+    if (idx < 0) {
+        throw Exception("Invalid mail index to delete");
+    }
+    execCommand("DELE " + std::to_string(idx));
 }
