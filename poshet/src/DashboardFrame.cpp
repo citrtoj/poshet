@@ -45,9 +45,16 @@ DashboardFrame::DashboardFrame(const wxString& title) :
     Centre();
 }
 
+void DashboardFrame::refreshViewMailPanel() {
+    if (_isViewMailPanelInit) {
+        _viewMailPanel->Layout();
+        _splitter->SplitVertically(_mailList, _viewMailPanel, 0);
+        return;
+    }
+}
+
 void DashboardFrame::initViewMailPanel() {
     if (_isViewMailPanelInit) {
-        _splitter->SplitVertically(_mailList, _viewMailPanel, 0);
         return;
     }
     _viewMailPanel = new wxPanel(_splitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SUNKEN);
@@ -75,20 +82,24 @@ void DashboardFrame::initViewMailPanel() {
 
     _headerPanel->SetSizerAndFit(headerSizer);
 
-    // urmeaza :)
-    //auto mailContentsPanel = new wxPanel(viewMailPanel(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SUNKEN);
+    auto mailContentsPanel = new wxPanel(viewMailPanel(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SUNKEN);
+    auto mailContentsSizer = new wxBoxSizer(wxVERTICAL);
+
+    _mailContentsCtrl = new wxRichTextCtrl(mailContentsPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(400, 400));
+    mailContentsSizer->Add(_mailContentsCtrl, wxEXPAND);
+    mailContentsPanel->SetSizer(mailContentsSizer);
 
     //auto mailAttachmentsPanel = new wxPanel(viewMailPanel(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SUNKEN);
 
     auto mainSizer = new wxBoxSizer(wxVERTICAL);
     mainSizer->Add(_headerPanel, 0, wxEXPAND);
-    // mainSizer->Add(mailContentsPanel, 0, 0);
-    // mainSizer->Add(mailAttachmentsPanel, 0, 0);
+    mainSizer->Add(mailContentsPanel, 0, wxEXPAND);
+    //mainSizer->Add(mailAttachmentsPanel, 0, 0);
 
     viewMailPanel()->SetSizer(mainSizer);
     viewMailPanel()->SetMinSize(wxSize(headerSizer->GetSize().GetX(), -1));
-    viewMailPanel()->Layout();
-    _splitter->SplitVertically(_mailList, _viewMailPanel, 0);
+
+    refreshViewMailPanel();
 
     _isViewMailPanelInit = true;
 }
@@ -97,15 +108,13 @@ void DashboardFrame::initViewMailPanel() {
 // ---- wxWidgets-specific event handlers
 
 void DashboardFrame::OnListBoxEvent(wxCommandEvent& e) {
-    std::cout << _mailList->GetFirstSelected() << "\n";
+    //std::cout << _mailList->GetFirstSelected() << "\n";
+    _subscriber->onSelectMail();
+    initViewMailPanel();
 }
 
 void DashboardFrame::OnClose(wxEvent& e) {
-    _subscriber->onCloseAnyWindow();
-}
-
-void DashboardFrame::OnRefresh(wxCommandEvent& e) {
-    initViewMailPanel();
+    _subscriber->onCloseApp();
 }
 
 void DashboardFrame::OnRefreshMailList(wxCommandEvent& e) {
@@ -152,4 +161,17 @@ void DashboardFrame::setMailList(const std::vector<Mail>& mails) {
         _mailList->Update();
     }
 
+}
+
+void DashboardFrame::updateViewMailPanel(const Mail& mail) {
+    // not final in any way shape or form
+    initViewMailPanel();
+    _selectedMailFrom->SetLabel(mail.getHeader("From"));
+    _selectedMailTo->SetLabel(mail.getHeader("To"));
+    _mailContentsCtrl->SetValue(mail.plainText());
+    refreshViewMailPanel();
+}
+
+long DashboardFrame::selected() const {
+    return _mailList->GetFirstSelected();
 }

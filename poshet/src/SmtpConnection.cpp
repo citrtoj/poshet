@@ -59,7 +59,6 @@ void SMTPConnection::connectToServer() {
 void SMTPConnection::keepAlive() {
     bool stop = true;
     while(stop) {
-        if (_state == DISCONNECTED)
         execCommand("NOOP");
         log("Sent NOOP");
         {

@@ -13,8 +13,9 @@
 
 class DashboardFrame : public wxFrame {
 protected:
-    static const int MARGIN = 5;
     DashboardFrameSubscriber* _subscriber;
+
+    static const int MARGIN = 5;
 
     const std::vector<std::string> _fields = {
         "From", "Subject", "Date"
@@ -35,6 +36,7 @@ protected:
     wxStaticText* _selectedMailTo;
     wxStaticText* _selectedMailSubject;
     wxStaticText* _selectedMailDate;
+    wxRichTextCtrl* _mailContentsCtrl;
     wxButton* _replyMailBtn;
     wxButton* _forwardMailBtn;
     wxButton* _deleteMailBtn;
@@ -42,7 +44,6 @@ protected:
     // wxWidgets-specific event handlers
     void OnListBoxEvent(wxCommandEvent& e);
     void OnClose(wxEvent& e);
-    void OnRefresh(wxCommandEvent& e);
     void OnRefreshMailList(wxCommandEvent& e);
     void OnNewMail(wxCommandEvent& e);
 
@@ -51,6 +52,7 @@ protected:
     
     // internal functions
     void initViewMailPanel();
+    void refreshViewMailPanel();
 
 public:
     DashboardFrame(const wxString& title);
@@ -58,4 +60,9 @@ public:
     // external setters to be used by outside controllers
     void subscribe(DashboardFrameSubscriber* sub);
     void setMailList(const std::vector<Mail>& mail);
+    void updateViewMailPanel(const Mail& mail);
+
+    // external getters
+    long selected() const;
+    
 };

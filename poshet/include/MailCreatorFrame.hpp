@@ -7,6 +7,7 @@
 class MailCreatorFrame : public wxFrame {
 protected:
     MailCreatorFrameSubscriber* _subscriber;
+    
     wxButton* _sendBtn, * _attachBtn;
     wxTextCtrl* _toInput, * _subjectInput;
     wxRichTextCtrl* _contentsCtrl;
@@ -18,6 +19,8 @@ protected:
     void OnClose(wxEvent& event);
 public:
     MailCreatorFrame();
+
+    void closeGracefully();
 
     std::string to() const {
         return _toInput->GetValue().ToStdString();

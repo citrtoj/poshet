@@ -12,6 +12,19 @@ AppController::AppController(wxApp* app) :
     _loginFrame->Show(true);
 }
 
+void AppController::warnUnimplemented() {
+    std::cout << "Feature not yet implemented\n";
+}
+
+void AppController::onCloseApp() {
+    delete _session;
+    _mainApp->Exit();
+}
+
+void AppController::onLoginSubmit() {
+    login();
+}
+
 void AppController::login() {
     try {
         _session->setLoginData(_loginFrame->userInput());
@@ -25,9 +38,16 @@ void AppController::login() {
     }
 }
 
-void AppController::onCloseAnyWindow() {
-    delete _session;
-    _mainApp->Exit();
+void AppController::onRefreshMailList() {
+    const auto& mails = _session->retrieveMail();
+    _dashboardFrame->setMailList(mails);
+}
+
+void AppController::onSelectMail() {
+    auto selected = _dashboardFrame->selected();
+    const auto& mail = _session->getMail(selected);
+    std::cout << mail.plainText();
+    _dashboardFrame->updateViewMailPanel(mail);
 }
 
 void AppController::onNewMail() {
@@ -39,13 +59,26 @@ void AppController::onNewMail() {
     }
 }
 
+void AppController::onReplyMail() {
+    warnUnimplemented();
+}
+
+void AppController::onForwardMail() {
+    warnUnimplemented();
+}
+
 void AppController::onMailCreatorSend() {
     auto to = _mailCreatorFrame->to();
     auto subject = _mailCreatorFrame->subject();
     auto body = _mailCreatorFrame->body();
-
-    _session->sendMail(to, subject, body);
-    
+    try {
+        _session->sendMail(to, subject, body);
+        _mailCreatorFrame->closeGracefully();
+    }
+    catch (Exception& e) {
+        // show error
+    }
+    onRefreshMailList();
 }
 
 void AppController::onMailCreatorClose() {

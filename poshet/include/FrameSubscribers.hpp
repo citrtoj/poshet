@@ -2,7 +2,7 @@
 
 class FrameSubscriber {
 public:
-    virtual void onCloseAnyWindow() = 0;
+    virtual void onCloseApp() = 0;
 };
 
 class LoginFrameSubscriber : virtual public FrameSubscriber {
@@ -12,8 +12,10 @@ public:
 
 class DashboardFrameSubscriber : virtual public FrameSubscriber {
 public:
+    virtual void onSelectMail() = 0;
     virtual void onNewMail() = 0;
-    virtual void onReplyMail(/* un fel de a identifica mail-ul la care ma refer... vedem mai incolo*/) = 0;
+    virtual void onReplyMail() = 0;
+    virtual void onForwardMail() = 0;
     virtual void onRefreshMailList() = 0;
 };
 
@@ -22,3 +24,5 @@ public:
     virtual void onMailCreatorSend() = 0;
     virtual void onMailCreatorClose() = 0;
 };
+
+

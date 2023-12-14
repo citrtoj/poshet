@@ -19,14 +19,26 @@ Mail::Mail(const std::string& to, const std::string& from, const std::string& su
 }
 
 std::unordered_map<std::string, std::string> Mail::mailHeaders(const std::string& input) {
+    //temporary function
+    
+    // only get everything up until crlfcrlf
+    std::string trimmedInput;
+
+    auto headerSplit = input.find("\r\n\r\n");
+    if (headerSplit != std::string::npos) {
+        trimmedInput = input.substr(0, headerSplit);
+    }
+    else {
+        trimmedInput = input;
+    }
+
     std::unordered_map<std::string, std::string> result;
-    std::istringstream iss(input);
+    std::istringstream iss(trimmedInput);
     std::string line;
     std::string lastKey;
     while (std::getline(iss, line)) {
         if (!line.empty() && (line[0] == '\t' or line[0] == ' ')) {
-            if (!lastKey.empty())
-                result[lastKey] += ' ' + Utils::strip(line);
+            result[lastKey] += ' ' + Utils::strip(line);
         }
         else {
             size_t colonPos = line.find(": ");
@@ -43,10 +55,6 @@ std::unordered_map<std::string, std::string> Mail::mailHeaders(const std::string
     return result;
 }
 
-
-bool orderMailFromOldestToNewest(const Mail& mail1, const Mail& mail2);
-bool operator<(const Mail& mail1, const Mail& mail2);
-
 void Mail::dumpToPlaintext() {
     if (_type != FROM_USER_INPUT) {
         return;
@@ -58,4 +66,14 @@ void Mail::dumpToPlaintext() {
     }
     _plainText += "\r\n";
     _plainText += _userInputBody;
+}
+
+std::string Mail::getHeader(const std::string& key) const {
+    auto it = _headers.find(key);
+    if (it != _headers.cend()) {
+        return it->second;
+    }
+    else {
+        return "N/A";
+    }
 }

@@ -62,7 +62,7 @@ void LoginFrame::OnLogin(wxCommandEvent& event) {
 }
 
 void LoginFrame::OnClose(wxEvent& event) {
-    _subscriber->onCloseAnyWindow();
+    _subscriber->onCloseApp();
 }
 
 std::vector<std::string> LoginFrame::userInput() {

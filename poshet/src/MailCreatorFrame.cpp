@@ -47,6 +47,8 @@ MailCreatorFrame::MailCreatorFrame() :
     mainSizer->AddStretchSpacer(1);
 
     mainPanel->SetSizerAndFit(mainSizer);
+
+    Centre();
 }
 
 void MailCreatorFrame::OnClose(wxEvent& event) {
@@ -60,4 +62,8 @@ void MailCreatorFrame::subscribe(MailCreatorFrameSubscriber* sub) {
 
 void MailCreatorFrame::OnSend(wxCommandEvent& event) {
     _subscriber->onMailCreatorSend();
+}
+
+void MailCreatorFrame::closeGracefully() {
+    Close();
 }

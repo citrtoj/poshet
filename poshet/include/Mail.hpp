@@ -29,8 +29,6 @@ public:
     Mail(const std::string& plainTextData);
     Mail(const std::string& to, const std::string& from, const std::string& subject, const std::string& userInputBody);
 
-    friend bool operator<(const Mail& mail1, const Mail& mail2);
-
     const std::string& plainText() const {
         return _plainText;
     }
@@ -38,8 +36,7 @@ public:
         return _headers;
     }
 
+    std::string getHeader(const std::string& key) const;
+
     static std::unordered_map<std::string, std::string> mailHeaders(const std::string& input);
 };
-
-bool orderMailFromOldestToNewest(const Mail& mail1, const Mail& mail2);
-bool operator<(const Mail& mail1, const Mail& mail2);

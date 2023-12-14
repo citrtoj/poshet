@@ -16,30 +16,32 @@ class AppController : public LoginFrameSubscriber, public DashboardFrameSubscrib
 protected:
     wxApp* _mainApp;
     Session* _session;
+
     LoginFrame* _loginFrame;
     DashboardFrame* _dashboardFrame;
-    
     bool _isMailCreatorOpen = false;
     MailCreatorFrame* _mailCreatorFrame;
+    
     size_t _selectedMail;
-
 
     // internal methods
     void login();
+
+    void warnUnimplemented();
 public:
     AppController(wxApp* app);
 
     // subscriber overrides
-    void onCloseAnyWindow() override;
-    void onLoginSubmit() override {
-        login();
-    }
-    void onRefreshMailList() override {
-        const auto& mails = _session->retrieveMail();
-        _dashboardFrame->setMailList(mails);
-    }
+    void onCloseApp() override;
+    
+    void onLoginSubmit() override;
+
+    void onSelectMail() override;
+    void onRefreshMailList() override;
     void onNewMail() override;
-    void onReplyMail() override {}
+    void onReplyMail() override;
+    void onForwardMail() override;
+
     void onMailCreatorSend() override;
     void onMailCreatorClose() override;
 };

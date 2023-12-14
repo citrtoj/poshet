@@ -57,7 +57,6 @@ void POP3Connection::login(const std::string& user, const std::string& pass) {
 }
 
 void POP3Connection::sendCommand(const std::string& command) {
-    // todo: DUPLICATE in smtp -- worth moving over to ConnectionBase, perhaps?
     std::string tmpCommand = command + "\r\n";  //CRLF ending
     int status = Utils::writeLoop(_socket, tmpCommand.c_str(), tmpCommand.length());
     if (status < 0) {
@@ -135,7 +134,6 @@ std::string POP3Connection::readMultiLineResponse() {
 void POP3Connection::keepAlive() {
     bool stop = true;
     while(stop) {
-        if (_state == DISCONNECTED)
         execCommand("NOOP");
         log("Sent NOOP");
         {
@@ -161,7 +159,7 @@ void POP3Connection::closeConnection() {
     if (_threadStarted) {
         cv.notify_all();
         _noopThread.join();
-        log("Joined noop thread");
+        log("Joined no-op thread");
         _threadStarted = false;
     }
     closeSocket();
