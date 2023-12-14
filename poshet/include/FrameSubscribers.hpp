@@ -19,6 +19,6 @@ public:
 
 class MailCreatorFrameSubscriber : virtual public FrameSubscriber {
 public:
-    virtual void onMailSend() = 0;
-    virtual void onCloseMailCreator() = 0;
+    virtual void onMailCreatorSend() = 0;
+    virtual void onMailCreatorClose() = 0;
 };

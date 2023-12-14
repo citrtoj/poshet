@@ -13,6 +13,7 @@ MailCreatorFrame::MailCreatorFrame() :
 
     auto buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
     _sendBtn = new wxButton(mainPanel, wxID_ANY, "Send");
+    _sendBtn->Bind(wxEVT_BUTTON, &MailCreatorFrame::OnSend, this);
     buttonsSizer->Add(_sendBtn, wxSizerFlags().Border(wxALL, MARGIN));
     _attachBtn = new wxButton(mainPanel, wxID_ANY, "Attach");
     buttonsSizer->Add(_attachBtn, wxSizerFlags().Border(wxALL, MARGIN));
@@ -46,15 +47,17 @@ MailCreatorFrame::MailCreatorFrame() :
     mainSizer->AddStretchSpacer(1);
 
     mainPanel->SetSizerAndFit(mainSizer);
-} 
+}
 
 void MailCreatorFrame::OnClose(wxEvent& event) {
-    _subscriber->onCloseMailCreator();
-    if (_shouldClose) {
-        event.Skip(); // should singlehandedly make the window close
-    }
+    _subscriber->onMailCreatorClose();  //notifies in case it needs to save input, or something...
+    event.Skip();
 }
 
 void MailCreatorFrame::subscribe(MailCreatorFrameSubscriber* sub) {
     _subscriber = sub;
+}
+
+void MailCreatorFrame::OnSend(wxCommandEvent& event) {
+    _subscriber->onMailCreatorSend();
 }

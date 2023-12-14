@@ -53,6 +53,7 @@ void SMTPConnection::connectToServer() {
     // pot de pe acum sa trimit NOOP in thread
     _noopThread = std::thread(&SMTPConnection::keepAlive, this);
     _threadStarted = true;
+    _state = State::TRANSACTION;
 }
 
 void SMTPConnection::keepAlive() {
@@ -92,6 +93,17 @@ void SMTPConnection::closeConnection() {
     }
     closeSocket();
 }
+
+void SMTPConnection::sendMail(const Mail& mail) {
+    const auto& to = mail.headers().find("To")->second;
+    const auto& from = mail.headers().find("From")->second;
+
+    log(execCommand("MAIL FROM: " + from));
+    log(execCommand("RCPT TO: " + to));
+    log(execCommand("DATA"));
+    log(execCommand(mail.plainText() + "\r\n."));
+}
+
 
 SMTPConnection::~SMTPConnection() {
     closeConnection();

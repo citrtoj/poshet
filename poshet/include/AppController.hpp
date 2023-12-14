@@ -14,14 +14,15 @@
 
 class AppController : public LoginFrameSubscriber, public DashboardFrameSubscriber, public MailCreatorFrameSubscriber {
 protected:
+    wxApp* _mainApp;
     Session* _session;
     LoginFrame* _loginFrame;
     DashboardFrame* _dashboardFrame;
+    
+    bool _isMailCreatorOpen = false;
     MailCreatorFrame* _mailCreatorFrame;
-    wxApp* _mainApp;
     size_t _selectedMail;
 
-    bool _isMailCreatorOpen = false;
 
     // internal methods
     void login();
@@ -39,10 +40,6 @@ public:
     }
     void onNewMail() override;
     void onReplyMail() override {}
-    void onMailSend() override {}
-    void onCloseMailCreator() override {
-        _mailCreatorFrame->notifyToClose();
-        // todo: perhaps think of a better way to singletonify this class
-        _isMailCreatorOpen = false;
-    }
+    void onMailCreatorSend() override;
+    void onMailCreatorClose() override;
 };

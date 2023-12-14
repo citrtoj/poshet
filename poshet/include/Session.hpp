@@ -23,8 +23,8 @@ protected:
     int _currentMail;
 public:
     Session() {}
-    void setLoginData(const LoginData& data);
-    void login();
+    void setLoginData(const std::vector<std::string> data);
+    void connectAndLoginToServers();
 
     const auto& retrieveMail() {
         auto rawMail = _pop3.retrieveAllMailHeaders();
@@ -43,6 +43,9 @@ public:
         }
         return _mails;
     }
+
+    void sendMail(const std::string& to, const std::string& subject, const std::string& rawBody);
+    
 
     ~Session() {
         std::cout << "[Session] dtor\n";

@@ -12,6 +12,7 @@ set(SOURCES
     src/Config.cpp
     src/Utils.cpp
     src/App.cpp
+    src/Mail.cpp
     src/AppController.cpp
     src/Session.cpp
     src/ConnectionBase.cpp

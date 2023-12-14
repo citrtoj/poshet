@@ -4,38 +4,48 @@ LoginFrame::LoginFrame(const wxString& title) :
     wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxDefaultSize),
     _textInputs({
         {"Full name", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::UNCENSORED},
-        {"Username", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::UNCENSORED},
+        {"Email address", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::UNCENSORED},
         {"Password", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::CENSORED},
-        {"POP3 Domain Name", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::UNCENSORED},
-        {"SMTP Domain Name", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::UNCENSORED},
+        {"POP3 Domain Name (optional)", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::UNCENSORED},
+        {"POP3 Username (optional)", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::UNCENSORED},
+        {"SMTP Domain Name (optional)", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::UNCENSORED},
     })
 {
     _statusBar = CreateStatusBar();
     SetStatusText("Ready");
 
     wxPanel* panel = new wxPanel(this, wxID_ANY);
-    wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer* inputsSizer = new wxBoxSizer(wxVERTICAL);
+    inputsSizer->SetMinSize(wxSize(800, -1));
 
-    sizer->AddStretchSpacer();
     for (auto& textInputInfo : _textInputs) {
         auto label = (new wxStaticText(panel, wxID_ANY, std::get<LoginFrame::LABEL>(textInputInfo) + ":"));
-        sizer->Add(label, 0, wxEXPAND | wxALL, MARGIN);
+        inputsSizer->Add(label, 0, wxEXPAND | wxALL, MARGIN);
         std::get<LoginFrame::STATICTEXT>(textInputInfo) = label;
 
         auto ctrl = new wxTextCtrl(panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER
                                     | (std::get<LoginFrame::INPUTTYPE>(textInputInfo) == LoginFrame::SINGLE ? 0 : wxTE_MULTILINE)
                                     | (std::get<LoginFrame::CENSOR>(textInputInfo) == LoginFrame::UNCENSORED ? 0 : wxTE_PASSWORD));
-        sizer->Add(ctrl, 0, wxEXPAND | wxALL, MARGIN);
+        inputsSizer->Add(ctrl, 0, wxEXPAND | wxALL, MARGIN);
         std::get<LoginFrame::TEXTCTRL>(textInputInfo) = ctrl;
     }
     
     _loginButton = new wxButton(panel, wxID_ANY, "Login");
-    sizer->Add(_loginButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, MARGIN);
-    sizer->AddStretchSpacer();
+    inputsSizer->Add(_loginButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, MARGIN);
 
-    sizer->SetMinSize(wxSize(800, -1));
+    auto horizontalSizer = new wxBoxSizer(wxHORIZONTAL);
 
-    panel->SetSizerAndFit(sizer);
+    horizontalSizer->AddStretchSpacer(1);
+    horizontalSizer->Add(inputsSizer, 10);
+    horizontalSizer->AddStretchSpacer(1);
+
+    auto mainSizer = new wxBoxSizer(wxVERTICAL);
+    
+    mainSizer->AddStretchSpacer(1);
+    mainSizer->Add(horizontalSizer, 10);
+    mainSizer->AddStretchSpacer(1);
+
+    panel->SetSizerAndFit(mainSizer);
 
     wxSizer* frameSizer = new wxBoxSizer(wxVERTICAL);
     frameSizer->Add(panel, 1, wxALIGN_CENTER | wxALL, 100);

@@ -1,21 +1,28 @@
 #include "Session.hpp"
 
-void Session::setLoginData(const LoginData& data) {
+void Session::setLoginData(const std::vector<std::string> data) {
     std::cout << "[Session] Setting login data\n";
-    _loginData = data;
+    _loginData = LoginData(data);
     std::cout << "[Session] Setting POP3 domain\n";
     _pop3.setHost(_loginData.pop3Domain());
     _smtp.setHost(_loginData.smtpDomain());
     std::cout << "[Session] Set login data\n";
 }
 
-void Session::login() {
-    _pop3.connectToServer();
-    std::cout << "[Session] Logging in to POP3 server\n";
-    _pop3.login(_loginData.username(), _loginData.password());
-    std::cout << "[Session] Logged in to POP3 server\n";
+void Session::connectAndLoginToServers() {
+    try {
+        _pop3.connectToServer();
+        _smtp.connectToServer();
+        _pop3.login(_loginData.pop3Username(), _loginData.password());
+    }
+    catch (Exception& e) {
+        _pop3.closeConnection();
+        _smtp.closeConnection();
+        throw;
+    }
+}
 
-    _smtp.connectToServer();
-    // _smtp.execCommand("EHLO localhost");
-    //std::cout << _smtp.readResponse();
+void Session::sendMail(const std::string& to, const std::string& subject, const std::string& rawBody) {
+    Mail mail(to, _loginData.emailAddress(), subject, rawBody);
+    _smtp.sendMail(mail);
 }

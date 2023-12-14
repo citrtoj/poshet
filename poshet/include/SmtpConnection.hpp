@@ -10,6 +10,7 @@
 #include <condition_variable>
 #include <atomic>
 
+#include "Mail.hpp"
 #include "ConnectionBase.hpp"
 
 class SMTPConnection : public ConnectionBase {
@@ -48,5 +49,8 @@ public:
 
     void connectToServer() override;
     void closeConnection() override;
+
     std::string readResponse();
+
+    void sendMail(const Mail& mail);
 };

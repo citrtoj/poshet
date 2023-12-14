@@ -13,9 +13,8 @@ protected:
 
     static const int MARGIN = 5;
 
-    bool _shouldClose = false;
-
     // wxWidgets event handlers
+    void OnSend(wxCommandEvent& event);
     void OnClose(wxEvent& event);
 public:
     MailCreatorFrame();
@@ -23,9 +22,12 @@ public:
     std::string to() const {
         return _toInput->GetValue().ToStdString();
     }
+    std::string subject() const {
+        return _subjectInput->GetValue().ToStdString();
+    }
 
-    void notifyToClose() {
-        _shouldClose = true;
+    std::string body() const {
+        return _contentsCtrl->GetValue().ToStdString();
     }
 
     void subscribe(MailCreatorFrameSubscriber* sub);
