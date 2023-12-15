@@ -40,7 +40,7 @@ DashboardFrame::DashboardFrame(const wxString& title) :
     sidebarPanelBoxSizer->AddStretchSpacer(1);
     _sidebarPanel->SetSizerAndFit(sidebarPanelBoxSizer);
 
-    _splitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition,wxSize(1200, 800));
+    _splitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition, wxSize(1200, 800));
 
     _mailList = new wxListView(_splitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_SINGLE_SEL | wxBORDER_SUNKEN);
     
@@ -52,7 +52,7 @@ DashboardFrame::DashboardFrame(const wxString& title) :
 
     wxBoxSizer *mainSizer = new wxBoxSizer(wxHORIZONTAL);
     mainSizer->Add(_sidebarPanel, 0, wxEXPAND | wxALL, MARGIN);
-    mainSizer->Add(_splitter, 0, wxEXPAND | wxALL, MARGIN);
+    mainSizer->Add(_splitter, 1, wxEXPAND | wxALL, MARGIN);
     _splitter->Initialize(_mailList);
     SetSizerAndFit(mainSizer);
     Centre();
@@ -91,9 +91,9 @@ void DashboardFrame::initViewMailPanel() {
     mailButtonSizer->Add(_forwardMailBtn, 0, wxALL, MARGIN);
     mailButtonSizer->Add(_deleteMailBtn, 0, wxALL, MARGIN);
 
-    headerSizer->Add(mailHeadersSizer, 0, wxALL, MARGIN);
-    headerSizer->AddStretchSpacer();
-    headerSizer->Add(mailButtonSizer, 0, wxALL, MARGIN);
+    headerSizer->Add(mailHeadersSizer, 1, wxALL, MARGIN);
+    headerSizer->Add(mailButtonSizer, 1, wxALL, MARGIN);
+    //headerSizer->Layout();
 
     auto mailContentsPanel = new wxPanel(viewMailPanel(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SUNKEN);
     auto mailContentsSizer = new wxBoxSizer(wxVERTICAL);
@@ -106,6 +106,7 @@ void DashboardFrame::initViewMailPanel() {
 
     _viewMailSizer = new wxBoxSizer(wxVERTICAL);
     _viewMailSizer->Add(headerSizer, 0, wxEXPAND | wxALL, MARGIN);
+    //_viewMailPanel->SetMinSize({ headerSizer->GetSize().GetX(), _viewMailPanel->GetSize().GetY()});
     _viewMailSizer->Add(mailContentsPanel, 1, wxEXPAND | wxALL, MARGIN);
 
     //mainSizer->Add(mailAttachmentsPanel, 0, 0);
