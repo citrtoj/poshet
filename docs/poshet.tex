@@ -33,7 +33,9 @@
 \begin{abstract}
 Poshet este un client pentru serviciul POP3 în care se poate vizualiza, organiza și trimite e-mail. În continuare sunt detaliate atât tehnologiile utilizate, structura aplicației, cât și diverse detalii de implementare.
 
-\keywords{C++ \and Email \and POP3 \and SMTP \and MIME \and wxWidgets}
+\renewcommand\keywordname{{\bf Cuvinte cheie:}}
+
+\keywords{Mail \and POP3 \and SMTP \and MIME \and OOP \and wxWidgets}
 \end{abstract}
 %
 %
@@ -61,7 +63,7 @@ Pentru analizarea și procesarea mailurilor din conținut ASCII într-un format 
 
 \subsection{Arhitectura principală}
 
-Proiectul folosește clase și OOP, având o structură inspirată în linii mari de arhitectura MVP (Model-View-Presenter) pentru a separa responsabilitățile între clase.
+Proiectul folosește clase și OOP, având o structură inspirată de arhitectura MVP (Model-View-Presenter) pentru a separa responsabilitățile între clase.
 
 
 
@@ -131,7 +133,7 @@ AppController implementează simultan trei clase pur virtuale: LoginFrameSubscri
 
 \begin{figure}
     \centering
-    \includegraphics[width={200px}]{subscriberMember.png}
+    \includegraphics[width={230px}]{subscriberMember.png}
     \caption{Definirea membrului \texttt{\_subscriber} în \texttt{DashboardFrame.hpp}.}
     \label{fig:subscriberMember}
 \end{figure}
@@ -159,7 +161,7 @@ Conexiunile cu serverele POP3 și SMTP sunt administrate de clasele POP3Connecti
 
 \begin{figure}
     \centering
-    \includegraphics[width={130px}]{noopThread.png}
+    \includegraphics[width={200px}]{noopThread.png}
     \caption{Declararea \texttt{\_noopThread} și a altor membri ajutători în \texttt{POP3Connection.hpp}.}
     \label{fig:noopThread}
 \end{figure}

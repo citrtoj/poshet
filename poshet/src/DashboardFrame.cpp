@@ -1,7 +1,7 @@
 #include "DashboardFrame.hpp"
 
 DashboardFrame::DashboardFrame(const wxString& title) :
-    wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxSize(1200, 800))
+    wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxDefaultSize)
 {
     SetDoubleBuffered(true);
     this->Bind(wxEVT_CLOSE_WINDOW, &DashboardFrame::OnClose, this);
@@ -22,12 +22,25 @@ DashboardFrame::DashboardFrame(const wxString& title) :
     _newMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnRefreshMailList, this);
     _refreshMailBtn = new wxButton(_sidebarPanel, wxID_ANY, "New message");
     _refreshMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnNewMail, this);
+    _folderList = new wxListBox(_sidebarPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+
+    // temporary, to demonstrate how it would look
+    std::vector<std::string> dummyFolders = {
+        "Dummy Folder 1",
+        "Dummy Folder 2",
+        "Dummy Folder 3"
+    };
+    for (int i = 0; i < dummyFolders.size(); ++i) {
+        _folderList->Insert(dummyFolders[i], i);
+    }
 
     sidebarPanelBoxSizer->Add(_newMailBtn, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, MARGIN);
-    sidebarPanelBoxSizer->Add(_refreshMailBtn, 0, wxALIGN_CENTER_HORIZONTAL | wxLEFT | wxRIGHT | wxBOTTOM, MARGIN);
-    _sidebarPanel->SetSizer(sidebarPanelBoxSizer);
+    sidebarPanelBoxSizer->Add(_refreshMailBtn, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, MARGIN);
+    sidebarPanelBoxSizer->Add(_folderList, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, MARGIN);
+    sidebarPanelBoxSizer->AddStretchSpacer(1);
+    _sidebarPanel->SetSizerAndFit(sidebarPanelBoxSizer);
 
-    _splitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition,wxSize(600, -1));
+    _splitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition,wxSize(1200, 800));
 
     _mailList = new wxListView(_splitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_SINGLE_SEL | wxBORDER_SUNKEN);
     
@@ -39,7 +52,7 @@ DashboardFrame::DashboardFrame(const wxString& title) :
 
     wxBoxSizer *mainSizer = new wxBoxSizer(wxHORIZONTAL);
     mainSizer->Add(_sidebarPanel, 0, wxEXPAND | wxALL, MARGIN);
-    mainSizer->Add(_splitter, 4, wxEXPAND | wxALL, MARGIN);
+    mainSizer->Add(_splitter, 0, wxEXPAND | wxALL, MARGIN);
     _splitter->Initialize(_mailList);
     SetSizerAndFit(mainSizer);
     Centre();
@@ -47,8 +60,6 @@ DashboardFrame::DashboardFrame(const wxString& title) :
 
 void DashboardFrame::refreshViewMailPanel() {
     if (_isViewMailPanelInit) {
-        _viewMailPanel->Fit();
-        _viewMailPanel->Layout();
         _splitter->SplitVertically(_mailList, _viewMailPanel, 0);
         return;
     }
@@ -59,47 +70,47 @@ void DashboardFrame::initViewMailPanel() {
         return;
     }
     _viewMailPanel = new wxPanel(_splitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SUNKEN);
-    _headerPanel = new wxPanel(viewMailPanel(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxEXPAND);
-    _headerPanel->SetBackgroundColour(wxColor(255, 255, 255));
+    _viewMailPanel->SetBackgroundColour(wxColor(255, 255, 255));
+
+    //_headerPanel = new wxPanel(_viewMailPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxEXPAND);
     auto headerSizer = new wxBoxSizer(wxHORIZONTAL);
 
     auto mailHeadersSizer = new wxBoxSizer(wxVERTICAL);
-    _selectedMailFrom = new wxStaticText(_headerPanel, wxID_ANY, "Dummy Subject");
-    _selectedMailTo = new wxStaticText(_headerPanel, wxID_ANY, "Dummy To");
+    _selectedMailFrom = new wxStaticText(_viewMailPanel, wxID_ANY, "Dummy Subject");
+    _selectedMailTo = new wxStaticText(_viewMailPanel, wxID_ANY, "Dummy To");
     mailHeadersSizer->Add(_selectedMailFrom);
     mailHeadersSizer->Add(_selectedMailTo);
 
     auto mailButtonSizer = new wxBoxSizer(wxHORIZONTAL);
     mailButtonSizer->AddStretchSpacer(); // "align right"
-    _replyMailBtn = new wxButton(_headerPanel, wxID_ANY, "Reply");
-    _forwardMailBtn = new wxButton(_headerPanel, wxID_ANY, "Forward");
-    _deleteMailBtn = new wxButton(_headerPanel, wxID_ANY, "Delete");
+    _replyMailBtn = new wxButton(_viewMailPanel, wxID_ANY, "Reply");
+    _forwardMailBtn = new wxButton(_viewMailPanel, wxID_ANY, "Forward");
+    _deleteMailBtn = new wxButton(_viewMailPanel, wxID_ANY, "Delete");
     _deleteMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnDeleteMail, this);
     mailButtonSizer->Add(_replyMailBtn, 0, wxALL, MARGIN);
     mailButtonSizer->Add(_forwardMailBtn, 0, wxALL, MARGIN);
     mailButtonSizer->Add(_deleteMailBtn, 0, wxALL, MARGIN);
 
-    headerSizer->Add(mailHeadersSizer, 0);
-    headerSizer->Add(mailButtonSizer, 1);
-
-    _headerPanel->SetSizerAndFit(headerSizer);
+    headerSizer->Add(mailHeadersSizer, 0, wxALL, MARGIN);
+    headerSizer->AddStretchSpacer();
+    headerSizer->Add(mailButtonSizer, 0, wxALL, MARGIN);
 
     auto mailContentsPanel = new wxPanel(viewMailPanel(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SUNKEN);
     auto mailContentsSizer = new wxBoxSizer(wxVERTICAL);
 
-    _mailContentsCtrl = new wxRichTextCtrl(mailContentsPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(400, 400), wxTE_READONLY);
-    mailContentsSizer->Add(_mailContentsCtrl, wxEXPAND);
+    _mailContentsCtrl = new wxRichTextCtrl(mailContentsPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
+    mailContentsSizer->Add(_mailContentsCtrl, 1, wxEXPAND);
     mailContentsPanel->SetSizer(mailContentsSizer);
 
     //auto mailAttachmentsPanel = new wxPanel(viewMailPanel(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SUNKEN);
 
-    auto mainSizer = new wxBoxSizer(wxVERTICAL);
-    mainSizer->Add(_headerPanel, 0, wxEXPAND);
-    mainSizer->Add(mailContentsPanel, 0, wxEXPAND);
+    _viewMailSizer = new wxBoxSizer(wxVERTICAL);
+    _viewMailSizer->Add(headerSizer, 0, wxEXPAND | wxALL, MARGIN);
+    _viewMailSizer->Add(mailContentsPanel, 1, wxEXPAND | wxALL, MARGIN);
+
     //mainSizer->Add(mailAttachmentsPanel, 0, 0);
 
-    viewMailPanel()->SetSizer(mainSizer);
-    viewMailPanel()->SetMinSize(wxSize(headerSizer->GetSize().GetX(), -1));
+    _viewMailPanel->SetSizerAndFit(_viewMailSizer);
 
     refreshViewMailPanel();
 
@@ -157,11 +168,7 @@ void DashboardFrame::setMailList(const std::vector<Mail>& mails) {
         _mailList->InsertItem(item);
 
         for (int i = 0; i < _fields.size(); ++i) {
-            auto it = mail.headers().find(_fields[i]);
-            std::string fieldValue = "";
-            if (it != mail.headers().cend()) {
-                fieldValue = it->second;
-            }
+            auto fieldValue = mail.getHeader(_fields[i]);
             _mailList->SetItem(index, i, fieldValue);
         }
     }
@@ -176,6 +183,7 @@ void DashboardFrame::setMailList(const std::vector<Mail>& mails) {
 void DashboardFrame::updateViewMailPanel(const Mail& mail) {
     // not final in any way shape or form
     initViewMailPanel();
+
     _selectedMailFrom->SetLabel("From: " + mail.getHeader("From"));
     _selectedMailTo->SetLabel("To: " + mail.getHeader("To"));
     _mailContentsCtrl->SetValue(mail.plainText());

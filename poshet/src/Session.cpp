@@ -51,6 +51,9 @@ void Session::sendMail(const std::string& to, const std::string& subject, const 
 
 void Session::refreshMail() {
     // temporary: clears vector, reads from POP3, populates vector
+
+    // temporary solution: reset the connection to get the latest events
+    // in the future i'll set up some sort of mechanism to a) prevent resetting right after the session has been started, and b) not refresh absolutely every single time i retrieve mail, as it could get expensive
     _pop3.resetConnection();
     auto rawMail = _pop3.retrieveAllMail();
 
@@ -60,8 +63,6 @@ void Session::refreshMail() {
         Mail tempMail = Mail(x.plainData);  // todo: implement move operator and all...
         _mails.push_back(tempMail);
     }
-
-    _shouldRefresh = false;
 }
 
 const std::vector<Mail>& Session::retrieveMail() {
@@ -83,6 +84,4 @@ void Session::deleteMail(long idx) {
         throw Exception("Invalid mail index to delete");
     }
     _pop3.markMailForDeletion(idx + 1);
-
-    _shouldRefresh = true;
 }

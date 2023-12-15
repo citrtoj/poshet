@@ -23,14 +23,16 @@ protected:
 
     wxStatusBar* _statusBar;
     wxPanel* _sidebarPanel;
-    wxButton* _newMailBtn;
     wxButton* _refreshMailBtn;
+    wxButton* _newMailBtn;
+    wxListBox* _folderList;
     wxListView* _mailList;
     wxSplitterWindow* _splitter;
 
     //Mail* currentMail;
     bool _isViewMailPanelInit = false;
     wxPanel* _viewMailPanel;
+    wxBoxSizer* _viewMailSizer;
     wxPanel* _headerPanel;
     wxStaticText* _selectedMailFrom;
     wxStaticText* _selectedMailTo;

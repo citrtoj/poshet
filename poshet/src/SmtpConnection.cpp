@@ -94,8 +94,8 @@ void SMTPConnection::closeConnection() {
 }
 
 void SMTPConnection::sendMail(const Mail& mail) {
-    const auto& to = mail.headers().find("To")->second;
-    const auto& from = mail.headers().find("From")->second;
+    auto to = mail.getHeader("To");
+    auto from = mail.getHeader("From");
 
     log(execCommand("MAIL FROM: " + from));
     log(execCommand("RCPT TO: " + to));
