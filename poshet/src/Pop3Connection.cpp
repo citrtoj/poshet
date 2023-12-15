@@ -28,6 +28,8 @@ void POP3Connection::connectToServer() {
     connectSocket();
     readLineResponse();
     _state = AUTHORIZATION;
+
+    log("Successfully connected to server");
 }
 
 void POP3Connection::login() {
@@ -42,8 +44,11 @@ void POP3Connection::login() {
     execCommand("USER " + _user);
     execCommand("PASS " + _pass);
     _state = TRANSACTION;
+
     _noopThread = std::thread(&POP3Connection::keepAlive, this);
     _threadStarted = true;
+
+    log("Successfully logged in, notified no-op thread to start");
 }
 
 void POP3Connection::login(const std::string& user, const std::string& pass) {
@@ -133,6 +138,7 @@ std::string POP3Connection::readMultiLineResponse() {
 }
 
 void POP3Connection::keepAlive() {
+    // todo: set some sort of variable here to indicate that It Has Started
     bool stop = true;
     while(stop) {
         execCommand("NOOP");
@@ -148,9 +154,10 @@ void POP3Connection::keepAlive() {
 }
 
 void POP3Connection::closeConnection() {
+
     log("Closing connection...");
     if (_state == DISCONNECTED) {
-        log("No need to, already disconnected");
+        log("No need to close connection, already disconnected");
         return;
     }
     {
@@ -163,9 +170,23 @@ void POP3Connection::closeConnection() {
         log("Joined no-op thread");
         _threadStarted = false;
     }
-    execCommand("QUIT");
     closeSocket();
     _state = DISCONNECTED;
+
+
+    log("Successfully closed connection");
+}
+
+void POP3Connection::quitConnection() {
+    try {
+        execCommand("QUIT");
+        log("Successfully quit connection");
+        closeConnection();
+    }
+    catch (Exception& e) {
+        closeConnection();
+    }
+    
 }
 
 std::string POP3Connection::retrieveOneMail(size_t currentMailIndex, size_t byteSize) {
@@ -243,7 +264,7 @@ std::vector<POP3Connection::RawMailData> POP3Connection::retrieveAllMail() {
 
 void POP3Connection::resetConnection() {
     bool shouldLogin = (_state == State::TRANSACTION);
-    closeConnection();
+    quitConnection();
     connectToServer();
     if (shouldLogin) {
         login(_user, _pass);

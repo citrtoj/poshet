@@ -19,8 +19,15 @@ protected:
 
     std::vector<Mail> _mails;
     int _currentMail;
+    
+    // temporary solution to known pop3 bug
+    bool _shouldRefresh = false;
+
+    void refreshMail();
+
 public:
-    Session() {}
+    Session();
+    ~Session();
     void setLoginData(const std::vector<std::string> data);
     void connectAndLoginToServers();
 

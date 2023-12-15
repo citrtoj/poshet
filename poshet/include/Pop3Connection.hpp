@@ -29,6 +29,8 @@
 #include "ConnectionBase.hpp"
 
 class POP3Connection : public ConnectionBase {
+    // known bug: if you try to close it right after initializing, join() might throw an exception. perhaps the thread hasn't started yet. or something
+
     class RawMailData {
     public:
         size_t index;
@@ -97,6 +99,7 @@ public:
 
     void connectToServer() override;
     void closeConnection() override;
+    void quitConnection(); // acts as a commit
     void resetConnection();
 
     void login();

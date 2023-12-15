@@ -1,5 +1,11 @@
 #include "Session.hpp"
 
+Session::Session() {}
+
+Session::~Session() {
+    closeConnections();
+}
+
 void Session::setLoginData(const std::vector<std::string> data) {
     std::cout << "[Session] Setting login data\n";
     _loginData = LoginData(data);
@@ -22,7 +28,12 @@ void Session::connectAndLoginToServers() {
 }
 
 void Session::closeConnections() {
-    _pop3.closeConnection();
+    try {
+        _pop3.quitConnection();
+    }
+    catch(Exception& e) {
+        _pop3.closeConnection();
+    }
     _smtp.closeConnection();
 }
 
@@ -34,12 +45,13 @@ void Session::resetConnections() {
 void Session::sendMail(const std::string& to, const std::string& subject, const std::string& rawBody) {
     Mail mail(to, _loginData.emailAddress(), subject, rawBody);
     _smtp.sendMail(mail);
+
+    _shouldRefresh = true;
 }
 
-const std::vector<Mail>& Session::retrieveMail() {
-    // clears vector, reads from POP3, populates vector
-    _pop3.resetConnection(); 
-
+void Session::refreshMail() {
+    // temporary: clears vector, reads from POP3, populates vector
+    _pop3.resetConnection();
     auto rawMail = _pop3.retrieveAllMail();
 
     _mails.clear();
@@ -48,6 +60,12 @@ const std::vector<Mail>& Session::retrieveMail() {
         Mail tempMail = Mail(x.plainData);  // todo: implement move operator and all...
         _mails.push_back(tempMail);
     }
+
+    _shouldRefresh = false;
+}
+
+const std::vector<Mail>& Session::retrieveMail() {
+    refreshMail();
     return _mails;
 }
 
@@ -65,5 +83,6 @@ void Session::deleteMail(long idx) {
         throw Exception("Invalid mail index to delete");
     }
     _pop3.markMailForDeletion(idx + 1);
-    _pop3.resetConnection(); // in order to "commit" the changes
+
+    _shouldRefresh = true;
 }

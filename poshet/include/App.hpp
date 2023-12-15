@@ -19,6 +19,10 @@ public:
         try {
             throw;
         }
+        catch (ServerException& e) {
+            std::cout << "Server Exception: " << e.what() << "\nQuitting...\n";
+            exit(EXIT_FAILURE);
+        }
         catch (Exception& e) {
             std::cout << "Poshet Exception: " << e.what() << "\nQuitting...\n";
             exit(EXIT_FAILURE);

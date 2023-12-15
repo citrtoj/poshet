@@ -67,7 +67,6 @@ void AppController::onForwardMail() {
 }
 
 void AppController::onDeleteMail() {
-    // get selected, delete
     auto selected = _dashboardFrame->selected();
     _session->deleteMail(selected);
     auto mails = _session->retrieveMail();
@@ -89,7 +88,7 @@ void AppController::onMailCreatorSend() {
 }
 
 void AppController::onMailCreatorClose() {
-    //shouldn't lead to bugs, despite it seemingly being a "i'm pretending it's done before it's actually done" situation
+    // shouldn't lead to bugs, despite it seemingly being a "i'm pretending it's done before it's actually done" situation
     // the GUI is singlethreaded, so immediately after this is set to false, the window of the mail creator frame receives the close event, and then that starts closing itself, more safely than I would have closed it manually using Destroy();
     // and only then would the user theoretically be even able to press the "new message" button again
     // perhaps in the future I might allow more than one window
