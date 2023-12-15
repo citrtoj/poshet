@@ -10,6 +10,7 @@ Librării/pachete externe necesare:
 - CMake
 - wxWidgets
 - SQLite3
+- Mimetic (care este inclus în folderul `thirdparty`).
 
 Pentru a construi și compila proiectul fără fișierul `Makefile`, presupunând că vă aflați în același folder cu acest fișier:
 
