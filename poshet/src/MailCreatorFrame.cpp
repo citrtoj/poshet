@@ -41,7 +41,7 @@ MailCreatorFrame::MailCreatorFrame() :
     verticalSizer->Add(_contentsCtrl, wxSizerFlags().Border(wxALL, MARGIN).Expand());
 
     auto mainSizer = new wxBoxSizer(wxHORIZONTAL);
-    // max-width: 80%;
+    // max-width: 75%%;
     mainSizer->AddStretchSpacer(1);
     mainSizer->Add(verticalSizer, 6);
     mainSizer->AddStretchSpacer(1);
@@ -51,19 +51,35 @@ MailCreatorFrame::MailCreatorFrame() :
     Centre();
 }
 
-void MailCreatorFrame::OnClose(wxEvent& event) {
-    _subscriber->onMailCreatorClose();  //notifies in case it needs to save input, or something...
-    event.Skip();
-}
-
 void MailCreatorFrame::subscribe(MailCreatorFrameSubscriber* sub) {
     _subscriber = sub;
 }
+
+bool MailCreatorFrame::closeGracefully() {
+    return Close();
+}
+
+// wxWidgets handlers
 
 void MailCreatorFrame::OnSend(wxCommandEvent& event) {
     _subscriber->onMailCreatorSend();
 }
 
-void MailCreatorFrame::closeGracefully() {
-    Close();
+void MailCreatorFrame::OnClose(wxEvent& event) {
+    _subscriber->onMailCreatorClose();  //notifies in case it needs to save input, or something...
+    event.Skip();
+}
+
+// getters. temporary
+
+std::string MailCreatorFrame::to() const {
+    return _toInput->GetValue().ToStdString();
+}
+
+std::string MailCreatorFrame::subject() const {
+    return _subjectInput->GetValue().ToStdString();
+}
+
+std::string MailCreatorFrame::body() const {
+    return _contentsCtrl->GetValue().ToStdString();
 }

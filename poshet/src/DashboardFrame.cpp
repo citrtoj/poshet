@@ -47,6 +47,7 @@ DashboardFrame::DashboardFrame(const wxString& title) :
 
 void DashboardFrame::refreshViewMailPanel() {
     if (_isViewMailPanelInit) {
+        _viewMailPanel->Fit();
         _viewMailPanel->Layout();
         _splitter->SplitVertically(_mailList, _viewMailPanel, 0);
         return;

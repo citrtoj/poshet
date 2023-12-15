@@ -29,14 +29,9 @@ public:
     Mail(const std::string& plainTextData);
     Mail(const std::string& to, const std::string& from, const std::string& subject, const std::string& userInputBody);
 
-    const std::string& plainText() const {
-        return _plainText;
-    }
-    const auto& headers() const {
-        return _headers;
-    }
-
     std::string getHeader(const std::string& key) const;
+    const std::string& plainText() const;
+    const auto& headers() const;
 
     static std::unordered_map<std::string, std::string> mailHeaders(const std::string& input);
 };

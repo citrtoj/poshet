@@ -19,19 +19,12 @@ protected:
     void OnClose(wxEvent& event);
 public:
     MailCreatorFrame();
-
-    void closeGracefully();
-
-    std::string to() const {
-        return _toInput->GetValue().ToStdString();
-    }
-    std::string subject() const {
-        return _subjectInput->GetValue().ToStdString();
-    }
-
-    std::string body() const {
-        return _contentsCtrl->GetValue().ToStdString();
-    }
-
     void subscribe(MailCreatorFrameSubscriber* sub);
+
+    bool closeGracefully();
+
+    std::string to() const;
+    std::string subject() const;
+    std::string body() const;
+
 };

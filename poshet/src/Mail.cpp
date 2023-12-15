@@ -77,3 +77,11 @@ std::string Mail::getHeader(const std::string& key) const {
         return "N/A";
     }
 }
+
+const std::string& Mail::plainText() const {
+    return _plainText;
+}
+
+const auto& Mail::headers() const {
+    return _headers;
+}

@@ -20,19 +20,12 @@
 #include "Utils.hpp"
 #include "Exceptions.hpp"
 
-enum SingleLineMessage { // should readSingleLineMessage leave in \r\n?
-    RAW,
-    PROCESSED
-};
-
 class ConnectionBase {
 protected:
     std::string _nameOfConnection;
 
     int _socket;
     bool _isSocketOpen;
-
-    int _timeoutSecs = 1;
 
     std::string _host;
     std::string _port;

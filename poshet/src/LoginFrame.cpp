@@ -16,7 +16,7 @@ LoginFrame::LoginFrame(const wxString& title) :
 
     wxPanel* panel = new wxPanel(this, wxID_ANY);
     wxBoxSizer* inputsSizer = new wxBoxSizer(wxVERTICAL);
-    inputsSizer->SetMinSize(wxSize(800, -1));
+    inputsSizer->SetMinSize(wxSize(600, -1));
 
     for (auto& textInputInfo : _textInputs) {
         auto label = (new wxStaticText(panel, wxID_ANY, std::get<LoginFrame::LABEL>(textInputInfo) + ":"));
@@ -36,7 +36,7 @@ LoginFrame::LoginFrame(const wxString& title) :
     auto horizontalSizer = new wxBoxSizer(wxHORIZONTAL);
 
     horizontalSizer->AddStretchSpacer(1);
-    horizontalSizer->Add(inputsSizer, 10);
+    horizontalSizer->Add(inputsSizer, 10, wxALIGN_CENTER_VERTICAL);
     horizontalSizer->AddStretchSpacer(1);
 
     auto mainSizer = new wxBoxSizer(wxVERTICAL);

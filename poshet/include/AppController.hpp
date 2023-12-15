@@ -32,6 +32,7 @@ public:
     AppController(wxApp* app);
 
     // subscriber overrides
+    
     void onCloseApp() override;
     
     void onLoginSubmit() override;

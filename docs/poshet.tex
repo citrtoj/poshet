@@ -40,7 +40,7 @@ Poshet este un client pentru serviciul POP3 în care se poate vizualiza, organiz
 %
 \section{Introducere}
 
-Poshet este un client cu interfață grafică, scris în C++ cu wxWidgets, pentru serviciile de mail electronic POP3 (pentru obținerea de mailuri) și SMTP (pentru trimiterea de mailuri și redirecționarea de mailuri către mailbox-urile corespunzătoare). Printre funcționalitățile acestuia se numără: vizualizarea și organizarea mailurilor primite, trimiterea de mailuri noi cu atașamente, reply sau forwarding la mailuri primite.
+Poshet este un client cu interfață grafică, scris în C++ cu wxWidgets, pentru serviciile de mail electronic POP3 (pentru obținerea de mailuri) și SMTP (pentru trimiterea de mailuri). Printre funcționalitățile acestuia se numără: vizualizarea și organizarea mailurilor primite, trimiterea de mailuri noi cu atașamente, reply sau forwarding la mailuri primite.
 
 \section{Tehnologii aplicate}
 
@@ -52,7 +52,7 @@ Comunicarea cu baza de date SQLite creată local se realizează cu ajutorul libr
 
 Pentru interfața grafică este utilizată librăria wxWidgets (în pofida altor librării similare precum Qt) datorită simplității sale, a structurii bazate pe OOP și în mod special a integrării sale facile cu Visual Studio Code și CMake.
 
-Pentru analizarea și procesarea mailurilor din conținut ASCII într-un format afișabil în client se utilizează o librărie externă (Mimetic) pentru fișiere scrise conform standardului MIME\cite{ref_rfc_mime}. A fost aleasă o librărie externă pentru că protocolul MIME este destul de complex și se dorește o soluție implementată cât se poate de corect și testată riguros.
+Pentru analizarea și procesarea mailurilor din conținut ASCII într-un format afișabil în client se utilizează o librărie externă (Mimetic) pentru fișiere scrise conform standardului MIME\cite{ref_rfc_mime}. A fost aleasă o librărie externă pentru că standardul MIME este destul de complex și se dorește o soluție implementată cât se poate de corect și testată riguros.
 
 
 
@@ -79,7 +79,7 @@ Clasa AppController poate fi privită ca un mediator între interfețe și logic
 
 \subsection{Stocarea informațiilor}
 
-Datele care aparțin unui mail sunt păstrate cu ajutorul clasei Mail, care conține metode prin care se poate procesa conținutul unui buffer ASCII (scris conform protocolului MIME) și se pot obține informații precum headers, date plain-text, atașamente, etc. În momentul când se dorește afișarea conținutului unui mail pe ecran, interfața DashboardFrame este responsabilă cu afișarea datelor mailului în viewMailPanel, utilizând elemente specializate ale wxWidgets precum wxRichTextCtrl (care permite afișarea "inline" de imagini sau alte fișiere multimedia).
+Datele care aparțin unui mail sunt păstrate cu ajutorul clasei Mail, care conține metode prin care se poate procesa conținutul unui buffer ASCII (scris conform standardului MIME) și se pot obține informații precum headers, date plain-text, atașamente, etc. În momentul când se dorește afișarea conținutului unui mail pe ecran, interfața DashboardFrame este responsabilă cu afișarea datelor mailului în viewMailPanel, utilizând elemente specializate ale wxWidgets precum wxRichTextCtrl (care permite afișarea "inline" de imagini sau alte fișiere multimedia).
 
 De asemenea, mailurile primite sunt stocate într-o bază de date locală, într-o tabelă \texttt{Mail} (legată de tabela \texttt{Users} printr-o relație de tip "one-to-many"). Pe lângă datele "raw" ale mailurilor sunt stocate și informații adiționale precum headers importante (To, Subject, etc.) sau un "tag" prin care utilizatorul a marcat respectivul mail în client pentru a își organiza inboxul.
 
@@ -112,16 +112,13 @@ Ambele protocoale sunt de tip comandă-răspuns; așadar, în urma trimiterii co
 \subsection{Scenarii de utilizare}
 Poshet este menit să comunice cu un server POP3 ne-încriptat, cu autentificare plain-text, și cu un server SMTP fără autentificare. În timpul dezvoltării acestui proiect s-au folosit programele Dovecot și Postfix pentru a configura servere POP3 și respectiv SMTP pe \texttt{localhost}.
 
-Un client de acest tip poate fi folositor în situații precum testarea locală; unele procese pot fi configurate să trimită mail către serverul SMTP local, iar administratorul le poate citi ușor din aplicație.
+Un client de acest tip poate fi folositor în situații precum testarea locală; unele procese pot fi configurate să trimită mail către serverul SMTP local (spre exemplu, pentru a simula trimiterea de mail către mai mulți utilizatori ai unui serviciu), iar administratorul le poate citi, verifica și organiza ușor din aplicație. De asemenea, prin conectarea la serverul SMTP local cu acest client se poate testa și verifica funcționarea conformă a serverului.
 
 \subsection{Aspecte interesante legate de implementare}
 
-
 \subsubsection{Utilizarea sistemului de "subscribers".} Pentru a evita dependența circulară între clasa AppController și clasele de interfață, dar și pentru a minimiza interacțiunea cu AppController prin modalități specifice librăriei wxWidgets, se utilizează conceptul de "subscribers".
 
-AppController implementează simultan trei clase pur virtuale: LoginFrameSubscriber, DashboardFrameSubscriber și MailCreatorFrameSubscriber. În momentul creerii LoginFrame, DashboardFrame și respectiv MailCreatorFrame, AppController apelează metodele publice \texttt{subscribe} ale acestora, iar fiecare instanță de interfață memorează o referință la AppController sub forma unui pointer de tipul "subscriber" corespunzător.
-
-În wxWidgets, interacțiunea utilizatorului cu o interfață este semnalată acesteia prin intermediul unor \texttt{wxEvent}-uri. Clasele de interfață ale Poshet conțin "event handlers" pentru acestea, implementate conform cerințelor librăriei, care la rândul lor apelează funcții ale "subscriber"-ului implementate în AppController, precum \texttt{onRefreshMailList()}, \texttt{onCloseApp()} sau \texttt{onMailSend()}.
+AppController implementează simultan trei clase pur virtuale: LoginFrameSubscriber, DashboardFrameSubscriber și MailCreatorFrameSubscriber. În momentul creerii LoginFrame, DashboardFrame și respectiv MailCreatorFrame, AppController apelează metodele publice \texttt{subscribe} ale acestora, iar fiecare instanță de interfață memorează o referință la AppController sub forma unui pointer de tipul "subscriber" corespunzător. Fiindcă interfețele în sine sunt administrate de către AppController, nu există riscul ca una dintre interfețe să apeleze o metodă în timp ce "subscriber"-ul său să fie un pointer invalid.
 
 
 \begin{figure}
@@ -131,22 +128,26 @@ AppController implementează simultan trei clase pur virtuale: LoginFrameSubscri
     \label{fig:subscribers}
 \end{figure}
 
+
 \begin{figure}
     \centering
-    \includegraphics[width=\textwidth]{subscriberMember.png}
+    \includegraphics[width={200px}]{subscriberMember.png}
     \caption{Definirea membrului \texttt{\_subscriber} în \texttt{DashboardFrame.hpp}.}
-    \label{fig:subscribers}
+    \label{fig:subscriberMember}
 \end{figure}
+
+\newpage
+
+În wxWidgets, interacțiunea utilizatorului cu o interfață este semnalată acesteia prin intermediul unor \texttt{wxEvent}-uri. Clasele de interfață ale Poshet conțin "event handlers" pentru acestea, implementate conform cerințelor librăriei, care la rândul lor apelează funcții ale "subscriber"-ului implementate în AppController, precum \texttt{onRefreshMailList()}, \texttt{onCloseApp()} sau \texttt{onMailSend()}.
+
+
 
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{subscriberFxns.png}
-    \caption{Exemple de "event handlers" care apelează funcțiile unui "subscriber", în \texttt{DashboardFrame.cpp}.}
-    \label{fig:subscribers}
+    \caption{Exemple de "event handlers" care apelează funcțiile "subscriber"-ului său, în \texttt{DashboardFrame.cpp}.}
+    \label{fig:subscriberFxns}
 \end{figure}
-
-
-\newpage
 
 \subsubsection{Administrarea conexiunilor POP3 și SMTP.}
 
