@@ -3,7 +3,7 @@
 LoginFrame::LoginFrame(const wxString& title) :
     wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxDefaultSize),
     _textInputs({
-        {"Full name", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::UNCENSORED},
+        {"Full name (optional)", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::UNCENSORED},
         {"Email address", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::UNCENSORED},
         {"Password", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::CENSORED},
         {"POP3 Domain Name (optional)", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::UNCENSORED},

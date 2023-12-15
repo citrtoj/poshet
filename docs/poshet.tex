@@ -116,6 +116,33 @@ Poshet este menit să comunice cu un server POP3 ne-încriptat, cu autentificare
 
 Un client de acest tip poate fi folositor în situații precum testarea locală; unele procese pot fi configurate să trimită mail către serverul SMTP local (spre exemplu, pentru a simula trimiterea de mail către mai mulți utilizatori ai unui serviciu), iar administratorul le poate citi, verifica și organiza ușor din aplicație. De asemenea, prin conectarea la serverul SMTP local cu acest client se poate testa și verifica funcționarea conformă a serverului.
 
+Utilizatorul se poate loga cu adresa de e-mail și parola, în urma cărora aplicația va încerca să intuiască parametri precum "domain name"-ul serverelor POP3 și SMTP, sau username-ul pentru mailbox-ul POP3. Dacă autentificarea sau conectarea eșuează, există posibilitatea de a le introduce manual, prin field-urile marcate cu "(Optional)".
+
+Ulterior, va fi afișată fereastra de tip "dashboard", care va afișa lista curentă de mailuri. Dacă este selectat vreunul, se afișează conținutul și detaliile acestuia în partea dreaptă a ecranului. În partea stângă a ecranului se regăsesc și alte elemente, precum butonul \texttt{Refresh mail list}, butonul \texttt{New message} prin care este inițializat procesul de trimitere a unui mail nou, sau o listă de directoare în care pot fi organizate mailurile din inbox.
+
+\begin{figure}
+    \centering
+    \includegraphics[width={300px}]{poshetLogin.png}
+    \caption{Fereastra "Login to Poshet".}
+    \label{fig:poshetlogin}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{poshetDashboard.png}
+    \caption{Fereastra de tip "dashboard", "Poshet". Aici, aceasta afișează conținutul "raw", neprocesat, al mailului selectat.}
+    \label{fig:poshetlogin}
+\end{figure}
+
+\newpage
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{poshetSend.png}
+    \caption{Fereastra de tip "New mail".}
+    \label{fig:poshetend}
+\end{figure}
+
 \subsection{Aspecte interesante legate de implementare}
 
 \subsubsection{Utilizarea sistemului de "subscribers".} Pentru a evita dependența circulară între clasa AppController și clasele de interfață, dar și pentru a minimiza interacțiunea cu AppController prin modalități specifice librăriei wxWidgets, se utilizează conceptul de "subscribers".
