@@ -32,7 +32,7 @@ protected:
     std::thread _noopThread;
     bool _threadStarted = false;
     std::mutex _commandMutex;
-    std::mutex _shouldExitMutex;
+    std::mutex _stateMutex;
     std::condition_variable cv;
 
     void sendCommand(const std::string& command); // NOT THREAD SAFE; only sends the command, without reading response

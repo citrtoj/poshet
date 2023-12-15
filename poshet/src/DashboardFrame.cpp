@@ -175,8 +175,8 @@ void DashboardFrame::setMailList(const std::vector<Mail>& mails) {
 void DashboardFrame::updateViewMailPanel(const Mail& mail) {
     // not final in any way shape or form
     initViewMailPanel();
-    _selectedMailFrom->SetLabel(mail.getHeader("From"));
-    _selectedMailTo->SetLabel(mail.getHeader("To"));
+    _selectedMailFrom->SetLabel("From: " + mail.getHeader("From"));
+    _selectedMailTo->SetLabel("To: " + mail.getHeader("To"));
     _mailContentsCtrl->SetValue(mail.plainText());
     refreshViewMailPanel();
 }

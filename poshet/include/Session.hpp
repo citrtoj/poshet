@@ -20,7 +20,7 @@ protected:
     std::vector<Mail> _mails;
     int _currentMail;
     
-    // temporary solution to known pop3 bug
+    // for future use
     bool _shouldRefresh = false;
 
     void refreshMail();

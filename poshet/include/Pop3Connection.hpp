@@ -29,7 +29,6 @@
 #include "ConnectionBase.hpp"
 
 class POP3Connection : public ConnectionBase {
-    // known bug: if you try to close it right after initializing, join() might throw an exception. perhaps the thread hasn't started yet. or something
 
     class RawMailData {
     public:
@@ -75,7 +74,7 @@ protected:
     bool _threadStarted = false;
     
     std::mutex _commandMutex;
-    std::mutex _shouldExitMutex;
+    std::mutex _stateMutex;
     std::condition_variable cv;
 
     void sendCommand(const std::string& command); // NOT THREAD SAFE

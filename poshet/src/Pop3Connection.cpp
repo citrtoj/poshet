@@ -138,54 +138,69 @@ std::string POP3Connection::readMultiLineResponse() {
 }
 
 void POP3Connection::keepAlive() {
-    // todo: set some sort of variable here to indicate that It Has Started
-    bool stop = true;
-    while(stop) {
-        execCommand("NOOP");
-        log("Sent NOOP");
+    while(true) {
         {
-            std::unique_lock<std::mutex> lock(_shouldExitMutex);
+            std::unique_lock<std::mutex> lock(_stateMutex);
             auto result = cv.wait_for(lock, std::chrono::seconds(TIMEOUT_SECS), [this]() {return _state != State::TRANSACTION;});
             if (result == true) {
-                stop = false;
+                break;
             }
         }
+        execCommand("NOOP");
+        log("Sent NOOP");
     }
 }
 
 void POP3Connection::closeConnection() {
-
     log("Closing connection...");
     if (_state == DISCONNECTED) {
         log("No need to close connection, already disconnected");
         return;
     }
     {
-        std::unique_lock<std::mutex> lock(_shouldExitMutex);
+        std::unique_lock<std::mutex> lock(_stateMutex);
         _state = State::DISCONNECTING;
     }
+    cv.notify_all();
     if (_threadStarted) {
-        cv.notify_all();
         _noopThread.join();
         log("Joined no-op thread");
         _threadStarted = false;
     }
     closeSocket();
     _state = DISCONNECTED;
-
-
     log("Successfully closed connection");
 }
 
 void POP3Connection::quitConnection() {
-    try {
+    log("Closing connection...");
+    if (_state == DISCONNECTED) {
+        log("No need to close connection, already disconnected");
+        return;
+    }
+    State oldState;
+    {
+        std::unique_lock<std::mutex> lock(_stateMutex);
+        oldState = _state;
+        _state = State::DISCONNECTING;
+    }
+    cv.notify_all();
+    if (_threadStarted) {
+        _noopThread.join();
+        log("Joined no-op thread");
+        _threadStarted = false;
+    }
+
+    if (oldState != DISCONNECTED and oldState != DISCONNECTING) {
         execCommand("QUIT");
         log("Successfully quit connection");
-        closeConnection();
+        _state = DISCONNECTING;
     }
-    catch (Exception& e) {
-        closeConnection();
-    }
+    
+    closeSocket();
+    _state = DISCONNECTED;
+
+    log("Successfully closed connection");
     
 }
 

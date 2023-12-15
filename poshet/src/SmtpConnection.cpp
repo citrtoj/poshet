@@ -58,16 +58,16 @@ void SMTPConnection::connectToServer() {
 
 void SMTPConnection::keepAlive() {
     bool stop = true;
-    while(stop) {
-        execCommand("NOOP");
-        log("Sent NOOP");
+    while(true) {
         {
-            std::unique_lock<std::mutex> lock(_shouldExitMutex);
+            std::unique_lock<std::mutex> lock(_stateMutex);
             auto result = cv.wait_for(lock, std::chrono::seconds(TIMEOUT_SECS), [this]() {return _state != State::TRANSACTION;});
             if (result == true) {
-                stop = false;
+                break;
             }
         }
+        execCommand("NOOP");
+        log("Sent NOOP");
     }
 }
 
@@ -81,11 +81,11 @@ std::string SMTPConnection::execCommand(const std::string& command) {
 void SMTPConnection::closeConnection() {
     log("Closing connection...");
     {
-        std::unique_lock<std::mutex> lock(_shouldExitMutex);
+        std::unique_lock<std::mutex> lock(_stateMutex);
         _state = State::DISCONNECTING;
     }
+    cv.notify_all();
     if (_threadStarted) {
-        cv.notify_all();
         _noopThread.join();
         log("Joined noop thread");
         _threadStarted = false;

@@ -154,7 +154,7 @@ Conexiunile cu serverele POP3 și SMTP sunt administrate de clasele POP3Connecti
 
 În general, după o anumită perioadă de inactivitate configurată de către administratorii serverelor, acestea pot încheia conexiunea. O particularitate interesantă a claselor POP3Connection și SMTPConnection este folosirea unui \texttt{std::thread} pentru a menține conexiunile active chiar și după mai mult timp: acesta trimite la un anumit interval repetat de timp, conform protocolului corespunzător, o operație de tip "no-op", prin care să semnaleze activitate fără a realiza o operație propriu-zisă.
 
-În POP3Connection și SMTPConnection există membrul \texttt{\_noopThread} și o metodă \texttt{keepAlive()} care este executată de către acesta. Pentru ca "no-op"-urile trimise de acest thread să nu interfereze cu procesul comandă-răspuns se folosește un \texttt{\_commandMutex}, folosit în funcția \texttt{execCommand} care este apelată atât de comenzi reale, cât și de "no-op". De asemenea, mutexul \texttt{\_shouldExitMutex} este utilizat pentru a întrerupe bucla infinită din \texttt{keepAlive()} când se dorește încheierea conexiunii.
+În POP3Connection și SMTPConnection există membrul \texttt{\_noopThread} și o metodă \texttt{keepAlive()} care este executată de către acesta. Pentru ca "no-op"-urile trimise de acest thread să nu interfereze cu procesul comandă-răspuns se folosește un \texttt{\_commandMutex}, folosit în funcția \texttt{execCommand} care este apelată atât de comenzi reale, cât și de "no-op". De asemenea, mutexul \texttt{\_stateMutex} este utilizat, printre altele, pentru a actualiza și verifica în mod sigur statusul curent al conexiunii.
 
 \begin{figure}
     \centering
