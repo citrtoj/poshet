@@ -4,7 +4,7 @@ Poshet este un client cu interfață grafică pentru serviciile de mail electron
 
 ## Compilare
 
-În acest folder se află un fișier `Makefile` în urma căruia ar trebui să apară executabilul `Poshet`. Acesta poate fi rulat prin comanda `./Poshet`.
+În acest folder se află un fișier `Makefile`. După rularea acestuia prin `make` ar trebui să apară executabilul `Poshet` care poate fi rulat prin comanda `./Poshet`.
 
 Librării/pachete externe necesare:
 - CMake
