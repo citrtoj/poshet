@@ -10,7 +10,7 @@ Librării/pachete externe necesare:
 - CMake
 - wxWidgets
 - SQLite3
-- Mimetic (care este inclus în folderul `thirdparty`).
+- Mimetic (al cărei cod sursă este inclus în folderul `thirdparty`).
 
 Pentru a construi și compila proiectul fără fișierul `Makefile`, presupunând că vă aflați în același folder cu acest fișier:
 
@@ -19,6 +19,8 @@ Pentru a construi și compila proiectul fără fișierul `Makefile`, presupunân
 `sudo apt install libwxgtk3.0-gtk3-0v5 libwxgtk3.0-gtk3-dev` (dacă au fost actualizate librăriile între timp, se recomandă căutarea `wxgtk` pe `apt` și instalarea noilor versiuni; pentru acest program sunt necesare atât Runtime Toolkit cât și Development Toolkit)
 
 `sudo apt install sqlite3 libsqlite3-dev`
+
+`cd poshet/thirdparty/mimetic && ./configure && make && sudo make install && make clean && cd ../../..` (pentru a construi și instala local librăria Mimetic care se află în folderul `poshet/thirdparty`)
 
 `cd poshet`
 

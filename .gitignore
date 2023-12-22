@@ -1,4 +1,5 @@
-poshet/build
+poshet/build/*
+poshet/thirdparty/mimetic/*
 ./Poshet
 
 */CMakeFiles/*
