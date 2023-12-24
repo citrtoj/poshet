@@ -27,7 +27,6 @@ protected:
 
 public:
     Session();
-    ~Session();
     void setLoginData(const std::vector<std::string> data);
     void connectAndLoginToServers();
 

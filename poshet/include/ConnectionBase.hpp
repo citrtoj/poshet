@@ -11,7 +11,7 @@
 #include <netdb.h>
 #include <stdlib.h>
 
-// C++ stdlib includes>
+// C++ stdlib includes
 #include <string>
 #include <iostream>
 #include <vector>

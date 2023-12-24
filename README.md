@@ -10,7 +10,7 @@ Librării/pachete externe necesare:
 - CMake
 - wxWidgets
 - SQLite3
-- Mimetic (al cărei cod sursă este inclus în folderul `thirdparty`).
+- Mimetic (dacă proiectul este descărcat prin GitHub, este necesară comanda `git submodule update --init --recursive` pentru a descărca codul ei sursă în `poshet/thirdparty`).
 
 Pentru a construi și compila proiectul fără fișierul `Makefile`, presupunând că vă aflați în același folder cu acest fișier:
 

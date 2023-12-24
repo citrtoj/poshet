@@ -96,3 +96,13 @@ void AppController::onMailCreatorClose() {
     // or the creator would have to send a pointer/index to itself... or something
     _isMailCreatorOpen = false;
 }
+
+AppController::~AppController() {
+    // destroy UI
+    _loginFrame->Destroy();
+    _dashboardFrame->Destroy();
+    _mailCreatorFrame->Destroy();
+
+    // destroy business-logic
+    delete _session;
+}

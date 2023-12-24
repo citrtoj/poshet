@@ -38,6 +38,9 @@ MailCreatorFrame::MailCreatorFrame() :
     // ADD RICHTEXTCTRL
 
     _contentsCtrl = new wxRichTextCtrl(mainPanel, wxID_ANY, "", wxDefaultPosition, wxSize(400, 600), wxBORDER_SUNKEN);
+    // wxImage::AddHandler(new wxPNGHandler);
+    // wxImage img("dashboardframesubscriber.png", wxBITMAP_TYPE_ANY);
+    // _contentsCtrl->AddImage(img);
     verticalSizer->Add(_contentsCtrl, wxSizerFlags().Border(wxALL, MARGIN).Expand());
 
     auto mainSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -66,6 +69,12 @@ void MailCreatorFrame::OnSend(wxCommandEvent& event) {
 }
 
 void MailCreatorFrame::OnClose(wxEvent& event) {
+    // wxStringOutputStream strm;
+    // wxRichTextBuffer buffer(_contentsCtrl->GetBuffer());
+    // wxRichTextXMLHandler xmlHandler;
+    // // mă simt de parcă trag cu dinții de output-ul ăsta
+    // xmlHandler.ExportXML(*(wxOutputStream*)(&strm), *(wxRichTextObject*)(_contentsCtrl->GetFocusObject()), 0);
+    // std::cout << strm.GetString();
     _subscriber->onMailCreatorClose();  //notifies in case it needs to save input, or something...
     event.Skip();
 }

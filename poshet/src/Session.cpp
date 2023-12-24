@@ -2,10 +2,6 @@
 
 Session::Session() {}
 
-Session::~Session() {
-    closeConnections();
-}
-
 void Session::setLoginData(const std::vector<std::string> data) {
     std::cout << "[Session] Setting login data\n";
     _loginData = LoginData(data);
@@ -43,10 +39,10 @@ void Session::resetConnections() {
 }
 
 void Session::sendMail(const std::string& to, const std::string& subject, const std::string& rawBody) {
-    Mail mail(to, _loginData.emailAddress(), subject, rawBody);
-    _smtp.sendMail(mail);
+    // Mail mail(to, _loginData.emailAddress(), subject, rawBody);
+    // _smtp.sendMail(mail);
 
-    _shouldRefresh = true;
+    // _shouldRefresh = true;
 }
 
 void Session::refreshMail() {

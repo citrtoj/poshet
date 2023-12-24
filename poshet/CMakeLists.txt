@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(poshet VERSION 1.0)
 
-find_package(wxWidgets REQUIRED gl core base std richtext OPTIONAL_COMPONENTS net)
+find_package(wxWidgets REQUIRED gl core base std richtext net)
 find_package(SQLite3 REQUIRED)
 
 set(SOURCES
@@ -35,6 +35,7 @@ target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE ${wxWidgets_CXX_FLAGS})
 target_link_libraries(${CMAKE_PROJECT_NAME} 
   ${wxWidgets_LIBRARIES}
   sqlite3
+  mimetic
   pthread
   dl
 )

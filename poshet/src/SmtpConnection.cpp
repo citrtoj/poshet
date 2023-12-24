@@ -94,13 +94,23 @@ void SMTPConnection::closeConnection() {
 }
 
 void SMTPConnection::sendMail(const Mail& mail) {
-    auto to = mail.getHeader("To");
-    auto from = mail.getHeader("From");
+    try {
+        auto to = mail.getHeaderField("To");
+        auto from = mail.getHeaderField("From");
+        auto content = mail.plainText() + "\r\n.";
 
-    log(execCommand("MAIL FROM: " + from));
-    log(execCommand("RCPT TO: " + to));
-    log(execCommand("DATA"));
-    log(execCommand(mail.plainText() + "\r\n."));
+        log(execCommand("MAIL FROM: " + from));
+        log(execCommand("RCPT TO: " + to));
+        log(execCommand("DATA"));
+        log(execCommand(content));
+    }
+    catch (MailException& exc) {
+        throw Exception("Could not get needed info in order to send mail");
+    }
+    catch (ServerException& exc) {
+        throw Exception("Server was unable to send mail");
+    }
+    
 }
 
 

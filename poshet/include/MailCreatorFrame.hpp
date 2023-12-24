@@ -2,6 +2,10 @@
 #include <wx/wx.h>
 #include <wx/strconv.h>
 #include <wx/richtext/richtextctrl.h>
+#include <wx/richtext/richtexthtml.h>
+#include <wx/stream.h>
+#include <wx/sstream.h>
+#include <wx/richtext/richtextxml.h>
 #include "FrameSubscribers.hpp"
 
 class MailCreatorFrame : public wxFrame {

@@ -30,6 +30,7 @@ protected:
     void warnUnimplemented();
 public:
     AppController(wxApp* app);
+    ~AppController();
 
     // subscriber overrides
     

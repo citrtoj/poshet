@@ -19,3 +19,11 @@ public:
         return _message.c_str();
     }
 };
+
+class MailException : public Exception {
+public:
+    MailException(const std::string& message) : Exception(message) {}
+    const char* what () {
+        return _message.c_str();
+    }
+};

@@ -1,8 +1,14 @@
 #pragma once
 #include <wx/wx.h>
+#include <wx/wxhtml.h>
 #include <wx/listctrl.h>
 #include <wx/richtext/richtextctrl.h>
 #include <wx/splitter.h>
+#include <wx/mstream.h>
+#include <wx/wfstream.h>
+#include <wx/base64.h>
+#include <wx/fs_mem.h>
+#include <mimetic/mimetic.h>
 #include <iostream>
 #include <string>
 #include <array>
@@ -38,7 +44,7 @@ protected:
     wxStaticText* _selectedMailTo;
     wxStaticText* _selectedMailSubject;
     wxStaticText* _selectedMailDate;
-    wxRichTextCtrl* _mailContentsCtrl;
+    wxHtmlWindow* _mailContentsCtrl;
     wxButton* _replyMailBtn;
     wxButton* _forwardMailBtn;
     wxButton* _deleteMailBtn;
@@ -57,6 +63,10 @@ protected:
     // internal functions
     void initViewMailPanel();
     void refreshViewMailPanel();
+
+    std::string memoryPrefix() const {
+        return "___DASHBOARD_FRAME_";
+    }
 
 public:
     DashboardFrame(const wxString& title);

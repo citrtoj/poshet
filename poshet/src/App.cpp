@@ -2,6 +2,7 @@
 
 bool App::OnInit() {
     controller = new AppController(this);
+    ::wxInitAllImageHandlers();
     return true;
 }
 

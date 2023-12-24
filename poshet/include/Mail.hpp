@@ -4,10 +4,15 @@
 #include <utility>
 #include <unordered_map>
 #include <sstream>
-
 #include <iostream>
+#include <utility>
+
+#include <mimetic/mimetic.h>
+using namespace mimetic;
 
 #include "Utils.hpp"
+#include "Exceptions.hpp"
+
 
 class Mail {
 protected:
@@ -17,21 +22,17 @@ protected:
     };
     Type _type;
 
+    MimeEntity* _mimeEntity = nullptr;
     std::string _plainText;
 
-    std::string _userInputBody;
-    //std::unordered_map<std::string, std::string> _attachments;
-    std::unordered_map<std::string, std::string> _headers;
 
-    void dumpToPlaintext();
+
+    //void dumpToPlaintext();
 
 public:
     Mail(const std::string& plainTextData);
-    Mail(const std::string& to, const std::string& from, const std::string& subject, const std::string& userInputBody);
+    //Mail(const std::string& to, const std::string& from, const std::string& subject, const std::string& userInputBody);
 
-    std::string getHeader(const std::string& key) const;
-    const std::string& plainText() const;
-    const auto& headers() const;
-
-    static std::unordered_map<std::string, std::string> mailHeaders(const std::string& input);
+    std::string plainText() const;
+    std::string getHeaderField(const std::string& key) const;
 };
