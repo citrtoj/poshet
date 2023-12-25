@@ -23,7 +23,7 @@ class SMTPConnection : public ConnectionBase {
         PROCESSED,
         RAW
     };
-    static constexpr int TIMEOUT_SECS = 60;
+    int _timeoutSecs = 60;
 protected:
     std::string _clientDomain = "localhost";
     

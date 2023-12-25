@@ -22,17 +22,18 @@ protected:
     };
     Type _type;
 
-    // MimeEntity* _mimeEntity = nullptr;
     std::string _plainText;
 
-    //void dumpToPlaintext();
+    GMimeMessage* _message = nullptr;
+    bool _isMimeMessageInit = false;
+    
+    void parsePlainText();
 
 public:
     Mail(const std::string& plainTextData);
     Mail(const Mail& rhs);
     Mail(Mail&& rhs);
     ~Mail();
-    //Mail(const std::string& to, const std::string& from, const std::string& subject, const std::string& userInputBody);
 
     std::string plainText() const;
     std::string getHeaderField(const std::string& key) const;

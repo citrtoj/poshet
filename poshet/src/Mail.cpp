@@ -1,47 +1,57 @@
 #include "Mail.hpp"
 
 Mail::Mail(const std::string& plainTextData) : _plainText(plainTextData) {
-    _type = Type::FROM_PLAINTEXT;
+    _type = Type::FROM_PLAINTEXT;   
+    parsePlainText(); 
+}
 
-    // std::istringstream i(plainTextData);
-    // _mimeEntity = new MimeEntity(i);
+void Mail::parsePlainText() {
+    GMimeParser* parser;
+    GMimeStream* stream;
+    stream = g_mime_stream_mem_new_with_buffer(_plainText.c_str(), _plainText.length()); 
+    parser = g_mime_parser_new_with_stream (stream);
+    g_object_unref (stream);
+    _message = g_mime_parser_construct_message (parser, NULL);
+    g_object_unref (parser);
+    _isMimeMessageInit = true;
 }
 
 Mail::Mail(const Mail& rhs) {
     _type = rhs._type;
     if (_type == FROM_PLAINTEXT) {
         _plainText = rhs._plainText;
-        // std::istringstream i(_plainText);
-        // _mimeEntity = new MimeEntity(i);
+        parsePlainText();
     }
     else {
-        // not the most intelligent thing ever but idk if I can directly clone the entity
-        // std::stringstream x;
-        // x << *(rhs._mimeEntity);
-        // _plainText = x.str();
-        // _mimeEntity = new MimeEntity(x);
+        throw MailException("unsupported");
     }
 }
 
 Mail::Mail(Mail&& rhs) : _plainText(std::move(rhs._plainText)) {
     _type = rhs._type;
-    // _mimeEntity = rhs._mimeEntity;
-    // rhs._mimeEntity = nullptr;
+    _message = rhs._message;
+    rhs._message = nullptr;
+    _isMimeMessageInit = rhs._isMimeMessageInit;
+    rhs._isMimeMessageInit = false;
 }
 
 Mail::~Mail() {
-    // delete _mimeEntity;
+	if (_isMimeMessageInit) {
+        g_object_unref (_message);
+    }
 }
 
 std::string Mail::getHeaderField(const std::string& key) const {
-    // if (!_mimeEntity->hasField(key)) {
-    //     throw MailException("Requested mail lacks requested header");
-    // }
-    // return _mimeEntity->header().field(key).value();
-    return "N/A";
+    if (!_isMimeMessageInit) {
+        throw MailException("Mail not parsed yet");
+    }
+    const char *headerValue = g_mime_object_get_header((GMimeObject*)_message, key.c_str());
+    if (headerValue == nullptr) {
+        throw MailException("Requested mail lacks requested header");
+    }
+    return std::string(headerValue);
 }
 
 std::string Mail::plainText() const {
     return _plainText;
-    // return _mimeEntity->body();
 }

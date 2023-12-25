@@ -10,6 +10,7 @@ Librării/pachete externe necesare:
 - CMake
 - wxWidgets
 - SQLite3
-- GMime.
+- GMime
+- GLib (pentru GMime)
 
 Dacă rularea `make` eșuează, puteți încerca rularea manuală a comenzilor din `Makefile`.

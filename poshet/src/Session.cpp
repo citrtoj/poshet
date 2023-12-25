@@ -1,6 +1,16 @@
 #include "Session.hpp"
 
+bool Session::_GMIME_INITIALIZED = false;
+
+void Session::_GMIME_INITIALIZE() {
+    if (!_GMIME_INITIALIZED) {
+        g_mime_init();
+        _GMIME_INITIALIZED = true;
+    }
+}
+
 Session::Session(FileManager* manager) : _fileManager(manager) {
+    _GMIME_INITIALIZE();
     _db.setPath(_fileManager->databasePath());
 }
 
@@ -22,6 +32,7 @@ void Session::connectAndLoginToServers() {
         _pop3.connectToServer();
         _smtp.connectToServer();
         _pop3.login(_loginData.pop3Username(), _loginData.password());
+        _db.addUser(_loginData.emailAddress());
         refreshMail();
     }
     catch (Exception& e) {

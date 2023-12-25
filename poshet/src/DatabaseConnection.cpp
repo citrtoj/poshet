@@ -23,14 +23,28 @@ void DatabaseConnection::openDb() {
 }
 
 void DatabaseConnection::initTables() {
-    std::string mailsTableQuery("CREATE TABLE IF NOT EXISTS mails ( mail_id TEXT PRIMARY KEY, mailbox_id INTEGER, content TEXT );");
+    std::string mailsTableQuery("CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY, mail_address TEXT);");
     int code = sqlite3_exec(_db, mailsTableQuery.c_str(), nullptr, nullptr, nullptr);
     if (code) {
-        throw DatabaseException("Could not create databases!");
+        throw DatabaseException("Could not create database table: users");
+    }
+    mailsTableQuery = "CREATE TABLE IF NOT EXISTS mail (mail_id INTEGER PRIMARY KEY, user_id INTEGER, tag TEXT, FOREIGN KEY(user_id) REFERENCES users(user_id));" ;
+    code = sqlite3_exec(_db, mailsTableQuery.c_str(), nullptr, nullptr, nullptr);
+    if (code) {
+        throw DatabaseException("Could not create database table: mail");
     }
 }
 
 void DatabaseConnection::init() {
     openDb();
     initTables();
+}
+
+void DatabaseConnection::addUser(const std::string& mailAddress) {
+    // todo: escape possible 's and all
+    std::string query = "INSERT OR IGNORE INTO users (mail_address) VALUES ('" + mailAddress + "');";
+    int code = sqlite3_exec(_db, query.c_str(), nullptr, nullptr, nullptr);
+    if (code) {
+        throw DatabaseException("Could not add user to database");
+    }
 }

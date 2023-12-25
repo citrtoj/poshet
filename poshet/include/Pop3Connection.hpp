@@ -24,20 +24,6 @@ class POP3Connection : public ConnectionBase {
         RawMailData(size_t index, size_t byteSize) : index(index), byteSize(byteSize) {}
         RawMailData() {}
     };
-    enum Command {
-        // not sure if I'll need these
-        UNDEFINED,
-        QUIT,
-        STAT,
-        LIST,
-        RETR,
-        DELE,
-        NOOP,
-        RSET,
-        UIDL,
-        USER,
-        PASS
-    };
     enum State {
         DISCONNECTED,
         DISCONNECTING,
@@ -48,7 +34,7 @@ class POP3Connection : public ConnectionBase {
         PROCESSED,
         RAW
     };
-    static constexpr int TIMEOUT_SECS = 60;
+    int _timeoutSecs = 60;
 protected:
 
     std::string _user, _pass;

@@ -15,6 +15,9 @@
 
 class Session {
 protected:
+    static bool _GMIME_INITIALIZED;
+    static void _GMIME_INITIALIZE();
+
     POP3Connection _pop3;
     SMTPConnection _smtp;
     DatabaseConnection _db;
@@ -25,13 +28,13 @@ protected:
     std::vector<Mail> _mails;
     int _currentMail;
     
-    // for future use
     bool _shouldRefreshConnection = false;
     bool _shouldRepopulateMail = true;
 
     void refreshMail();
 
 public:
+
     Session(FileManager* manager);
     ~Session();
     void setLoginData(const std::vector<std::string> data);

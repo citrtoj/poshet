@@ -141,7 +141,7 @@ void POP3Connection::keepAlive() {
     while(true) {
         {
             std::unique_lock<std::mutex> lock(_stateMutex);
-            auto result = cv.wait_for(lock, std::chrono::seconds(TIMEOUT_SECS), [this]() {return _state != State::TRANSACTION;});
+            auto result = cv.wait_for(lock, std::chrono::seconds(_timeoutSecs), [this]() {return _state != State::TRANSACTION;});
             if (result == true) {
                 break;
             }
