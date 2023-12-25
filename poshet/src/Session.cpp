@@ -61,8 +61,7 @@ void Session::refreshMail() {
     _shouldRefreshConnection = true;
     _mails.clear();
     for (const auto& x : rawMail) {
-        Mail tempMail = Mail(x.plainData);
-        _mails.push_back(tempMail);
+        _mails.push_back(Mail(x.plainData));
     }
 }
 

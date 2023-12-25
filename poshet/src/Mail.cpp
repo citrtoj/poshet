@@ -1,28 +1,36 @@
 #include "Mail.hpp"
 
-// code snippet from Mimetic
-void printMimeStructure(MimeEntity* pMe, int tabcount = 0)
-{
-	Header& h = pMe->header();
-	for(int c = tabcount; c > 0; --c) {
-		std::cout << "    ";
-    }
-	std::cout << h.contentType() << "\n";
-    if (h.contentType().type() == "image")  {
-        std::cout << pMe->body();
-    }
-	MimeEntityList& parts = pMe->body().parts();
-	MimeEntityList::iterator mbit = parts.begin(), meit = parts.end();
-	for(; mbit != meit; ++mbit) {
-		printMimeStructure(*mbit, 1 + tabcount);
-    }
-}
-
 Mail::Mail(const std::string& plainTextData) : _plainText(plainTextData) {
     _type = Type::FROM_PLAINTEXT;
 
     std::istringstream i(plainTextData);
     _mimeEntity = new MimeEntity(i);
+}
+
+Mail::Mail(const Mail& rhs) {
+    _type = rhs._type;
+    if (_type == FROM_PLAINTEXT) {
+        _plainText = rhs._plainText;
+        std::istringstream i(_plainText);
+        _mimeEntity = new MimeEntity(i);
+    }
+    else {
+        // not the most intelligent thing ever but idk if I can directly clone the entity
+        std::stringstream x;
+        x << *(rhs._mimeEntity);
+        _plainText = x.str();
+        _mimeEntity = new MimeEntity(x);
+    }
+}
+
+Mail::Mail(Mail&& rhs) : _plainText(std::move(rhs._plainText)) {
+    _type = rhs._type;
+    _mimeEntity = rhs._mimeEntity;
+    rhs._mimeEntity = nullptr;
+}
+
+Mail::~Mail() {
+    delete _mimeEntity;
 }
 
 std::string Mail::getHeaderField(const std::string& key) const {
