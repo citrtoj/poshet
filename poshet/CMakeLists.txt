@@ -11,6 +11,7 @@ set(SOURCES
     src/main.cpp
     src/Config.cpp
     src/Utils.cpp
+    src/FileManager.cpp
     src/App.cpp
     src/Mail.cpp
     src/AppController.cpp

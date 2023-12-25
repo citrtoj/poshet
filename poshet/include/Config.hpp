@@ -6,11 +6,9 @@ class Config {
 public:
     static Config& getInstance();
 
-    std::string APP_NAME;
-    std::string DB_PATH;
+    std::string _appName;
 
-    int RES_HEIGHT;
-    int RES_WIDTH;
+    // open config at startup... presume that there's a config.txt file right next to the executable
 private:
     Config();
 };

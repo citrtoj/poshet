@@ -1,6 +1,5 @@
 #pragma once
 
-// POSIX includes
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -11,7 +10,6 @@
 #include <netdb.h>
 #include <stdlib.h>
 
-// C++ stdlib includes
 #include <string>
 #include <iostream>
 #include <vector>

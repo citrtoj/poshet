@@ -35,16 +35,16 @@ MailCreatorFrame::MailCreatorFrame() :
 
     verticalSizer->Add(headerSizer, 0, wxEXPAND | wxALL, MARGIN);
 
-    // ADD RICHTEXTCTRL
-
     _contentsCtrl = new wxRichTextCtrl(mainPanel, wxID_ANY, "", wxDefaultPosition, wxSize(400, 600), wxBORDER_SUNKEN);
-    // wxImage::AddHandler(new wxPNGHandler);
     // wxImage img("dashboardframesubscriber.png", wxBITMAP_TYPE_ANY);
     // _contentsCtrl->AddImage(img);
+    // auto x = new wxRichTextHTMLHandler();
+    // x->SaveFile(&(_contentsCtrl->GetBuffer()), wxString("encoded.txt"));
+
     verticalSizer->Add(_contentsCtrl, wxSizerFlags().Border(wxALL, MARGIN).Expand());
 
     auto mainSizer = new wxBoxSizer(wxHORIZONTAL);
-    // max-width: 75%%;
+    // max-width: 75%;
     mainSizer->AddStretchSpacer(1);
     mainSizer->Add(verticalSizer, 6);
     mainSizer->AddStretchSpacer(1);

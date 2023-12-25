@@ -1,19 +1,6 @@
 #pragma once
 
-#include <poll.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <errno.h>
-#include <unistd.h>
-#include <string.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <stdlib.h>
-#include <sys/wait.h>
-
 #include <string>
-#include <sstream>
 #include <iostream>
 #include <unordered_map>
 #include <vector>
@@ -23,9 +10,7 @@
 #include <condition_variable>
 #include <atomic>
 
-#include "Utils.hpp"
-#include "DatabaseConnection.hpp"
-#include "Exceptions.hpp"
+#include "Mail.hpp"
 #include "ConnectionBase.hpp"
 
 class POP3Connection : public ConnectionBase {

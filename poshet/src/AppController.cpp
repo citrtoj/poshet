@@ -2,10 +2,17 @@
 
 AppController::AppController(wxApp* app) :
     _mainApp(app),
-    _session(new Session()),
     _loginFrame(new LoginFrame("Login to Poshet")),
     _dashboardFrame(new DashboardFrame("Poshet"))
 {
+    // perhaps get config settings before this??
+    try {
+        _fileManager = new FileManager();
+        _session = new Session(_fileManager);
+    }
+    catch (Exception& e) {
+        wxMessageBox(e.what(), "Error", wxOK | wxICON_ERROR);
+    }
     _loginFrame->subscribe(this);
     _dashboardFrame->subscribe(this);
 
@@ -31,7 +38,7 @@ void AppController::login() {
         _session->connectAndLoginToServers();
         _loginFrame->Hide();
         _dashboardFrame->Show();
-        this->onRefreshMailList();
+        getSetMail();
     }
     catch (Exception& e) {
         _loginFrame->showError(e.what());
@@ -39,7 +46,11 @@ void AppController::login() {
 }
 
 void AppController::onRefreshMailList() {
-    const auto& mails = _session->retrieveMail();
+    getSetMail(true);
+}
+
+void AppController::getSetMail(bool force) {
+    const auto& mails = _session->retrieveMail(force);
     _dashboardFrame->setMailList(mails);
 }
 
@@ -69,8 +80,7 @@ void AppController::onForwardMail() {
 void AppController::onDeleteMail() {
     auto selected = _dashboardFrame->selected();
     _session->deleteMail(selected);
-    auto mails = _session->retrieveMail();
-    _dashboardFrame->setMailList(mails);
+    getSetMail(true);
 }
 
 void AppController::onMailCreatorSend() {
@@ -104,5 +114,6 @@ AppController::~AppController() {
     _mailCreatorFrame->Destroy();
 
     // destroy business-logic
+    delete _fileManager;
     delete _session;
 }

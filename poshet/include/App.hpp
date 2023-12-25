@@ -1,7 +1,8 @@
 #pragma once
-#include <wx/wx.h>
 #include <string>
 #include <iostream>
+
+#include <wx/wx.h>
 
 #include "AppController.hpp"
 

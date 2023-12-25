@@ -1,9 +1,9 @@
 #pragma once
+
 #include <string>
 #include <vector>
 #include <iostream>
 #include <array>
-#include <regex>
 
 #include "Exceptions.hpp"
 

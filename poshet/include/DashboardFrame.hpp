@@ -1,4 +1,11 @@
 #pragma once
+
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <array>
+#include <unordered_map>
+
 #include <wx/wx.h>
 #include <wx/wxhtml.h>
 #include <wx/listctrl.h>
@@ -9,10 +16,6 @@
 #include <wx/base64.h>
 #include <wx/fs_mem.h>
 #include <mimetic/mimetic.h>
-#include <iostream>
-#include <string>
-#include <array>
-#include <unordered_map>
 
 #include "Mail.hpp"
 #include "FrameSubscribers.hpp"
@@ -51,6 +54,7 @@ protected:
 
     // wxWidgets-specific event handlers
     void OnListBoxEvent(wxCommandEvent& e);
+    void OnViewMailResize(wxSplitterEvent& e);
     void OnClose(wxEvent& e);
     void OnRefreshMailList(wxCommandEvent& e);
     void OnNewMail(wxCommandEvent& e);
@@ -63,6 +67,7 @@ protected:
     // internal functions
     void initViewMailPanel();
     void refreshViewMailPanel();
+    void resetSash();
 
     std::string memoryPrefix() const {
         return "___DASHBOARD_FRAME_";

@@ -1,12 +1,14 @@
 #pragma once
-#include <wx/wx.h>
+
 #include <tuple>
 #include <iostream>
 #include <string>
+
+#include <wx/wx.h>
+
 #include "Session.hpp"
 #include "LoginData.hpp"
 #include "FrameSubscribers.hpp"
-
 
 class LoginFrame : public wxFrame {
 protected:
