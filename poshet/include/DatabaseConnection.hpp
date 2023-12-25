@@ -24,5 +24,5 @@ public:
     void setPath(const std::string& dbPath);
     void init(); // opens db, creates tables if they don't exist
 
-    void addUser(const std::string& mailAddress);
+    void addUser(const std::string& mailAddress, const std::string& incomingServer);
 };

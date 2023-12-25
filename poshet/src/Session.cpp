@@ -32,7 +32,7 @@ void Session::connectAndLoginToServers() {
         _pop3.connectToServer();
         _smtp.connectToServer();
         _pop3.login(_loginData.pop3Username(), _loginData.password());
-        _db.addUser(_loginData.emailAddress());
+        _db.addUser(_loginData.emailAddress(), _loginData.pop3Domain());
         refreshMail();
     }
     catch (Exception& e) {
