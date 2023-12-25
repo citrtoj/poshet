@@ -28,15 +28,16 @@ set(SOURCES
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${wxWidgets_INCLUDE_DIRS})
-message(${wxWidgets_LIBRARIES})
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${wxWidgets_INCLUDE_DIRS} /usr/include/gmime-3.0 /usr/include/libmount /usr/include/blkid /usr/include/glib-2.0 /usr/lib/x86_64-linux-gnu/glib-2.0/include)
 
 target_compile_definitions(${CMAKE_PROJECT_NAME}  PUBLIC ${wxWidgets_DEFINITIONS})
 target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE ${wxWidgets_CXX_FLAGS})
 target_link_libraries(${CMAKE_PROJECT_NAME} 
   ${wxWidgets_LIBRARIES}
   sqlite3
-  mimetic
+  gmime-3.0
+  gio-2.0 gobject-2.0
+  glib-2.0
   pthread
   dl
 )

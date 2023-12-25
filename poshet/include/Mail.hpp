@@ -8,9 +8,7 @@
 #include <iostream>
 #include <utility>
 #include <sstream>
-
-#include <mimetic/mimetic.h>
-using namespace mimetic;
+#include <gmime/gmime.h>
 
 #include "Utils.hpp"
 #include "Exceptions.hpp"
@@ -24,7 +22,7 @@ protected:
     };
     Type _type;
 
-    MimeEntity* _mimeEntity = nullptr;
+    // MimeEntity* _mimeEntity = nullptr;
     std::string _plainText;
 
     //void dumpToPlaintext();
