@@ -9,7 +9,7 @@
 #include <utility>
 #include <sstream>
 
-#include <gmime/gmime.h>
+#include <vmime/vmime.hpp>
 
 #include "Utils.hpp"
 #include "Exceptions.hpp"
@@ -25,7 +25,7 @@ protected:
 
     std::string _plainText;
 
-    GMimeMessage* _message;
+    // GMimeMessage* _message;
     
     void parsePlainText();
 

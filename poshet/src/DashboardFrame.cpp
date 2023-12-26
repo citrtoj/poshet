@@ -198,6 +198,10 @@ void DashboardFrame::updateViewMailPanel(const Mail& mail) {
     _selectedMailFrom->SetLabel("From: " + mail.getHeaderField("From"));
     _selectedMailTo->SetLabel("To: " + mail.getHeaderField("To"));
     _selectedMailSubject->SetLabel(mail.getHeaderField("Subject"));
+
+    // parse ???????? get what, exactly???
+    // this will be a nightmare
+
     refreshViewMailPanel();
 }
 

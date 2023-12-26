@@ -16,8 +16,8 @@
 
 class Session {
 protected:
-    static bool _GMIME_INITIALIZED;
-    static void _GMIME_INITIALIZE();
+    // static bool _GMIME_INITIALIZED;
+    // static void _GMIME_INITIALIZE();
 
     POP3Connection _pop3;
     SMTPConnection _smtp;

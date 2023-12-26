@@ -10,8 +10,7 @@ Librării/pachete externe necesare:
 - CMake
 - wxWidgets
 - SQLite3
-- GMime
-- GLib (pentru GMime)
+- VMime
 - OpenSSL
 
 Dacă rularea `make` eșuează, puteți încerca rularea manuală a comenzilor din `Makefile`.
