@@ -9,7 +9,7 @@
 #include "DatabaseConnection.hpp"
 #include "Config.hpp"
 #include "FileManager.hpp"
-#include "LoginData.hpp"
+#include "UserData.hpp"
 #include "Mail.hpp"
 #include "Utils.hpp"
 
@@ -23,7 +23,7 @@ protected:
     DatabaseConnection _db;
 
     FileManager* _fileManager;
-    LoginData _loginData;
+    UserData _userData;
 
     std::vector<Mail> _mails;
     int _currentMail;

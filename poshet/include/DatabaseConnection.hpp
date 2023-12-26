@@ -25,4 +25,5 @@ public:
     void init(); // opens db, creates tables if they don't exist
 
     void addUser(const std::string& mailAddress, const std::string& incomingServer);
+    int getUser(const std::string& mailAddress, const std::string& incomingServer);
 };

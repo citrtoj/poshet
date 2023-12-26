@@ -7,7 +7,7 @@
 #include <wx/wx.h>
 
 #include "Session.hpp"
-#include "LoginData.hpp"
+#include "UserData.hpp"
 #include "FrameSubscribers.hpp"
 
 class LoginFrame : public wxFrame {

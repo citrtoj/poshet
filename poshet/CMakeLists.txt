@@ -9,18 +9,21 @@ find_package(SQLite3 REQUIRED)
 
 set(SOURCES
     src/main.cpp
+
     src/Config.cpp
     src/Utils.cpp
-    src/FileManager.cpp
-    src/App.cpp
-    src/Mail.cpp
     src/AppController.cpp
+
+    src/Mail.cpp
     src/Session.cpp
+    src/UserData.cpp
+    src/FileManager.cpp
     src/ConnectionBase.cpp
     src/SmtpConnection.cpp
     src/Pop3Connection.cpp
     src/DatabaseConnection.cpp
-    src/LoginData.cpp
+
+    src/App.cpp
     src/LoginFrame.cpp
     src/DashboardFrame.cpp
     src/MailCreatorFrame.cpp

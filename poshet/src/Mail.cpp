@@ -2,7 +2,7 @@
 
 Mail::Mail(const std::string& plainTextData) : _plainText(plainTextData) {
     _type = Type::FROM_PLAINTEXT;   
-    parsePlainText(); 
+    parsePlainText();
 }
 
 void Mail::parsePlainText() {
@@ -17,18 +17,21 @@ void Mail::parsePlainText() {
 }
 
 Mail::Mail(const Mail& rhs) {
+    std::cout << "Copy ctor\n";
     _type = rhs._type;
     if (_type == FROM_PLAINTEXT) {
         _plainText = rhs._plainText;
         parsePlainText();
     }
     else {
-        throw MailException("unsupported");
+        throw MailException("Unsupported");
     }
 }
 
-Mail::Mail(Mail&& rhs) : _plainText(std::move(rhs._plainText)) {
+Mail::Mail(Mail&& rhs) {
+    std::cout << "Move ctor\n";
     _type = rhs._type;
+    _plainText = rhs._plainText;
     _message = rhs._message;
     rhs._message = nullptr;
     _isMimeMessageInit = rhs._isMimeMessageInit;

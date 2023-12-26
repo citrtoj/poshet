@@ -11,8 +11,8 @@ namespace Utils {
         while (nbytes - readSoFar > 0) {
             int readCode = read(fd, (uint8_t*)buffer + readSoFar, nbytes - readSoFar);
             if (readCode < 1) {
-                if (readSoFar == 0) {
-                    return readCode;
+                if (readCode == 0) {
+                    return readSoFar;
                 }
                 else {
                     return -readSoFar - 1;
@@ -32,8 +32,8 @@ namespace Utils {
         while (nbytes - writtenSoFar > 0) {
             int writeCode = write(fd, (uint8_t*)buffer + writtenSoFar, nbytes - writtenSoFar);
             if (writeCode < 1) {
-                if (writtenSoFar == 0) {
-                    return writeCode;
+                if (writeCode == 0) {
+                    return writtenSoFar;
                 }
                 else {
                     return -writtenSoFar - 1;

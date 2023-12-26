@@ -7,4 +7,4 @@ install:
 	+ sudo apt install gmime-bin libgmime-3.0-0 libgmime-3.0-dev libgmime-3.0-doc
 
 build:
-	+ cd poshet && cmake -S . -B build && cd build && make && mv ./poshet ../../Poshet
+	cd poshet && cmake -S . -B build && cd build && make && mv ./poshet ../../Poshet

@@ -48,3 +48,19 @@ void DatabaseConnection::addUser(const std::string& mailAddress, const std::stri
         throw DatabaseException("Could not add user to database");
     }
 }
+
+int DatabaseConnection::getUser(const std::string& mailAddress, const std::string& incomingServer) {
+    int result = -1;
+    std::string query = "SELECT user_id FROM users WHERE mail_address like '" + mailAddress + "' AND incoming_server like '" + incomingServer + "';";
+    sqlite3_stmt *stmt;
+
+    if (sqlite3_prepare_v2(_db, query.c_str(), -1, &stmt, NULL) != SQLITE_OK) {
+        throw DatabaseException(std::string("Can't prepare statement: ") + sqlite3_errmsg(_db));
+    }
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        int column1_value = sqlite3_column_int(stmt, 0);
+        result = column1_value;
+    }
+    sqlite3_finalize(stmt);
+    return result;
+}

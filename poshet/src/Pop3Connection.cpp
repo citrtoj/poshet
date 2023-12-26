@@ -261,6 +261,8 @@ std::vector<POP3Connection::RawMailData> POP3Connection::retrieveAllMail() {
 
     std::stringstream strm(serverResponse, std::ios_base::in);
     strm >> buffer >> messageNumber >> buffer;
+
+    mailVector.reserve(messageNumber);
     
     for (int i = 1; i <= messageNumber; ++i) {
         int index, byteSize;

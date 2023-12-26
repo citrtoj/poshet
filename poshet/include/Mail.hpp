@@ -8,6 +8,7 @@
 #include <iostream>
 #include <utility>
 #include <sstream>
+
 #include <gmime/gmime.h>
 
 #include "Utils.hpp"
@@ -24,12 +25,12 @@ protected:
 
     std::string _plainText;
 
-    GMimeMessage* _message = nullptr;
-    bool _isMimeMessageInit = false;
+    GMimeMessage* _message;
     
     void parsePlainText();
 
 public:
+    bool _isMimeMessageInit;
     Mail(const std::string& plainTextData);
     Mail(const Mail& rhs);
     Mail(Mail&& rhs);
