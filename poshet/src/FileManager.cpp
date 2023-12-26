@@ -124,7 +124,7 @@ std::string FileManager::getMail(const std::string& mailboxName, const std::stri
         readCode = Utils::readLoop(mailFD , buffer, BUFFER_SIZE * sizeof(char));
         // todo: error handling. if == 1...
         readSoFar += readCode;
-        std::cout << "readcode:" << readSoFar << " " << readCode << "\n";
+        std::cout << "[FileManager] Readcode: " << readCode << "\n";
         result += buffer;
     }
     while (readCode == BUFFER_SIZE); 

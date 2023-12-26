@@ -28,15 +28,17 @@ protected:
 
     std::vector<Mail> _mails;
     int _currentMail;
+    std::string _currentTag;
     
     bool _shouldRefreshConnection = false;
     bool _shouldRepopulateMail = true;
 
     void loadMail(int count = -1);
 
-    void getAllPop3AndSaveLocally();
-    void getMailListFromDb(size_t size);
-    void dropFromPop3(/* list of UIDLs marked as deleted */);
+    void getAllPop3AndSaveLocally(); // might either do this only once, at startup, or offer a Refresh button
+    
+    std::vector<std::string> getAllMailIdsFromDatabase();
+    void dropUIDLFromPop3(/* list of UIDLs marked as deleted */);
 
 public:
     Session(FileManager* manager);
@@ -52,6 +54,4 @@ public:
     void deleteMail(long idx);
 
     void sendMail(const std::string& to, const std::string& subject, const std::string& rawBody);
-
-
 };

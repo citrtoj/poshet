@@ -9,6 +9,8 @@
 #include <mutex>
 #include <condition_variable>
 #include <atomic>
+#include <sstream>
+#include <iterator>
 
 #include "Mail.hpp"
 #include "ConnectionBase.hpp"

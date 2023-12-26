@@ -3,6 +3,7 @@
 #include <string>
 #include <chrono>
 #include <ctime>
+#include <vector>
 
 #include <sqlite3.h>
 
@@ -29,5 +30,7 @@ public:
     void addUser(const std::string& mailAddress, const std::string& incomingServer);
     int getUser(const std::string& mailAddress, const std::string& incomingServer);
 
-    void addMail(const std::string& mailId, int, const std::string tag, const std::string& uidl);
+    void addMail(const std::string& mailId, int userId, const std::string& uidl, const std::string tag = "Inbox");
+    std::vector<std::string> getMailIdsOfUser(int id);
+
 };

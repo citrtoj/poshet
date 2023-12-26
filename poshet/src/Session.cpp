@@ -80,7 +80,7 @@ void Session::getAllPop3AndSaveLocally() {
             // save to fileManager, then to db
             _fileManager->saveMail(_userData.pop3Domain(), fullMailId, mail.plainText());
             // if this didn't fail, save all related info to db
-            _db.addMail(fullMailId, _userData.dbId(), "", uidl);
+            _db.addMail(fullMailId, _userData.dbId(), uidl);
         }
         catch (ServerException& e) {
             std::cout << "[Session] SERVER WARNING: " << e.what() << "\n";
@@ -96,12 +96,21 @@ void Session::getAllPop3AndSaveLocally() {
     _shouldRefreshConnection = true;
 }
 
+std::vector<std::string> Session::getAllMailIdsFromDatabase() {
+    return _db.getMailIdsOfUser(_userData.dbId());
+}
+
 void Session::loadMail(int count) {
+    _mails.clear();
     getAllPop3AndSaveLocally();
     
+    auto mailIds = getAllMailIdsFromDatabase();
+    _mails.reserve(mailIds.size());
+    for (auto mailId : mailIds) {
+        auto x = _fileManager->getMail(_userData.pop3Domain(), mailId);
+        _mails.push_back(Mail(x));
+    }
 
-    _mails.clear(); // we'll fix this
-    // _mails.reserve(count);
 }
 
 const std::vector<Mail>& Session::retrieveMail(bool force) {

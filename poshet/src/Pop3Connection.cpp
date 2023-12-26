@@ -259,25 +259,36 @@ std::vector<POP3Connection::RawMailData> POP3Connection::retrieveAllMail() {
     std::string buffer;
     size_t messageNumber;
 
-    std::stringstream strm(serverResponse, std::ios_base::in);
-    strm >> buffer >> messageNumber >> buffer;
+    std::istringstream responseStream(serverResponse);
+    responseStream >> buffer >> messageNumber >> buffer;
 
     mailVector.reserve(messageNumber);
     
     for (int i = 1; i <= messageNumber; ++i) {
         int index, byteSize;
-        strm >> index >> byteSize;
+        responseStream >> index >> byteSize;
+        auto data = RawMailData(index, byteSize);
         try {
-            auto data = RawMailData(index, byteSize);
             data.plainData = retrieveOneMail(data.index, data.byteSize);
-            data.UIDL = execCommand("UIDL " + std::to_string(data.index), false, PROCESSED);
-            std::cout << data.UIDL << "\n";
-            mailVector.push_back(data);
         }
         catch(ServerException& e) {
-            // TODO: REPLACE
+            // TODO: actually handle this exception???
             std::cout << e.what() << "\n";
-        }  
+        }
+        try {
+            auto UIDLResponse = execCommand("UIDL " + std::to_string(data.index), false, PROCESSED);
+            std::istringstream uidlStream(UIDLResponse);
+            std::string responsePrefix, mailIndex, UIDL;
+            uidlStream >> responsePrefix >> mailIndex >> UIDL;
+            data.UIDL = UIDL;
+        }
+        catch(ServerException& e) {
+            // it means that this pop3 server doesn't even have a UIDL feature in the first place. Unlikely, but it happens
+            // TODO: actually handle this case
+            std::cout << e.what() << "\n";
+        }
+
+        mailVector.push_back(data);
     }
     return mailVector;
 }
