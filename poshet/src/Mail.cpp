@@ -17,7 +17,7 @@ void Mail::parsePlainText() {
 }
 
 Mail::Mail(const Mail& rhs) {
-    std::cout << "Copy ctor\n";
+    std::cout << "[Mail] Copy ctor\n";
     _type = rhs._type;
     if (_type == FROM_PLAINTEXT) {
         _plainText = rhs._plainText;
@@ -29,7 +29,7 @@ Mail::Mail(const Mail& rhs) {
 }
 
 Mail::Mail(Mail&& rhs) {
-    std::cout << "Move ctor\n";
+    std::cout << "[Mail] Move ctor\n";
     _type = rhs._type;
     _plainText = rhs._plainText;
     _message = rhs._message;
@@ -55,6 +55,6 @@ std::string Mail::getHeaderField(const std::string& key) const {
     return std::string(headerValue);
 }
 
-std::string Mail::plainText() const {
+const std::string& Mail::plainText() const {
     return _plainText;
 }

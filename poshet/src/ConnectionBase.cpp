@@ -18,7 +18,7 @@ void ConnectionBase::openSocket() {
     }
     _socket = socket(AF_INET, SOCK_STREAM, 0);
     if (_socket == -1) {
-        throw Exception("Could not initialize socket");
+        throw ConnectException("Could not initialize socket");
     }
     _isSocketOpen = true;
 }
@@ -37,7 +37,7 @@ bool ConnectionBase::isSocketOpen() {
 
 void ConnectionBase::connectSocket() {
     if (_host.empty()) {
-        throw Exception("Cannot resolve empty server address");
+        throw ConnectException("Cannot resolve empty server address");
     }
     struct addrinfo *result, *resultIt;
     struct addrinfo hints;
@@ -45,7 +45,7 @@ void ConnectionBase::connectSocket() {
     hints.ai_family = AF_INET;
     int status = getaddrinfo(_host.c_str(), _port.c_str(), &hints, &result);
     if (status != 0) {
-        throw Exception("Could not resolve address of server (" + _host + ":" + _port + ")");
+        throw ConnectException("Could not resolve address of server (" + _host + ":" + _port + ")");
     }
     for (resultIt = result; resultIt != NULL; resultIt = resultIt->ai_next) {
         _socket = socket(resultIt->ai_family, resultIt->ai_socktype, resultIt->ai_protocol);
@@ -59,7 +59,7 @@ void ConnectionBase::connectSocket() {
     }
 
     if (resultIt == NULL) {
-        throw Exception("Could not connect to server (" + _host + ":" + _port + ")");
+        throw ConnectException("Could not connect to server (" + _host + ":" + _port + ")");
     }
     freeaddrinfo(result);
 }

@@ -6,6 +6,7 @@ project(poshet VERSION 1.0)
 
 find_package(wxWidgets REQUIRED gl core base std richtext net)
 find_package(SQLite3 REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 set(SOURCES
     src/main.cpp
@@ -41,6 +42,5 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
   gmime-3.0
   gio-2.0 gobject-2.0
   glib-2.0
-  pthread
-  dl
+  OpenSSL::SSL
 )

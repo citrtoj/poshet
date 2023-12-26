@@ -5,6 +5,7 @@ install:
 	+ sudo apt install libwxgtk3.0-gtk3-0v5 libwxgtk3.0-gtk3-dev
 	+ sudo apt install sqlite3 libsqlite3-dev
 	+ sudo apt install gmime-bin libgmime-3.0-0 libgmime-3.0-dev libgmime-3.0-doc
+	+ sudo apt install openssl
 
 build:
 	cd poshet && cmake -S . -B build && cd build && make && mv ./poshet ../../Poshet

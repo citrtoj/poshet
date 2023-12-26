@@ -11,12 +11,16 @@ AppController::AppController(wxApp* app) :
         _session = new Session(_fileManager);
     }
     catch (Exception& e) {
-        wxMessageBox(e.what(), "Error", wxOK | wxICON_ERROR);
+        showException(e.what());
     }
     _loginFrame->subscribe(this);
     _dashboardFrame->subscribe(this);
 
     _loginFrame->Show(true);
+}
+
+void AppController::showException(const std::string& msg) {
+    wxMessageBox(msg, "Error", wxOK | wxICON_ERROR);
 }
 
 void AppController::warnUnimplemented() {
@@ -36,12 +40,17 @@ void AppController::login() {
     try {
         _session->setLoginData(_loginFrame->userInput());
         _session->connectAndLoginToServers();
-        _loginFrame->Hide();
-        _dashboardFrame->Show();
-        getSetMail();
     }
     catch (Exception& e) {
-        _loginFrame->showError(e.what());
+        showException(e.what());
+    }
+    try {
+        _loginFrame->Hide();
+        _dashboardFrame->Show();
+        getSetMail(true);
+    }
+    catch (Exception& e) {
+        showException(e.what());
     }
 }
 

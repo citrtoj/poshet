@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "Exceptions.hpp"
 #include "Pop3Connection.hpp"
 #include "SmtpConnection.hpp"
 #include "DatabaseConnection.hpp"
@@ -31,10 +32,13 @@ protected:
     bool _shouldRefreshConnection = false;
     bool _shouldRepopulateMail = true;
 
-    void refreshMail();
+    void loadMail(int count = -1);
+
+    void getAllPop3AndSaveLocally();
+    void getMailListFromDb(size_t size);
+    void dropFromPop3(/* list of UIDLs marked as deleted */);
 
 public:
-
     Session(FileManager* manager);
     ~Session();
     void setLoginData(const std::vector<std::string> data);
@@ -48,4 +52,6 @@ public:
     void deleteMail(long idx);
 
     void sendMail(const std::string& to, const std::string& subject, const std::string& rawBody);
+
+
 };

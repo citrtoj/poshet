@@ -28,7 +28,7 @@ void DatabaseConnection::initTables() {
     if (code) {
         throw DatabaseException("Could not create database table: users");
     }
-    mailsTableQuery = "CREATE TABLE IF NOT EXISTS mail (mail_id INTEGER PRIMARY KEY, user_id INTEGER, tag TEXT, FOREIGN KEY(user_id) REFERENCES users(user_id));" ;
+    mailsTableQuery = "CREATE TABLE IF NOT EXISTS mail (mail_id TEXT PRIMARY KEY, user_id INTEGER, tag TEXT, uidl TEXT, timestamp INTEGER NOT NULL, marked_for_deletion INTEGER DEFAULT 0 NOT NULL, FOREIGN KEY(user_id) REFERENCES users(user_id));" ;
     code = sqlite3_exec(_db, mailsTableQuery.c_str(), nullptr, nullptr, nullptr);
     if (code) {
         throw DatabaseException("Could not create database table: mail");
@@ -63,4 +63,20 @@ int DatabaseConnection::getUser(const std::string& mailAddress, const std::strin
     }
     sqlite3_finalize(stmt);
     return result;
+}
+
+void DatabaseConnection::addMail(const std::string& mailId, int userId, const std::string tag, const std::string& uidl) {
+    // momentan presupunem ca toate serverele au UIDL
+    auto currentTime = std::chrono::system_clock::now();
+    std::time_t currentTime_t = std::chrono::system_clock::to_time_t(currentTime);
+    int unixTimestamp = static_cast<int>(currentTime_t);
+
+//mailsTableQuery = "CREATE TABLE IF NOT EXISTS mail (mail_id TEXT PRIMARY KEY, user_id INTEGER, tag TEXT, uidl TEXT, timestamp INTEGER NOT NULL, marked_for_deletion INTEGER DEFAULT 0 NOT NULL, FOREIGN KEY(user_id) REFERENCES users(user_id));" ;
+
+
+    std::string query = "INSERT OR IGNORE INTO mail (mail_id, user_id, tag, uidl, timestamp) VALUES ('" + mailId + "', " + std::to_string(userId) + ", '" + tag + "', '" + uidl + "', " + std::to_string(unixTimestamp) + ");";
+    int code = sqlite3_exec(_db, query.c_str(), nullptr, nullptr, nullptr);
+    if (code) {
+        throw DatabaseException(std::string("Could not add mail to database: ") + sqlite3_errmsg(_db));
+    }
 }

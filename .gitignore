@@ -1,14 +1,9 @@
 poshet/build/*
-poshet/thirdparty/mimetic/*
 ./Poshet
-
 */CMakeFiles/*
-
 tmp/*
-TODO
-poshet/mail.db
 Poshet
-
+*.code-workspace
 docs/*.aux
 docs/*.fdb_latexmk
 docs/*.fls

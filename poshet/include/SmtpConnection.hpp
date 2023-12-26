@@ -29,6 +29,8 @@ protected:
     
     State _state = State::DISCONNECTED;
 
+    bool _enableSSL = false;
+
     std::thread _noopThread;
     bool _threadStarted = false;
     std::mutex _commandMutex;

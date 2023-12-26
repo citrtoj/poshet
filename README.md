@@ -12,5 +12,6 @@ Librării/pachete externe necesare:
 - SQLite3
 - GMime
 - GLib (pentru GMime)
+- OpenSSL
 
 Dacă rularea `make` eșuează, puteți încerca rularea manuală a comenzilor din `Makefile`.

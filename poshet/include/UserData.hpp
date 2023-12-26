@@ -20,6 +20,8 @@ private:
 
     int _dbId = -1;
 
+    bool _secure = false;
+
 public:
     static constexpr int MIN_ARGS = 5;
     

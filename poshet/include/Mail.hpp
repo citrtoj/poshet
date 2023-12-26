@@ -36,6 +36,6 @@ public:
     Mail(Mail&& rhs);
     ~Mail();
 
-    std::string plainText() const;
+    const std::string& plainText() const;
     std::string getHeaderField(const std::string& key) const;
 };

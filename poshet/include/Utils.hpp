@@ -9,11 +9,16 @@
 #include <stdint.h>
 
 #include <string>
+#include <iostream>
 #include <algorithm>
+
+#include <openssl/evp.h>
+#include <openssl/sha.h>
 
 namespace Utils {
     int readLoop(int fd, void* buffer, int nbytes);
     int writeLoop(int fd, const void* buffer, int nbytes);
 
     std::string strip(const std::string& str);
+    std::string sha256(const std::string& input);
 }

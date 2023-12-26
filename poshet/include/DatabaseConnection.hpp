@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <chrono>
+#include <ctime>
 
 #include <sqlite3.h>
 
@@ -26,4 +28,6 @@ public:
 
     void addUser(const std::string& mailAddress, const std::string& incomingServer);
     int getUser(const std::string& mailAddress, const std::string& incomingServer);
+
+    void addMail(const std::string& mailId, int, const std::string tag, const std::string& uidl);
 };

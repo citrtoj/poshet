@@ -33,6 +33,8 @@ protected:
     void login();
     void getSetMail(bool force = false);
     void warnUnimplemented();
+
+    void showException(const std::string& msg);
 public:
     AppController(wxApp* app);
     ~AppController();

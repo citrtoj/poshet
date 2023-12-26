@@ -56,4 +56,29 @@ namespace Utils {
 
         return (start < end) ? std::string(start, end) : std::string();
     }
+
+    std::string sha256(const std::string& input) {
+        EVP_MD_CTX *mdctx;
+        const EVP_MD *md;
+        unsigned char hash[SHA256_DIGEST_LENGTH];
+        unsigned int hashLen;
+        OpenSSL_add_all_digests();
+        md = EVP_get_digestbyname("sha256");
+        if (!md) {
+            return "";
+        }
+        mdctx = EVP_MD_CTX_new();
+        EVP_DigestInit_ex(mdctx, md, NULL);
+        EVP_DigestUpdate(mdctx, input.c_str(), input.length());
+        EVP_DigestFinal_ex(mdctx, hash, &hashLen);
+        EVP_MD_CTX_free(mdctx);
+        std::string hashedString;
+        for (int i = 0; i < hashLen; ++i) {
+            char hex[3];
+            sprintf(hex, "%02x", hash[i]);
+            hashedString += hex;
+        }
+
+        return hashedString;
+    }
 }

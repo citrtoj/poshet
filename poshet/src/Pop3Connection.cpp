@@ -267,14 +267,17 @@ std::vector<POP3Connection::RawMailData> POP3Connection::retrieveAllMail() {
     for (int i = 1; i <= messageNumber; ++i) {
         int index, byteSize;
         strm >> index >> byteSize;
-        mailVector.push_back(RawMailData(index, byteSize));
         try {
-            mailVector.back().plainData = retrieveOneMail(mailVector.back().index, mailVector.back().byteSize);
+            auto data = RawMailData(index, byteSize);
+            data.plainData = retrieveOneMail(data.index, data.byteSize);
+            data.UIDL = execCommand("UIDL " + std::to_string(data.index), false, PROCESSED);
+            std::cout << data.UIDL << "\n";
+            mailVector.push_back(data);
         }
-        catch (Exception& e) {
-            mailVector.pop_back();
-        }
-        
+        catch(ServerException& e) {
+            // TODO: REPLACE
+            std::cout << e.what() << "\n";
+        }  
     }
     return mailVector;
 }

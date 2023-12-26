@@ -19,6 +19,7 @@ class POP3Connection : public ConnectionBase {
     public:
         size_t index;
         size_t byteSize;
+        std::string UIDL;
         std::string plainData;
 
         RawMailData(size_t index, size_t byteSize) : index(index), byteSize(byteSize) {}
@@ -40,6 +41,8 @@ protected:
     std::string _user, _pass;
 
     State _state = State::DISCONNECTED;
+
+    bool _enableSSL = false;
 
     std::thread _noopThread;
     bool _threadStarted = false;
