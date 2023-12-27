@@ -25,7 +25,7 @@ protected:
 
     std::string _plainText;
 
-    // GMimeMessage* _message;
+    vmime::message* _message;
     
     void parsePlainText();
 

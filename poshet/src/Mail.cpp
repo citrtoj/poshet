@@ -6,8 +6,9 @@ Mail::Mail(const std::string& plainTextData) : _plainText(plainTextData) {
 }
 
 void Mail::parsePlainText() {
-    
-    
+    _message = new vmime::message;
+    _message->parse(_plainText);
+    _isMimeMessageInit = true;
 }
 
 Mail::Mail(const Mail& rhs) {
@@ -26,28 +27,27 @@ Mail::Mail(Mail&& rhs) {
     std::cout << "[Mail] Move ctor\n";
     _type = rhs._type;
     _plainText = rhs._plainText;
-    // _message = rhs._message;
-    // rhs._message = nullptr;
+    _message = rhs._message;
+    rhs._message = nullptr;
     _isMimeMessageInit = rhs._isMimeMessageInit;
     rhs._isMimeMessageInit = false;
 }
 
 Mail::~Mail() {
-	if (_isMimeMessageInit) {
-        // g_object_unref (_message);
-    }
+    delete _message;
 }
 
 std::string Mail::getHeaderField(const std::string& key) const {
     if (!_isMimeMessageInit) {
         throw MailException("Mail not parsed yet");
     }
-    return "N/A";
-    // const char *headerValue = g_mime_object_get_header((GMimeObject*)_message, key.c_str());
-    // if (headerValue == nullptr) {
-    //     throw MailException("Requested mail lacks requested header");
-    // }
-    // return std::string(headerValue);
+    if (_message->getHeader()->hasField(key)) {
+        return _message->getHeader()->getField(key)->getValue()->generate();
+    }
+    else {
+        return ""; //temporary
+    }
+    
 }
 
 const std::string& Mail::plainText() const {
