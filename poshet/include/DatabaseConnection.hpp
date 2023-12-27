@@ -34,3 +34,8 @@ public:
     std::vector<std::string> getMailIdsOfUser(int id);
 
 };
+
+class DatabaseException : public Exception {
+public:
+    DatabaseException(const std::string& message) : Exception(message) {}
+};

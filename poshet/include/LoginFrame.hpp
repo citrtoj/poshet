@@ -12,17 +12,15 @@
 
 class LoginFrame : public wxFrame {
 protected:
+    static wxTextCtrl* addTextCtrlToSizer(wxWindow* parent, const std::string& labelText, wxBoxSizer* sizer, bool censored = false, bool allowOnlyNumbers = false);
+    //static wxCheckBox* addCheckboxToSizer(wxWindow* parent, const std::string& labelText, wxBoxSizer* sizer);
+
     enum TextInputInfo {
         LABEL,
         STATICTEXT,
         TEXTCTRL,
         INPUTTYPE,
         CENSOR
-    };
-
-    enum InputType {
-        SINGLE,
-        MULTI
     };
 
     enum Censor {
@@ -32,9 +30,8 @@ protected:
 
     LoginFrameSubscriber* _subscriber;
 
-    std::vector<std::tuple<std::string, wxStaticText*, wxTextCtrl*, InputType, Censor>> _textInputs;
-    std::vector<wxStaticText*> _textLabels;
-    std::vector<wxTextCtrl*> _textControls;
+    // std::vector<std::tuple<std::string, wxStaticText*, wxTextCtrl*, Censor>> _textInputs;
+    wxTextCtrl* _fullName, *_emailAddress, *_password, *_pop3Domain, *_pop3Username, *_smtpDomain;
     wxButton* _loginButton;
     wxStatusBar* _statusBar;
 
@@ -45,7 +42,7 @@ protected:
 
 public:
     LoginFrame(const wxString& title);
-    std::vector<std::string> userInput();
+    UserData userInput();
     wxButton* loginButton();
 
     void subscribe(LoginFrameSubscriber* sub) {

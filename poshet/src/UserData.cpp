@@ -11,17 +11,22 @@ std::array<std::string, 2> UserData::splitEmailAddress(const std::string& addres
     };
 }
 
-UserData::UserData(const std::vector<std::string>& data) {
-    if (data.size() < UserData::MIN_ARGS) {
-        throw Exception("Not enough args for login data object");
-    }
-    _fullName = data[0];
-    _emailAddress = data[1];
+UserData::UserData(const std::string& fullName, const std::string& emailAddress, const std::string& password, const std::string& pop3Domain, const std::string& pop3Username, const std::string& smtpDomain, bool secure, bool smtpAuthPlain, const std::string& smtpUsername, int pop3Port, int smtpPort) {
+    _fullName = fullName;
+    _emailAddress = emailAddress;
     auto splitAddress = splitEmailAddress(_emailAddress);
-    _password = data[2];
-    _pop3Domain = data[3].empty() ? splitAddress[1] : data[3];
-    _pop3Username = data[4].empty() ? splitAddress[0] : data[4];
-    _smtpDomain = data[5].empty() ? splitAddress[1] : data[5];
+    _password = password;
+    _pop3Domain = pop3Domain.empty() ? splitAddress[1] : pop3Domain;
+    _pop3Username = pop3Username.empty() ? _emailAddress : pop3Username;
+    _smtpDomain = smtpDomain.empty() ? splitAddress[1] : smtpDomain;
+    _smtpUsername = smtpUsername.empty() ? _emailAddress : smtpUsername;
+
+    _smtpAuthPlain = smtpAuthPlain;
+    _secure = secure;
+
+    _pop3Port = pop3Port;
+    _smtpPort = smtpPort;
+
     std::cout << "[UserData] built UserData obj\n";
 }
 
@@ -55,4 +60,12 @@ void UserData::setDbId(int dbId) {
 
 int UserData::dbId() const {
     return _dbId;
+}
+
+bool UserData::secure() const {
+    return _secure;
+}
+
+bool UserData::smtpAuthPlain() const {
+    return _smtpAuthPlain;
 }

@@ -55,3 +55,8 @@ public:
 
     std::string getMail(const std::string& mailboxName, const std::string& mailFilename);
 };
+
+class FileManagerException : public Exception {
+public:
+    FileManagerException(const std::string& message) : Exception(message) {}
+};

@@ -13,6 +13,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <openssl/ssl.h>
 
 // project-specific includes
 #include "Utils.hpp"
@@ -22,8 +23,13 @@ class ConnectionBase {
 protected:
     std::string _nameOfConnection;
 
+    void assertParamChangeDuringActiveConnection();
+
     int _socket;
-    bool _isSocketOpen;
+    bool _isSocketOpen = false;
+    bool _isSocketConnected = false;
+
+    bool _SSL = false;
 
     std::string _host;
     std::string _port;
@@ -38,6 +44,7 @@ public:
 
     void setHost(const std::string& host);
     void setPort(const std::string& port);
+    void setSSL(bool value = true);
 
     virtual void connectToServer() = 0;
     virtual void closeConnection() = 0;
@@ -45,4 +52,14 @@ public:
     void log(const std::string& logMessage);
 
     ~ConnectionBase();
+};
+
+class ConnectException : public Exception {
+public:
+    ConnectException(const std::string& message) : Exception(message) {}
+};
+
+class ServerException : public Exception {
+public:
+    ServerException(const std::string& message) : Exception(message) {}
 };

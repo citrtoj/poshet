@@ -1,6 +1,8 @@
 #include "Utils.hpp"
 
 namespace Utils {
+    
+
     int readLoop(int fd, void* buffer, int nbytes) {
         // if returned number is positive: if equal to nbytes then succeeded writing, else it piped somewhere
         // if returned number is negative: returns -readSofar - 1 (to distinguish from error on first read)
@@ -24,13 +26,54 @@ namespace Utils {
     }
 
     int writeLoop(int fd, const void* buffer, int nbytes) {
-        // same as writeLoop
+        // same as readLoop
         if (nbytes < 0 || buffer == NULL) {
             return -1;
         }
         int writtenSoFar = 0;
         while (nbytes - writtenSoFar > 0) {
             int writeCode = write(fd, (uint8_t*)buffer + writtenSoFar, nbytes - writtenSoFar);
+            if (writeCode < 1) {
+                if (writeCode == 0) {
+                    return writtenSoFar;
+                }
+                else {
+                    return -writtenSoFar - 1;
+                }
+            }
+            writtenSoFar += writeCode;
+        }
+        return writtenSoFar;
+    }
+
+    // it's the same logic from the above functions but really I didn't think it was worth it to DRY them
+    int readLoopSSL(SSL* ssl, void* buffer, int nbytes) {
+        if (nbytes < 0 || buffer == NULL) {
+            return -1;
+        }
+        int readSoFar = 0;
+        while (nbytes - readSoFar > 0) {
+            int readCode = SSL_read(ssl, (uint8_t*)buffer + readSoFar, nbytes - readSoFar);
+            if (readCode < 1) {
+                if (readCode == 0) {
+                    return readSoFar;
+                }
+                else {
+                    return -readSoFar - 1;
+                }
+            }
+            readSoFar += readCode;
+        }
+        return readSoFar;
+    }
+
+    int writeLoopSSL(SSL* ssl, const void* buffer, int nbytes) {
+        if (nbytes < 0 || buffer == NULL) {
+            return -1;
+        }
+        int writtenSoFar = 0;
+        while (nbytes - writtenSoFar > 0) {
+            int writeCode = SSL_write(ssl, (uint8_t*)buffer + writtenSoFar, nbytes - writtenSoFar);
             if (writeCode < 1) {
                 if (writeCode == 0) {
                     return writtenSoFar;

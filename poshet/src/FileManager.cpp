@@ -113,7 +113,6 @@ std::string FileManager::getMail(const std::string& mailboxName, const std::stri
         throw FileManagerException("Error opening file " + filePath);
     }
     // citim in buffere de 512 at a time ca mna, si adaugam la un std::string ca sa nu fie chiar void*
-
     constexpr int BUFFER_SIZE = 512;
     char buffer[BUFFER_SIZE + 1];
     int readCode;

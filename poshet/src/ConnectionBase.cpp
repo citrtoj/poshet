@@ -1,11 +1,23 @@
 #include "ConnectionBase.hpp"
 
+void ConnectionBase::assertParamChangeDuringActiveConnection() {
+    if (_isSocketConnected) {
+        throw ConnectException("Cannot change connection parameters while connection is active");
+    }
+}
+
 void ConnectionBase::setHost(const std::string& host) {
+    assertParamChangeDuringActiveConnection();
     _host = host;
 }
 
 void ConnectionBase::setPort(const std::string& port) {
+    assertParamChangeDuringActiveConnection();
     _port = port;
+}
+
+void ConnectionBase::setSSL(bool value) {
+    _SSL = value;
 }
 
 void ConnectionBase::log(const std::string& logMessage) {
@@ -62,6 +74,7 @@ void ConnectionBase::connectSocket() {
         throw ConnectException("Could not connect to server (" + _host + ":" + _port + ")");
     }
     freeaddrinfo(result);
+    _isSocketConnected = true;
 }
 
 ConnectionBase::~ConnectionBase() {

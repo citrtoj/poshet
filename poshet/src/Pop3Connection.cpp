@@ -40,7 +40,6 @@ void POP3Connection::login() {
     if (_state != AUTHORIZATION) {
         throw Exception("Unable to log in -- not connected to server");
     }
-    //todo: check if there isn't perhaps a risk of injection here... remove newlines, or something
     execCommand("USER " + _user);
     execCommand("PASS " + _pass);
     _state = TRANSACTION;
@@ -63,6 +62,7 @@ void POP3Connection::login(const std::string& user, const std::string& pass) {
 
 void POP3Connection::sendCommand(const std::string& command) {
     std::string tmpCommand = command + "\r\n";  //CRLF ending
+    log(command);
     int status = Utils::writeLoop(_socket, tmpCommand.c_str(), tmpCommand.length());
     if (status < 0) {
         throw Exception("Error writing command to server");
@@ -73,11 +73,14 @@ std::string POP3Connection::execCommand(const std::string& command, bool expects
     std::lock_guard<std::mutex> lock(_commandMutex);
     sendCommand(command);
     if (!expectsMultiline) {
-        auto x = readLineResponse(processing);
-        return x;
+        auto response = readLineResponse(processing);
+        assertResponse(response);
+        return response;
     }
     else {
-        return readMultiLineResponse();
+        auto response = readMultiLineResponse();
+        assertResponse(response);
+        return response;
     }
 }
 
@@ -104,13 +107,6 @@ std::string POP3Connection::readLineResponse(bool raw) {
         if (error == false and finalResult[0] == '-') {
             error = true;
         }
-    } 
-    
-    // todo:  move this from here to wherever we handle input
-    // maybe sometimes we don't simply want to exception out of this
-
-    if (error) {  // contains "-ERR ..."
-        throw ServerException(finalResult.substr(5));
     }
     return finalResult;
 }
@@ -120,9 +116,9 @@ std::string POP3Connection::readMultiLineResponse() {
     int bytesRead;
     while (true) {
         auto buffer = readLineResponse(SingleLineMessage::RAW);
-        if (buffer.find("-ERR") != std::string::npos) {
-            // todo: same as a bit above
-            throw ServerException(buffer.substr(5));
+        if (isError(buffer)) {
+            // string is error and thus it'll be singleline. Return
+            return buffer;
         }
         if (buffer == "\r\n") {
             finalResult += "\n";
@@ -276,7 +272,7 @@ std::vector<POP3Connection::RawMailData> POP3Connection::retrieveAllMail() {
             std::cout << e.what() << "\n";
         }
         try {
-            auto UIDLResponse = execCommand("UIDL " + std::to_string(data.index), false, PROCESSED);
+            auto UIDLResponse = execCommand("UIDL " + std::to_string(data.index), false, PROCESSED); // TODO: SIMPLIFY! A single UIDL will give you all the needed IDs!!!
             std::istringstream uidlStream(UIDLResponse);
             std::string responsePrefix, mailIndex, UIDL;
             uidlStream >> responsePrefix >> mailIndex >> UIDL;
@@ -307,4 +303,14 @@ void POP3Connection::markMailForDeletion(long idx) {
         throw Exception("Invalid mail index to delete");
     }
     execCommand("DELE " + std::to_string(idx));
+}
+
+bool POP3Connection::isError(const std::string& message) {
+    return message[0] == '-';
+}
+
+void POP3Connection::assertResponse(const std::string& response) {
+    if (isError(response)) {
+        throw ServerException(response.substr(5));
+    }
 }

@@ -39,3 +39,9 @@ public:
     const std::string& plainText() const;
     std::string getHeaderField(const std::string& key) const;
 };
+
+
+class MailException : public Exception {
+public:
+    MailException(const std::string& message) : Exception(message) {}
+};

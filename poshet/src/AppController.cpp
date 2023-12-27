@@ -43,6 +43,8 @@ void AppController::login() {
     }
     catch (Exception& e) {
         showException(e.what());
+        // perhaps handle it or something... reset session?
+        return;
     }
     try {
         _loginFrame->Hide();

@@ -16,7 +16,7 @@
 #include "ConnectionBase.hpp"
 
 class POP3Connection : public ConnectionBase {
-
+public:
     class RawMailData {
     public:
         size_t index;
@@ -38,10 +38,9 @@ class POP3Connection : public ConnectionBase {
         RAW
     };
     int _timeoutSecs = 60;
+
 protected:
-
     std::string _user, _pass;
-
     State _state = State::DISCONNECTED;
 
     bool _enableSSL = false;
@@ -64,6 +63,7 @@ protected:
 
     std::string retrieveOneMail(size_t currentMailIndex, size_t byteSize);
     std::string retrieveOneMailHeader(size_t currentMailIndex);
+
 public:
     POP3Connection(const std::string& host);
     POP3Connection();
@@ -84,4 +84,7 @@ public:
     std::vector<RawMailData> retrieveAllMailHeaders();
 
     void markMailForDeletion(long idx);
+
+    static bool isError(const std::string& message);
+    static void assertResponse(const std::string& response);
 };

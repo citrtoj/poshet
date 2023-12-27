@@ -18,13 +18,11 @@ Session::~Session() {
     // not its business to delete the file manager :)
 }
 
-void Session::setLoginData(const std::vector<std::string> data) {
-    std::cout << "[Session] Setting login data\n";
-    _userData = UserData(data);
-    std::cout << "[Session] Setting POP3 domain\n";
+void Session::setLoginData(const UserData& data) {
+    _userData = data;
     _pop3.setHost(_userData.pop3Domain());
     _smtp.setHost(_userData.smtpDomain());
-    std::cout << "[Session] Set login data\n";
+    std::cout << "[Session] Set data\n";
 }
 
 void Session::connectAndLoginToServers() {

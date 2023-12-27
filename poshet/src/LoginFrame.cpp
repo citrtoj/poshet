@@ -1,15 +1,20 @@
 #include "LoginFrame.hpp"
 
+wxTextCtrl* LoginFrame::addTextCtrlToSizer(wxWindow* parent, const std::string& labelText, wxBoxSizer* sizer, bool censored, bool allowOnlyNumbers) {
+    auto label = (new wxStaticText(parent, wxID_ANY, labelText + ":"));
+    sizer->Add(label, 0, wxEXPAND | wxALL, MARGIN);
+    auto ctrl = new wxTextCtrl(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER
+                                | (censored ? wxTE_PASSWORD : 0));
+    sizer->Add(ctrl, 0, wxEXPAND | wxALL, MARGIN);
+    return ctrl;
+}
+// wxCheckBox* LoginFrame::addCheckboxToSizer(wxWindow* parent, const std::string& labelText, wxBoxSizer* sizer) {
+//     auto label = (new wxStaticText(parent, wxID_ANY, labelText));
+//     // make a separate sizer in order to add them like. Horizontally if you will
+// }
+
 LoginFrame::LoginFrame(const wxString& title) :
-    wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxDefaultSize),
-    _textInputs({
-        {"Full name (optional)", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::UNCENSORED},
-        {"Email address", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::UNCENSORED},
-        {"Password", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::CENSORED},
-        {"POP3 Domain Name (optional)", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::UNCENSORED},
-        {"POP3 Username (optional)", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::UNCENSORED},
-        {"SMTP Domain Name (optional)", nullptr, nullptr, LoginFrame::InputType::SINGLE, LoginFrame::UNCENSORED},
-    })
+    wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxDefaultSize)
 {
     _statusBar = CreateStatusBar();
     SetStatusText("Ready");
@@ -18,17 +23,12 @@ LoginFrame::LoginFrame(const wxString& title) :
     wxBoxSizer* inputsSizer = new wxBoxSizer(wxVERTICAL);
     inputsSizer->SetMinSize(wxSize(600, -1));
 
-    for (auto& textInputInfo : _textInputs) {
-        auto label = (new wxStaticText(panel, wxID_ANY, std::get<LoginFrame::LABEL>(textInputInfo) + ":"));
-        inputsSizer->Add(label, 0, wxEXPAND | wxALL, MARGIN);
-        std::get<LoginFrame::STATICTEXT>(textInputInfo) = label;
-
-        auto ctrl = new wxTextCtrl(panel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER
-                                    | (std::get<LoginFrame::INPUTTYPE>(textInputInfo) == LoginFrame::SINGLE ? 0 : wxTE_MULTILINE)
-                                    | (std::get<LoginFrame::CENSOR>(textInputInfo) == LoginFrame::UNCENSORED ? 0 : wxTE_PASSWORD));
-        inputsSizer->Add(ctrl, 0, wxEXPAND | wxALL, MARGIN);
-        std::get<LoginFrame::TEXTCTRL>(textInputInfo) = ctrl;
-    }
+    _fullName = addTextCtrlToSizer(panel, "Full name (optional)", inputsSizer);
+    _emailAddress = addTextCtrlToSizer(panel, "Email address", inputsSizer);
+    _password = addTextCtrlToSizer(panel, "Password", inputsSizer, true);
+    _pop3Domain = addTextCtrlToSizer(panel, "POP3 Domain (optional)", inputsSizer);
+    _pop3Username = addTextCtrlToSizer(panel, "POP3 Username (optional)", inputsSizer);
+    _smtpDomain = addTextCtrlToSizer(panel, "SMTP Domain (optional)", inputsSizer);
     
     _loginButton = new wxButton(panel, wxID_ANY, "Login");
     inputsSizer->Add(_loginButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, MARGIN);
@@ -65,12 +65,21 @@ void LoginFrame::OnClose(wxEvent& event) {
     _subscriber->onCloseApp();
 }
 
-std::vector<std::string> LoginFrame::userInput() {
-    std::vector<std::string> loginDataDump;
-    for (auto& input : _textInputs) {
-        loginDataDump.push_back(std::get<LoginFrame::TEXTCTRL>(input)->GetValue().ToStdString());
-    }
-    return loginDataDump;
+UserData LoginFrame::userInput() {
+    
+    return UserData(
+        _fullName->GetValue().ToStdString(),
+        _emailAddress->GetValue().ToStdString(),
+        _password->GetValue().ToStdString(),
+        _pop3Domain->GetValue().ToStdString(),
+        _pop3Username->GetValue().ToStdString(),
+        _smtpDomain->GetValue().ToStdString(),
+        false,
+        false,
+        "",
+        -1,
+        -1
+    );
 }
 
 wxButton* LoginFrame::loginButton() {

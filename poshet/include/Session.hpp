@@ -43,7 +43,7 @@ protected:
 public:
     Session(FileManager* manager);
     ~Session();
-    void setLoginData(const std::vector<std::string> data);
+    void setLoginData(const UserData& data);
     void connectAndLoginToServers();
 
     void closeConnections();
