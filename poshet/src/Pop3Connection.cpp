@@ -1,6 +1,6 @@
 #include "Pop3Connection.hpp"
 
-constexpr int POP3Connection::DefaultPort(bool SSL) {
+int POP3Connection::DefaultPort(bool SSL) {
     if (SSL) {
         return DEFAULT_SSL_PORT;
     }
@@ -11,7 +11,7 @@ constexpr int POP3Connection::DefaultPort(bool SSL) {
 
 POP3Connection::POP3Connection() {
     _nameOfConnection = "POP3 Connection";
-    setPort(std::to_string(DefaultPort(_SSL)));
+    setPort(std::to_string(DefaultPort(_isSSLEnabled)));
 }
 
 POP3Connection::~POP3Connection() {
@@ -68,7 +68,7 @@ void POP3Connection::login(const std::string& user, const std::string& pass) {
 void POP3Connection::sendCommand(const std::string& command) {
     std::string tmpCommand = command + "\r\n";  //CRLF ending
     log(command);
-    int status = Utils::writeLoop(_socket, tmpCommand.c_str(), tmpCommand.length());
+    int status = writeToSocket(tmpCommand.c_str(), tmpCommand.length());
     if (status < 0) {
         throw Exception("Error writing command to server");
     }
@@ -96,7 +96,7 @@ std::string POP3Connection::readLineResponse(bool raw) {
     char buffer[2] = {0, 0};
     while (not (buffer[0] == '\r' and buffer[1] == '\n')) {
         char singleCharBuffer;
-        int readCode = Utils::readLoop(_socket, &singleCharBuffer, 1);
+        int readCode = readFromSocket(&singleCharBuffer, 1);
         if (readCode <= 0) {
             throw Exception("Error reading character from socket.");
         }
@@ -213,7 +213,7 @@ std::string POP3Connection::retrieveOneMail(size_t currentMailIndex, size_t byte
     char* buffer = new char[byteSize + 1];
 
     buffer[byteSize] = 0;
-    int readCode = Utils::readLoop(_socket, buffer, byteSize);
+    int readCode = readFromSocket(buffer, byteSize);
     // todo: handle readCode
     readMultiLineResponse(); // to read whatever other termination chars are at the end
     std::string x = buffer;
@@ -261,13 +261,16 @@ std::vector<POP3Connection::RawMailData> POP3Connection::retrieveAllMail() {
     size_t messageNumber;
 
     std::istringstream responseStream(serverResponse);
-    responseStream >> buffer >> messageNumber >> buffer;
+    std::string firstLine;
+    std::getline(responseStream, firstLine);
+    std::istringstream firstLineStream(firstLine);
+    // add some sort of sanity check, perhaps, in case there's not even a number
+    firstLineStream >> buffer >> messageNumber;
 
     mailVector.reserve(messageNumber);
     
-    for (int i = 1; i <= messageNumber; ++i) {
-        int index, byteSize;
-        responseStream >> index >> byteSize;
+    int index, byteSize;
+    while (responseStream >> index >> byteSize) {
         auto data = RawMailData(index, byteSize);
         try {
             data.plainData = retrieveOneMail(data.index, data.byteSize);

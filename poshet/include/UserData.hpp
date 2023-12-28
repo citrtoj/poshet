@@ -6,6 +6,7 @@
 #include <array>
 
 #include "Exceptions.hpp"
+// for default port info
 #include "Pop3Connection.hpp"
 #include "SmtpConnection.hpp"
 
@@ -57,6 +58,17 @@ public:
     const std::string& pop3Username() const;
     const std::string& pop3Domain() const;
     const std::string& smtpDomain() const;
+
+    bool pop3SSL() const {
+        return _pop3SSL;
+    }
+    bool smtpSSL() const {
+        return _smtpSSL;
+    }
+
+    const std::string& pop3Port() const {
+        return _pop3Port;
+    }
     
     int dbId() const;
     void setDbId(int dbId);

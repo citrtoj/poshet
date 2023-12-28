@@ -3,7 +3,7 @@
 namespace Utils {
     
 
-    int readLoop(int fd, void* buffer, int nbytes) {
+    ssize_t readLoop(int fd, void* buffer, size_t nbytes) {
         // if returned number is positive: if equal to nbytes then succeeded writing, else it piped somewhere
         // if returned number is negative: returns -readSofar - 1 (to distinguish from error on first read)
         if (nbytes < 0 || buffer == NULL) {
@@ -25,7 +25,7 @@ namespace Utils {
         return readSoFar;
     }
 
-    int writeLoop(int fd, const void* buffer, int nbytes) {
+    ssize_t writeLoop(int fd, const void* buffer, size_t nbytes) {
         // same as readLoop
         if (nbytes < 0 || buffer == NULL) {
             return -1;
@@ -47,7 +47,7 @@ namespace Utils {
     }
 
     // it's the same logic from the above functions but really I didn't think it was worth it to DRY them
-    int readLoopSSL(SSL* ssl, void* buffer, int nbytes) {
+    ssize_t readLoopSSL(SSL* ssl, void* buffer, size_t nbytes) {
         if (nbytes < 0 || buffer == NULL) {
             return -1;
         }
@@ -67,7 +67,7 @@ namespace Utils {
         return readSoFar;
     }
 
-    int writeLoopSSL(SSL* ssl, const void* buffer, int nbytes) {
+    ssize_t writeLoopSSL(SSL* ssl, const void* buffer, size_t nbytes) {
         if (nbytes < 0 || buffer == NULL) {
             return -1;
         }

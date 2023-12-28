@@ -1,6 +1,6 @@
 #include "SmtpConnection.hpp"
 
-constexpr int SMTPConnection::DefaultPort(bool SSL) {
+int SMTPConnection::DefaultPort(bool SSL) {
     if (SSL) {
         return DEFAULT_SSL_PORT;
     }
@@ -11,7 +11,7 @@ constexpr int SMTPConnection::DefaultPort(bool SSL) {
 
 SMTPConnection::SMTPConnection() {
     _nameOfConnection = "SMTP Connection";
-    setPort(std::to_string(DefaultPort(_SSL)));
+    setPort(std::to_string(DefaultPort(_isSSLEnabled)));
 }
 
 SMTPConnection::SMTPConnection(const std::string& host) : SMTPConnection() {
@@ -26,14 +26,14 @@ std::string SMTPConnection::readResponse() {
     std::string finalResult;
     while (true) {
         char buffer[4 + 1];
-        int readCode = Utils::readLoop(_socket, buffer, 4);
+        int readCode = readFromSocket(buffer, 4);
         if (readCode < 0) {
             throw Exception("Error reading status code from server");
         }
         finalResult += buffer;
         while (!(finalResult[finalResult.size() - 2] == '\r' and finalResult[finalResult.size() - 1] == '\n')) {
             char oneCharBuffer;
-            int readCode = Utils::readLoop(_socket, &oneCharBuffer, 1);
+            int readCode = readFromSocket(&oneCharBuffer, 1);
             if (readCode < 0) {
                 throw Exception("Error reading SMTP response from server");
             }
@@ -48,7 +48,7 @@ std::string SMTPConnection::readResponse() {
 
 void SMTPConnection::sendCommand(const std::string& command) {
     std::string tmpCommand = command + "\r\n";
-    int status = Utils::writeLoop(_socket, tmpCommand.c_str(), tmpCommand.length());
+    int status = writeToSocket(tmpCommand.c_str(), tmpCommand.length());
     if (status < 0) {
         throw Exception("Error writing command to server");
     }

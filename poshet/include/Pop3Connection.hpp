@@ -43,8 +43,6 @@ protected:
     std::string _user, _pass;
     State _state = State::DISCONNECTED;
 
-    bool _SSL = false;
-
     std::thread _noopThread;
     bool _threadStarted = false;
     
@@ -71,7 +69,7 @@ public:
     static constexpr int DEFAULT_PORT = 110;
     static constexpr int DEFAULT_SSL_PORT = 995;
 
-    static constexpr int DefaultPort(bool SSL = false);
+    static int DefaultPort(bool SSL = false);
 
     void setUser(const std::string& user);
     void setPass(const std::string& pass);

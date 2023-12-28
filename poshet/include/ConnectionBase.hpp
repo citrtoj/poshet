@@ -13,9 +13,10 @@
 #include <string>
 #include <iostream>
 #include <vector>
-#include <openssl/ssl.h>
 
-// project-specific includes
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
 #include "Utils.hpp"
 #include "Exceptions.hpp"
 
@@ -29,7 +30,10 @@ protected:
     bool _isSocketOpen = false;
     bool _isSocketConnected = false;
 
-    bool _SSL = false;
+    bool _isSSLEnabled = false;
+    SSL_CTX* _ctx;
+    SSL* _ssl;
+
 
     std::string _host;
     std::string _port;
@@ -39,12 +43,27 @@ protected:
     bool isSocketOpen();
     void connectSocket();
 
+    ssize_t readFromSocket(void* buffer, size_t nbytes);
+    ssize_t writeToSocket(const void* buffer, size_t nbytes);
+
 public:
-    ConnectionBase() {}
+    static bool _isOpenSSLInit;
+    void InitializeOpenSSL();
+
+    ConnectionBase() {
+        InitializeOpenSSL();
+    }
+
+    bool _isSSLInit = false;
+    void initSSL();
 
     void setHost(const std::string& host);
     void setPort(const std::string& port);
+
     void setSSL(bool value = true);
+    bool getSSL() const {
+        return _isSSLEnabled;
+    }
 
     virtual void connectToServer() = 0;
     virtual void closeConnection() = 0;

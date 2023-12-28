@@ -11,14 +11,16 @@ Session::~Session() {
 void Session::setLoginData(const UserData& data) {
     _userData = data;
     _pop3.setHost(_userData.pop3Domain());
-    _smtp.setHost(_userData.smtpDomain());
+    _pop3.setSSL(_userData.pop3SSL());
+    _pop3.setPort(_userData.pop3Port());
+    //_smtp.setHost(_userData.smtpDomain());
     std::cout << "[Session] Set data\n";
 }
 
 void Session::connectAndLoginToServers() {
     try {
         _pop3.connectToServer();
-        _smtp.connectToServer();
+        //_smtp.connectToServer();
         _pop3.login(_userData.pop3Username(), _userData.password());
         _db.addUser(_userData.emailAddress(), _userData.pop3Domain());
         _userData.setDbId(_db.getUser(_userData.emailAddress(), _userData.pop3Domain()));

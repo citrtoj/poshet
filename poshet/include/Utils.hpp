@@ -17,10 +17,10 @@
 #include <openssl/ssl.h>
 
 namespace Utils {
-    int readLoop(int fd, void* buffer, int nbytes);
-    int readLoopSSL(SSL* ssl, void* buffer, int nbytes);
-    int writeLoop(int fd, const void* buffer, int nbytes);
-    int writeLoopSSL(SSL* ssl, const void* buffer, int nbytes);
+    ssize_t readLoop(int fd, void* buffer, size_t nbytes);
+    ssize_t readLoopSSL(SSL* ssl, void* buffer, size_t nbytes);
+    ssize_t writeLoop(int fd, const void* buffer, size_t nbytes);
+    ssize_t writeLoopSSL(SSL* ssl, const void* buffer, size_t nbytes);
 
     std::string strip(const std::string& str);
     std::string sha256(const std::string& input);
