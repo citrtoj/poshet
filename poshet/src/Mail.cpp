@@ -64,15 +64,13 @@ const std::string& Mail::plainText() const {
 }
 
 std::string Mail::getHTMLPart() const {
-    std::ofstream f("output.txt");
-    vmime::utility::outputStreamAdapter out(f) ;
-    _message->generate(out) ;
+    // std::ofstream f("output.txt");
+    // vmime::utility::outputStreamAdapter out(f) ;
+    // _message->generate(out) ;
     for (size_t i = 0 ; i < _messageParser->getTextPartCount() ; ++i) {
         const vmime::textPart& part = *_messageParser->getTextPartAt(i);
-        // text/html
         if (part.getType().getSubType() == vmime::mediaTypes::TEXT_HTML) {
             const vmime::htmlTextPart& hp = dynamic_cast<const vmime::htmlTextPart&>(part);
-            // HTML text is in "hp.getText()"
             std::string htmlText;
             vmime::utility::outputStreamStringAdapter x(htmlText);
             hp.getText()->extract(x);
@@ -85,7 +83,6 @@ std::string Mail::getHTMLPart() const {
 std::string Mail::getPlainTextPart() const {
     for (size_t i = 0 ; i < _messageParser->getTextPartCount() ; ++i) {
         const vmime::textPart& part = *_messageParser->getTextPartAt(i);
-        // text/html
         if (part.getType().getSubType() == vmime::mediaTypes::TEXT_PLAIN) {
             const vmime::textPart& tp = dynamic_cast<const vmime::textPart&>(part);
             std::string htmlText;

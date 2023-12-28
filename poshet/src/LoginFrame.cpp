@@ -20,27 +20,27 @@ LoginFrame::LoginFrame(const wxString& title) :
     wxPanel* panel = new wxPanel(this, wxID_ANY);
     wxBoxSizer* inputsSizer = new wxBoxSizer(wxVERTICAL);
 
-    _fullName = addTextCtrlToSizer(panel, "Full name (optional)", inputsSizer);
     _emailAddress = addTextCtrlToSizer(panel, "Email address", inputsSizer);
+    _fullName = addTextCtrlToSizer(panel, "Full name (default: local part of email address)", inputsSizer);
     _password = addTextCtrlToSizer(panel, "Password", inputsSizer, wxTE_PASSWORD);
 
     auto twoColumnHorizSizer = new wxBoxSizer(wxHORIZONTAL);
     
     auto pop3Sizer = new wxBoxSizer(wxVERTICAL);
-    _pop3Port = addTextCtrlToSizer(panel, "POP3 Port (optional)", pop3Sizer, 0, true);
+    _pop3Port = addTextCtrlToSizer(panel, "POP3 Port (default: 110 / 995 for SSL)", pop3Sizer, 0, true);
     _pop3SSL = new wxCheckBox(panel, wxID_ANY, "Enable SSL for POP3");
     pop3Sizer->Add(_pop3SSL, 0, wxALL, MARGIN);
-    _pop3Domain = addTextCtrlToSizer(panel, "POP3 Domain (optional)", pop3Sizer);
-    _pop3Username = addTextCtrlToSizer(panel, "POP3 Username (optional)", pop3Sizer);
+    _pop3Domain = addTextCtrlToSizer(panel, "POP3 Domain (default: domain of email address)", pop3Sizer);
+    _pop3Username = addTextCtrlToSizer(panel, "POP3 Username (default: local part of email address)", pop3Sizer);
 
     auto smtpSizer = new wxBoxSizer(wxVERTICAL);
-    _smtpPort = addTextCtrlToSizer(panel, "SMTP Port (optional)", smtpSizer, 0, true);
+    _smtpPort = addTextCtrlToSizer(panel, "SMTP Port (default: 25 / 465 for SSL)", smtpSizer, 0, true);
     _smtpSSL = new wxCheckBox(panel, wxID_ANY, "Enable SSL for SMTP");
     smtpSizer->Add(_smtpSSL, 0, wxALL, MARGIN);
-    _smtpDomain = addTextCtrlToSizer(panel, "SMTP Domain (optional)", smtpSizer);
+    _smtpDomain = addTextCtrlToSizer(panel, "SMTP Domain (default: domain of email address)", smtpSizer);
     _smtpAuth = new wxCheckBox(panel, wxID_ANY, "Enable SMTP authentication (Plain)");
     smtpSizer->Add(_smtpAuth, 0, wxALL, MARGIN);
-    _smtpDomain = addTextCtrlToSizer(panel, "SMTP Username (optional)", smtpSizer);
+    _smtpUsername = addTextCtrlToSizer(panel, "SMTP Username (default: local part of email address)", smtpSizer);
 
     twoColumnHorizSizer->Add(pop3Sizer, 1, wxEXPAND);
     twoColumnHorizSizer->Add(smtpSizer, 1, wxEXPAND);
@@ -81,19 +81,21 @@ void LoginFrame::OnClose(wxEvent& event) {
 }
 
 UserData LoginFrame::userInput() {
-    
     return UserData(
-        _fullName->GetValue().ToStdString(),
         _emailAddress->GetValue().ToStdString(),
+        _fullName->GetValue().ToStdString(),
         _password->GetValue().ToStdString(),
+
+        _pop3SSL->GetValue(),
         _pop3Domain->GetValue().ToStdString(),
+        _pop3Port->GetValue().ToStdString(),
         _pop3Username->GetValue().ToStdString(),
+
+        _smtpSSL->GetValue(),
         _smtpDomain->GetValue().ToStdString(),
-        false,
-        false,
-        "",
-        -1,
-        -1
+        _smtpPort->GetValue().ToStdString(),
+        _smtpAuth->GetValue(),
+        _smtpUsername->GetValue().ToStdString()
     );
 }
 

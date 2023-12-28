@@ -29,7 +29,7 @@ protected:
     
     State _state = State::DISCONNECTED;
 
-    bool _enableSSL = false;
+    bool _SSL = false;
 
     std::thread _noopThread;
     bool _threadStarted = false;
@@ -46,6 +46,11 @@ public:
     SMTPConnection(const std::string& host);
     SMTPConnection();
     ~SMTPConnection();
+
+    static constexpr int DEFAULT_PORT = 25;
+    static constexpr int DEFAULT_SSL_PORT = 465;
+
+    static constexpr int DefaultPort(bool SSL = false);
 
     void setClientDomain(const std::string& domain);
 

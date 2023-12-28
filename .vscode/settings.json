@@ -76,4 +76,5 @@
     },
     "cmake.configureOnOpen": true,
     "todo-tree.tree.scanMode": "workspace only",
+    "C_Cpp.default.compilerPath": "/usr/bin/g++",
 }

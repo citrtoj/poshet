@@ -1,16 +1,6 @@
 #include "Session.hpp"
 
-// bool Session::_GMIME_INITIALIZED = false;
-
-// void Session::_GMIME_INITIALIZE() {
-//     if (!_GMIME_INITIALIZED) {
-//         g_mime_init();
-//         _GMIME_INITIALIZED = true;
-//     }
-// }
-
 Session::Session(MailFileManager* manager) : _fileManager(manager) {
-    // _GMIME_INITIALIZE();
     _db.setPath(_fileManager->databasePath());
 }
 

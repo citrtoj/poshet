@@ -1,12 +1,17 @@
 #include "Pop3Connection.hpp"
 
-POP3Connection::POP3Connection() {
-    setPort("110"); //potentially modify to get the default from config etc etc
-    _nameOfConnection = "POP3 Connection";
+constexpr int POP3Connection::DefaultPort(bool SSL) {
+    if (SSL) {
+        return DEFAULT_SSL_PORT;
+    }
+    else {
+        return DEFAULT_PORT;
+    }
 }
 
-POP3Connection::POP3Connection(const std::string& host) : POP3Connection() {
-    setHost(host);
+POP3Connection::POP3Connection() {
+    _nameOfConnection = "POP3 Connection";
+    setPort(std::to_string(DefaultPort(_SSL)));
 }
 
 POP3Connection::~POP3Connection() {

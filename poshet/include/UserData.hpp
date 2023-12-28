@@ -6,40 +6,50 @@
 #include <array>
 
 #include "Exceptions.hpp"
+#include "Pop3Connection.hpp"
+#include "SmtpConnection.hpp"
 
 class UserData {
 private:
     static std::array<std::string, 2> splitEmailAddress(const std::string& address);
 
-    enum TextFields {
-        FULLNAME,
-        EMAILADDRESS,
-        PASSWORD,
-        POP3DOMAIN,
-        POP3USERNAME,
-        SMTPDOMAIN,
-        SMTPUSERNAME
-    };
+    std::string _emailAddress,
+                _fullName,
+                _password;
+    
+    bool _pop3SSL = false;
+    std::string _pop3Domain,
+                _pop3Port,
+                _pop3Username;
+    
+    bool _smtpSSL = false;
+    std::string _smtpDomain,
+                _smtpPort;
+    bool _smtpAuth = false;
+    std::string _smtpUsername;
 
-    std::string _fullName,
-                _emailAddress,
-                _password,
-                _pop3Domain,
-                _pop3Username,
-                _smtpDomain,
-                _smtpUsername;
-
-    int _pop3Port = -1, _smtpPort = -1;
     int _dbId = -1;
-
-    bool _secure = false;
-    bool _smtpAuthPlain = false;
 
 public:
     static constexpr int MIN_ARGS = 5;
     
     UserData() {}
-    UserData(const std::string& fullName, const std::string& emailAddress, const std::string& password, const std::string& pop3Domain, const std::string& pop3Username, const std::string& smtpDomain, bool secure, bool smtpAuthPlain, const std::string& smtpUsername, int pop3Port, int smtpPort);
+    UserData(
+        const std::string& emailAddress,
+        const std::string& fullName,
+        const std::string& password,
+
+        bool pop3SSL,
+        const std::string& pop3Domain,
+        const std::string& pop3Port,
+        const std::string& pop3Username,
+
+        bool smtpSSL,
+        const std::string& smtpDomain,
+        const std::string& smtpPort,
+        bool smtpAuth,
+        const std::string& smtpUsername
+    );
 
     const std::string& fullName() const;
     const std::string& emailAddress() const;
@@ -50,7 +60,9 @@ public:
     
     int dbId() const;
     void setDbId(int dbId);
+};
 
-    bool secure() const;
-    bool smtpAuthPlain() const;
+class ValidationException : public Exception {
+public:
+    ValidationException(const std::string& message) : Exception(message) {}
 };

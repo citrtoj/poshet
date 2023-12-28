@@ -11,21 +11,37 @@ std::array<std::string, 2> UserData::splitEmailAddress(const std::string& addres
     };
 }
 
-UserData::UserData(const std::string& fullName, const std::string& emailAddress, const std::string& password, const std::string& pop3Domain, const std::string& pop3Username, const std::string& smtpDomain, bool secure, bool smtpAuthPlain, const std::string& smtpUsername, int pop3Port, int smtpPort) {
-    _fullName = fullName;
+UserData::UserData(
+    const std::string& emailAddress,
+    const std::string& fullName,
+    const std::string& password,
+
+    bool pop3SSL,
+    const std::string& pop3Domain,
+    const std::string& pop3Port,
+    const std::string& pop3Username,
+    
+    bool smtpSSL,
+    const std::string& smtpDomain,
+    const std::string& smtpPort,
+    bool smtpAuth,
+    const std::string& smtpUsername
+) {
     _emailAddress = emailAddress;
     auto splitAddress = splitEmailAddress(_emailAddress);
+    _fullName = fullName.empty() ? splitAddress[0] : fullName;
     _password = password;
+
+    _pop3SSL = pop3SSL;
     _pop3Domain = pop3Domain.empty() ? splitAddress[1] : pop3Domain;
+    _pop3Port = pop3Port.empty() ? "110" : pop3Port;
     _pop3Username = pop3Username.empty() ? _emailAddress : pop3Username;
+
+    _smtpSSL = smtpSSL;
     _smtpDomain = smtpDomain.empty() ? splitAddress[1] : smtpDomain;
+    _smtpPort = smtpPort.empty() ? "25" : smtpPort;
+    _smtpAuth = smtpAuth;
     _smtpUsername = smtpUsername.empty() ? _emailAddress : smtpUsername;
-
-    _smtpAuthPlain = smtpAuthPlain;
-    _secure = secure;
-
-    _pop3Port = pop3Port;
-    _smtpPort = smtpPort;
 
     std::cout << "[UserData] built UserData obj\n";
 }
@@ -60,12 +76,4 @@ void UserData::setDbId(int dbId) {
 
 int UserData::dbId() const {
     return _dbId;
-}
-
-bool UserData::secure() const {
-    return _secure;
-}
-
-bool UserData::smtpAuthPlain() const {
-    return _smtpAuthPlain;
 }

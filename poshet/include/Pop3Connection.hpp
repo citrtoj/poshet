@@ -43,7 +43,7 @@ protected:
     std::string _user, _pass;
     State _state = State::DISCONNECTED;
 
-    bool _enableSSL = false;
+    bool _SSL = false;
 
     std::thread _noopThread;
     bool _threadStarted = false;
@@ -65,16 +65,20 @@ protected:
     std::string retrieveOneMailHeader(size_t currentMailIndex);
 
 public:
-    POP3Connection(const std::string& host);
     POP3Connection();
     ~POP3Connection();
+
+    static constexpr int DEFAULT_PORT = 110;
+    static constexpr int DEFAULT_SSL_PORT = 995;
+
+    static constexpr int DefaultPort(bool SSL = false);
 
     void setUser(const std::string& user);
     void setPass(const std::string& pass);
 
     void connectToServer() override;
     void closeConnection() override;
-    void quitConnection(); // acts as a commit
+    void quitConnection(); // acts as a commit for DELE commands
     void resetConnection();
 
     void login();

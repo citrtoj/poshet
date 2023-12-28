@@ -1,8 +1,17 @@
 #include "SmtpConnection.hpp"
 
+constexpr int SMTPConnection::DefaultPort(bool SSL) {
+    if (SSL) {
+        return DEFAULT_SSL_PORT;
+    }
+    else {
+        return DEFAULT_PORT;
+    }
+}
+
 SMTPConnection::SMTPConnection() {
-    setPort("25");
     _nameOfConnection = "SMTP Connection";
+    setPort(std::to_string(DefaultPort(_SSL)));
 }
 
 SMTPConnection::SMTPConnection(const std::string& host) : SMTPConnection() {
