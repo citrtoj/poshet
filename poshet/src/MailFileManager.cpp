@@ -1,21 +1,21 @@
-#include "FileManager.hpp"
+#include "MailFileManager.hpp"
 
-FileManager::FileManager() {
+MailFileManager::MailFileManager() {
     init();
 }
 
-FileManager::FileManager(const std::string& rootLocation) : _root(rootLocation) {
+MailFileManager::MailFileManager(const std::string& rootLocation) : _root(rootLocation) {
     init();
 }
 
-std::string FileManager::joinToFullPath(const std::string& root, const std::string& addon) {
+std::string MailFileManager::joinToFullPath(const std::string& root, const std::string& addon) {
     if (addon.empty()) {
         return root;
     }
     return root + "/" + addon;
 }
 
-void FileManager::createFolderOrCheckIfExists(const std::string& path) {
+void MailFileManager::createFolderOrCheckIfExists(const std::string& path) {
     struct stat st;
     if (stat(path.c_str(), &st) != 0) {
         if (mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0) {
@@ -27,7 +27,7 @@ void FileManager::createFolderOrCheckIfExists(const std::string& path) {
     }
 }
 
-void FileManager::initRootPath() {
+void MailFileManager::initRootPath() {
     if (_root == "$HOME") {
         const char* homeDir = getenv("HOME");
         if (homeDir != nullptr) {
@@ -42,15 +42,15 @@ void FileManager::initRootPath() {
     }
 }
 
-void FileManager::initFolder() {
+void MailFileManager::initFolder() {
     createFolderOrCheckIfExists(_rootPath);
 }
 
-std::string FileManager::databasePath() const {
+std::string MailFileManager::databasePath() const {
     return joinToFullPath(_rootPath, _dbName);
 }
 
-void FileManager::initDatabase() {
+void MailFileManager::initDatabase() {
     int dbFD = open(databasePath().c_str(), O_RDWR | O_CREAT | O_APPEND, PERMISSIONS);
     if (dbFD == -1) {
         throw FileManagerException("Error creating database file"); 
@@ -58,61 +58,68 @@ void FileManager::initDatabase() {
     close(dbFD);
 }
 
-void FileManager::initMailFolder() {
+void MailFileManager::initMailFolder() {
     auto mailFolderPath = joinToFullPath(_rootPath, _mailFolderName);
-
     createFolderOrCheckIfExists(mailFolderPath);
 }
 
-void FileManager::init() {
+void MailFileManager::init() {
     initRootPath();
     initFolder();
     initDatabase();
     initMailFolder();
 }
 
-void FileManager::setRootLocation(const std::string& rootLocation) {
+void MailFileManager::setRootLocation(const std::string& rootLocation) {
     // this will not get rid of the previous location, rather, it will populate the newly chosen folder (if it can) with the appropriate folders. it will not copy the info either
     _root = rootLocation;
     init();
 }
 
-std::string FileManager::mailbox(const std::string& mailboxName) {
+std::string MailFileManager::mailbox(const std::string& mailboxName) {
     // creates mailbox if it can, returns mailbox path
     auto mailboxPath = joinToFullPath(joinToFullPath(_rootPath, _mailFolderName), mailboxName);
     createFolderOrCheckIfExists(mailboxPath);
+    // create Received and Sent folders
+    auto mailboxSentPath = joinToFullPath(mailboxPath, _sentFolder);
+    createFolderOrCheckIfExists(mailboxSentPath);
+    auto mailboxReceivedPath = joinToFullPath(mailboxPath, _receivedFolder);
+    createFolderOrCheckIfExists(mailboxReceivedPath);
     return mailboxPath;
 }
 
-// since we're storing raw ASCII data I think string is fine
-void FileManager::saveMail(const std::string& mailboxName, const std::string& mailFilename, const std::string& rawMailData) {
-    // all the filemanager does is save files and get files
-    // it does NOT care about sha256 stuff
+void MailFileManager::saveMail(const std::string& mailboxName, MailFileManager::MailType type, const std::string& mailFilename, const std::string& rawMailData) {
+    // all the filemanager does is save files and get files, not its business to handle how to generate the filenames and everything
     auto mailboxPath = mailbox(mailboxName);
-    auto filePath = joinToFullPath(mailboxPath, mailFilename);
+    auto filePath = joinToFullPath(joinToFullPath(mailboxPath, _typeFolderNames.find(type)->second), mailFilename);
     if (access(filePath.c_str(), F_OK) != -1) {
+        // todo: file exists. check SHA256; if not, continue
+        std::cout << "file exists\n";
         return;
     }
     int mailFD = open(filePath.c_str(), O_CREAT | O_RDWR, PERMISSIONS);
     if (mailFD == -1) {
         throw FileManagerException("Error creating file " + filePath);
     }
+    // truncate file
     size_t len = rawMailData.length();
     int writeCode = Utils::writeLoop(mailFD, rawMailData.c_str(), len * sizeof(char));
     close(mailFD);
 }
 
-std::string FileManager::getMail(const std::string& mailboxName, const std::string& mailFilename) {
+std::string MailFileManager::getMail(const std::string& mailboxName, MailFileManager::MailType type, const std::string& mailFilename) {
     auto mailboxPath = mailbox(mailboxName);
-    auto filePath = joinToFullPath(mailboxPath, mailFilename);
+
+    auto filePath = joinToFullPath(joinToFullPath(mailboxPath, _typeFolderNames.find(type)->second), mailFilename);
     if (access(filePath.c_str(), F_OK) == -1) {
         throw FileManagerException("File " + filePath + " is not valid");
     }
+
     int mailFD = open(filePath.c_str(), O_RDWR);
     if (mailFD == -1) {
         throw FileManagerException("Error opening file " + filePath);
     }
-    // citim in buffere de 512 at a time ca mna, si adaugam la un std::string ca sa nu fie chiar void*
+    // citim in buffere de 512 at a time ca mna
     constexpr int BUFFER_SIZE = 512;
     char buffer[BUFFER_SIZE + 1];
     int readCode;

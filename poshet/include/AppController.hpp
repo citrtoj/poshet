@@ -11,7 +11,7 @@
 #include "FrameSubscribers.hpp"
 #include "MailCreatorFrame.hpp"
 #include "Session.hpp"
-#include "FileManager.hpp"
+#include "MailFileManager.hpp"
 #include "Exceptions.hpp"
 
 class AppController : public LoginFrameSubscriber, public DashboardFrameSubscriber, public MailCreatorFrameSubscriber {
@@ -25,7 +25,7 @@ protected:
     bool _isMailCreatorOpen = false;
     MailCreatorFrame* _mailCreatorFrame;
 
-    FileManager* _fileManager;
+    MailFileManager* _fileManager;
     
     size_t _selectedMail;
 

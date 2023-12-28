@@ -24,11 +24,11 @@ void ConnectionBase::log(const std::string& logMessage) {
     std::cout << "[" + _nameOfConnection + "] " + logMessage + "\n"; 
 }
 
-void ConnectionBase::openSocket() {
+void ConnectionBase::openSocket(int domain, int type, int protocol) {
     if (isSocketOpen()) {
         return;
     }
-    _socket = socket(AF_INET, SOCK_STREAM, 0);
+    _socket = socket(domain, type, protocol);
     if (_socket == -1) {
         throw ConnectException("Could not initialize socket");
     }
@@ -40,6 +40,7 @@ void ConnectionBase::closeSocket() {
         return;
     }
     close(_socket);
+    _isSocketConnected = false;
     _isSocketOpen = false;
 }
 
@@ -60,8 +61,10 @@ void ConnectionBase::connectSocket() {
         throw ConnectException("Could not resolve address of server (" + _host + ":" + _port + ")");
     }
     for (resultIt = result; resultIt != NULL; resultIt = resultIt->ai_next) {
-        _socket = socket(resultIt->ai_family, resultIt->ai_socktype, resultIt->ai_protocol);
-        if (_socket == -1) {
+        try {
+            openSocket(resultIt->ai_family, resultIt->ai_socktype, resultIt->ai_protocol);
+        }
+        catch (ConnectException& e) {
             continue;
         }
         if (connect(_socket, resultIt->ai_addr, resultIt->ai_addrlen) != -1) {

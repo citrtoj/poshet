@@ -10,7 +10,7 @@ Librării/pachete externe necesare:
 - CMake
 - wxWidgets
 - SQLite3
-- VMime
+- VMime (doar pentru parsarea mesajelor în format MIME, nu și pentru comunicarea în rețea)
 - OpenSSL
 
 Dacă rularea `make` eșuează, puteți încerca rularea manuală a comenzilor din `Makefile`.

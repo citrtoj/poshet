@@ -47,7 +47,9 @@ protected:
     wxStaticText* _selectedMailTo;
     wxStaticText* _selectedMailSubject;
     wxStaticText* _selectedMailDate;
-    wxHtmlWindow* _mailContentsCtrl;
+    wxHtmlWindow* _htmlDisplayer;
+    wxTextCtrl* _plainTextDisplayer;
+    wxBoxSizer* _displayer;
     wxButton* _replyMailBtn;
     wxButton* _forwardMailBtn;
     wxButton* _deleteMailBtn;

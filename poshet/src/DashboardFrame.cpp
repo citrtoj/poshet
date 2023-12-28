@@ -102,8 +102,17 @@ void DashboardFrame::initViewMailPanel() {
     auto mailContentsPanel = new wxPanel(viewMailPanel(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SUNKEN);
     auto mailContentsSizer = new wxBoxSizer(wxVERTICAL);
 
-    _mailContentsCtrl = new wxHtmlWindow(mailContentsPanel, wxID_ANY);
-    mailContentsSizer->Add(_mailContentsCtrl, 1, wxEXPAND);
+    _plainTextDisplayer = new wxTextCtrl(mailContentsPanel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
+    _htmlDisplayer = new wxHtmlWindow(mailContentsPanel, wxID_ANY);
+    //_plainTextDisplayer->Hide();
+    //_htmlDisplayer->Hide();
+
+    _displayer = new wxBoxSizer(wxVERTICAL);
+
+    _displayer->Add(_htmlDisplayer, 1, wxEXPAND);
+    _displayer->Add(_plainTextDisplayer, 1, wxEXPAND);
+
+    mailContentsSizer->Add(_displayer, 1, wxEXPAND);
     mailContentsPanel->SetSizer(mailContentsSizer);
 
     _viewMailSizer = new wxBoxSizer(wxVERTICAL);
@@ -199,8 +208,18 @@ void DashboardFrame::updateViewMailPanel(const Mail& mail) {
     _selectedMailTo->SetLabel("To: " + mail.getHeaderField("To"));
     _selectedMailSubject->SetLabel(mail.getHeaderField("Subject"));
 
-    // parse ???????? get what, exactly???
-    // this will be a nightmare
+    try {
+        auto htmlText = mail.getHTML();
+        _htmlDisplayer->SetPage(htmlText);
+        _plainTextDisplayer->Hide();
+        _htmlDisplayer->Show();
+    }
+    catch (MailException& e) {
+        std::wstring x = L"test string. should also work with unicode. abcăîșț";
+        _plainTextDisplayer->SetValue(wxString(x));
+        _plainTextDisplayer->Show();
+        _htmlDisplayer->Hide();
+    }
 
     refreshViewMailPanel();
 }

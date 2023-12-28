@@ -34,7 +34,7 @@ protected:
     std::string _host;
     std::string _port;
 
-    void openSocket();
+    void openSocket(int domain, int type, int protocol);
     void closeSocket();
     bool isSocketOpen();
     void connectSocket();

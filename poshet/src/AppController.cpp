@@ -7,7 +7,7 @@ AppController::AppController(wxApp* app) :
 {
     // perhaps get config settings before this??
     try {
-        _fileManager = new FileManager();
+        _fileManager = new MailFileManager();
         _session = new Session(_fileManager);
     }
     catch (Exception& e) {

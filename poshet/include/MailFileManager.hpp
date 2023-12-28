@@ -15,6 +15,7 @@
 
 #include <vector>
 #include <unordered_set>
+#include <unordered_map>
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -22,14 +23,27 @@
 #include "Exceptions.hpp"
 #include "Utils.hpp"
 
-class FileManager {
+class MailFileManager {
+public:
+    enum MailType {
+        RECEIVED,
+        SENT
+    };
 private:
+    std::string _receivedFolder = "Received";
+    std::string _sentFolder = "Sent";
+
+    const std::unordered_map<MailType, std::string&> _typeFolderNames = {
+        {RECEIVED, _receivedFolder},
+        {SENT, _sentFolder}
+    };
+    
     // utility functions
     static std::string joinToFullPath(const std::string& root, const std::string& addon);
     static void createFolderOrCheckIfExists(const std::string& path);
     static constexpr int PERMISSIONS = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
-
-
+    
+    
     std::string _root = "$HOME";
     std::string _location = ".poshet";
     std::string _dbName = "mail.db";
@@ -44,16 +58,18 @@ private:
 
     std::string mailbox(const std::string& mailboxName);
 public:
-    FileManager();
-    FileManager(const std::string& rootLocation);
+
+
+    MailFileManager();
+    MailFileManager(const std::string& rootLocation);
 
     void setRootLocation(const std::string& rootLocation);
     
     std::string databasePath() const;
 
-    void saveMail(const std::string& mailboxName, const std::string& mailFilename, const std::string& rawMailData);
+    void saveMail(const std::string& mailboxName, MailType type, const std::string& mailFilename, const std::string& rawMailData);
 
-    std::string getMail(const std::string& mailboxName, const std::string& mailFilename);
+    std::string getMail(const std::string& mailboxName, MailType type, const std::string& mailFilename);
 };
 
 class FileManagerException : public Exception {

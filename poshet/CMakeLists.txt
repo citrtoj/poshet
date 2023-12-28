@@ -18,7 +18,7 @@ set(SOURCES
     src/Mail.cpp
     src/Session.cpp
     src/UserData.cpp
-    src/FileManager.cpp
+    src/MailFileManager.cpp
     src/ConnectionBase.cpp
     src/SmtpConnection.cpp
     src/Pop3Connection.cpp
@@ -32,7 +32,7 @@ set(SOURCES
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${wxWidgets_INCLUDE_DIRS} /usr/include/vmime)
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${wxWidgets_INCLUDE_DIRS} ${SQLite3_INCLUDE_DIRS} /usr/include/vmime)
 target_compile_definitions(${CMAKE_PROJECT_NAME}  PUBLIC ${wxWidgets_DEFINITIONS})
 target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE ${wxWidgets_CXX_FLAGS})
 target_link_libraries(${CMAKE_PROJECT_NAME} 

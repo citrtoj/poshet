@@ -28,10 +28,15 @@ void DatabaseConnection::initTables() {
     if (code) {
         throw DatabaseException("Could not create database table: users");
     }
-    mailsTableQuery = "CREATE TABLE IF NOT EXISTS mail (mail_id TEXT PRIMARY KEY, user_id INTEGER, tag TEXT NOT NULL, uidl TEXT, timestamp INTEGER NOT NULL, marked_for_deletion INTEGER DEFAULT 0 NOT NULL, FOREIGN KEY(user_id) REFERENCES users(user_id));" ;
+    mailsTableQuery = "CREATE TABLE IF NOT EXISTS received_mail (mail_id TEXT PRIMARY KEY, user_id INTEGER, tag TEXT, uidl TEXT, timestamp INTEGER NOT NULL, marked_for_deletion INTEGER DEFAULT 0 NOT NULL, FOREIGN KEY(user_id) REFERENCES users(user_id));" ;
     code = sqlite3_exec(_db, mailsTableQuery.c_str(), nullptr, nullptr, nullptr);
     if (code) {
-        throw DatabaseException("Could not create database table: mail");
+        throw DatabaseException("Could not create database table: received_mail");
+    }
+    mailsTableQuery = "CREATE TABLE IF NOT EXISTS sent_mail (mail_id TEXT PRIMARY KEY, user_id INTEGER, tag TEXT, timestamp INTEGER NOT NULL, FOREIGN KEY(user_id) REFERENCES users(user_id));" ;
+    code = sqlite3_exec(_db, mailsTableQuery.c_str(), nullptr, nullptr, nullptr);
+    if (code) {
+        throw DatabaseException("Could not create database table: sent_mail");
     }
 }
 
@@ -65,21 +70,26 @@ int DatabaseConnection::getUser(const std::string& mailAddress, const std::strin
     return result;
 }
 
-void DatabaseConnection::addMail(const std::string& mailId, int userId, const std::string& uidl, const std::string tag) {
+void DatabaseConnection::addReceivedMail(const std::string& mailId, int userId, const std::string& uidl, const std::string tag) {
     // momentan presupunem ca toate serverele au UIDL
     auto currentTime = std::chrono::system_clock::now();
     std::time_t currentTime_t = std::chrono::system_clock::to_time_t(currentTime);
     int unixTimestamp = static_cast<int>(currentTime_t);
-    std::string query = "INSERT OR IGNORE INTO mail (mail_id, user_id, tag, uidl, timestamp) VALUES ('" + mailId + "', " + std::to_string(userId) + ", '" + tag + "', '" + uidl + "', " + std::to_string(unixTimestamp) + ");";
+    std::string query = "INSERT OR IGNORE INTO received_mail (mail_id, user_id, tag, uidl, timestamp) VALUES"
+                        "('" + mailId
+                        + "', " + std::to_string(userId)
+                        + "," +  (tag.empty() ? "NULL":  "'" + tag + "'")
+                        + ", '" + uidl +
+                        "', " + std::to_string(unixTimestamp) + ");";
     int code = sqlite3_exec(_db, query.c_str(), nullptr, nullptr, nullptr);
     if (code) {
         throw DatabaseException(std::string("Could not add mail to database: ") + sqlite3_errmsg(_db));
     }
 }
 
-std::vector<std::string> DatabaseConnection::getMailIdsOfUser(int id) {
+std::vector<std::string> DatabaseConnection::getReceivedMailIdsOfUser(int id) {
     std::vector<std::string> result;
-    std::string query = "SELECT mail_id FROM mail m join users u on m.user_id = u.user_id WHERE m.user_id = " + std::to_string(id) + " ORDER BY timestamp DESC;";
+    std::string query = "SELECT mail_id FROM received_mail m join users u on m.user_id = u.user_id WHERE m.user_id = " + std::to_string(id) + " ORDER BY timestamp DESC;";
     sqlite3_stmt *stmt;
 
     if (sqlite3_prepare_v2(_db, query.c_str(), -1, &stmt, NULL) != SQLITE_OK) {

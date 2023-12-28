@@ -9,21 +9,18 @@
 #include "SmtpConnection.hpp"
 #include "DatabaseConnection.hpp"
 #include "Config.hpp"
-#include "FileManager.hpp"
+#include "MailFileManager.hpp"
 #include "UserData.hpp"
 #include "Mail.hpp"
 #include "Utils.hpp"
 
 class Session {
 protected:
-    // static bool _GMIME_INITIALIZED;
-    // static void _GMIME_INITIALIZE();
-
     POP3Connection _pop3;
     SMTPConnection _smtp;
     DatabaseConnection _db;
 
-    FileManager* _fileManager;
+    MailFileManager* _fileManager;
     UserData _userData;
 
     std::vector<Mail> _mails;
@@ -41,7 +38,7 @@ protected:
     void dropUIDLFromPop3(/* list of UIDLs marked as deleted */);
 
 public:
-    Session(FileManager* manager);
+    Session(MailFileManager* manager);
     ~Session();
     void setLoginData(const UserData& data);
     void connectAndLoginToServers();

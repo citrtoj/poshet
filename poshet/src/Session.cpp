@@ -9,7 +9,7 @@
 //     }
 // }
 
-Session::Session(FileManager* manager) : _fileManager(manager) {
+Session::Session(MailFileManager* manager) : _fileManager(manager) {
     // _GMIME_INITIALIZE();
     _db.setPath(_fileManager->databasePath());
 }
@@ -76,9 +76,9 @@ void Session::getAllPop3AndSaveLocally() {
             auto fullMailId = id + "_" + hash;
 
             // save to fileManager, then to db
-            _fileManager->saveMail(_userData.pop3Domain(), fullMailId, mail.plainText());
+            _fileManager->saveMail(_userData.pop3Domain(), MailFileManager::MailType::RECEIVED, fullMailId, mail.plainText());
             // if this didn't fail, save all related info to db
-            _db.addMail(fullMailId, _userData.dbId(), uidl);
+            _db.addReceivedMail(fullMailId, _userData.dbId(), uidl);
         }
         catch (ServerException& e) {
             std::cout << "[Session] SERVER WARNING: " << e.what() << "\n";
@@ -95,7 +95,7 @@ void Session::getAllPop3AndSaveLocally() {
 }
 
 std::vector<std::string> Session::getAllMailIdsFromDatabase() {
-    return _db.getMailIdsOfUser(_userData.dbId());
+    return _db.getReceivedMailIdsOfUser(_userData.dbId());
 }
 
 void Session::loadMail(int count) {
@@ -105,7 +105,7 @@ void Session::loadMail(int count) {
     auto mailIds = getAllMailIdsFromDatabase();
     _mails.reserve(mailIds.size());
     for (auto mailId : mailIds) {
-        auto x = _fileManager->getMail(_userData.pop3Domain(), mailId);
+        auto x = _fileManager->getMail(_userData.pop3Domain(), MailFileManager::MailType::RECEIVED, mailId);
         _mails.push_back(Mail(x));
     }
 

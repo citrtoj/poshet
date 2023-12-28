@@ -25,7 +25,8 @@ protected:
 
     std::string _plainText;
 
-    vmime::message* _message;
+    vmime::shared_ptr<vmime::message> _message;
+    vmime::messageParser* _messageParser;
     
     void parsePlainText();
 
@@ -38,6 +39,8 @@ public:
 
     const std::string& plainText() const;
     std::string getHeaderField(const std::string& key) const;
+
+    std::string getHTML() const;
 };
 
 
