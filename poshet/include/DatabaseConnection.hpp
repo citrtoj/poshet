@@ -33,6 +33,8 @@ public:
     void addReceivedMail(const std::string& mailId, int userId, const std::string& uidl, const std::string tag = "");
     std::vector<std::string> getReceivedMailIdsOfUser(int id);
 
+    void tagReceivedMail(const std::string& mailId, const std::string& tag);
+
 };
 
 class DatabaseException : public Exception {

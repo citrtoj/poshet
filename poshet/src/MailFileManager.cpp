@@ -120,7 +120,7 @@ std::string MailFileManager::getMail(const std::string& mailboxName, MailFileMan
         throw FileManagerException("Error opening file " + filePath);
     }
     // citim in buffere de 512 at a time ca mna
-    constexpr int BUFFER_SIZE = 512;
+    constexpr int BUFFER_SIZE = 1024;
     char buffer[BUFFER_SIZE + 1];
     int readCode;
     size_t readSoFar = 0;
@@ -130,7 +130,7 @@ std::string MailFileManager::getMail(const std::string& mailboxName, MailFileMan
         readCode = Utils::readLoop(mailFD , buffer, BUFFER_SIZE * sizeof(char));
         // todo: error handling. if == 1...
         readSoFar += readCode;
-        std::cout << "[FileManager] Readcode: " << readCode << "\n";
+        //std::cout << "[FileManager] Readcode: " << readCode << "\n";
         result += buffer;
     }
     while (readCode == BUFFER_SIZE); 

@@ -102,3 +102,11 @@ std::vector<std::string> DatabaseConnection::getReceivedMailIdsOfUser(int id) {
     sqlite3_finalize(stmt);
     return result;
 }
+
+void DatabaseConnection::tagReceivedMail(const std::string& mailId, const std::string& tag) {
+    std::string query = "UPDATE received_mail set tag='" + tag + "' where mail_id = '" + mailId + "';";
+    int code = sqlite3_exec(_db, query.c_str(), nullptr, nullptr, nullptr);
+    if (code) {
+        throw DatabaseException(std::string("Could not add mail to database: ") + sqlite3_errmsg(_db));
+    }
+}

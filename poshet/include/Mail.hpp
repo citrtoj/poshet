@@ -7,7 +7,7 @@
 #include <sstream>
 #include <iostream>
 #include <utility>
-#include <sstream>
+#include <fstream>
 
 #include <vmime/vmime.hpp>
 
@@ -17,11 +17,12 @@
 
 class Mail {
 protected:
-    enum Type {
+    enum ConstructType {
         FROM_PLAINTEXT,
         FROM_USER_INPUT,
     };
-    Type _type;
+
+    ConstructType _type;
 
     std::string _plainText;
 

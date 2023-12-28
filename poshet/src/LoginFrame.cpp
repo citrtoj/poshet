@@ -1,17 +1,15 @@
 #include "LoginFrame.hpp"
 
-wxTextCtrl* LoginFrame::addTextCtrlToSizer(wxWindow* parent, const std::string& labelText, wxBoxSizer* sizer, bool censored, bool allowOnlyNumbers) {
+wxTextCtrl* LoginFrame::addTextCtrlToSizer(wxWindow* parent, const std::string& labelText, wxBoxSizer* sizer,  long styleFlags, bool numbersOnly) {
     auto label = (new wxStaticText(parent, wxID_ANY, labelText + ":"));
     sizer->Add(label, 0, wxEXPAND | wxALL, MARGIN);
-    auto ctrl = new wxTextCtrl(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER
-                                | (censored ? wxTE_PASSWORD : 0));
+    
+    wxTextValidator validator(wxFILTER_DIGITS);
+    
+    auto ctrl = new wxTextCtrl(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER | styleFlags, numbersOnly ? validator : wxDefaultValidator);
     sizer->Add(ctrl, 0, wxEXPAND | wxALL, MARGIN);
     return ctrl;
 }
-// wxCheckBox* LoginFrame::addCheckboxToSizer(wxWindow* parent, const std::string& labelText, wxBoxSizer* sizer) {
-//     auto label = (new wxStaticText(parent, wxID_ANY, labelText));
-//     // make a separate sizer in order to add them like. Horizontally if you will
-// }
 
 LoginFrame::LoginFrame(const wxString& title) :
     wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxDefaultSize)
@@ -21,29 +19,46 @@ LoginFrame::LoginFrame(const wxString& title) :
 
     wxPanel* panel = new wxPanel(this, wxID_ANY);
     wxBoxSizer* inputsSizer = new wxBoxSizer(wxVERTICAL);
-    inputsSizer->SetMinSize(wxSize(600, -1));
 
     _fullName = addTextCtrlToSizer(panel, "Full name (optional)", inputsSizer);
     _emailAddress = addTextCtrlToSizer(panel, "Email address", inputsSizer);
-    _password = addTextCtrlToSizer(panel, "Password", inputsSizer, true);
-    _pop3Domain = addTextCtrlToSizer(panel, "POP3 Domain (optional)", inputsSizer);
-    _pop3Username = addTextCtrlToSizer(panel, "POP3 Username (optional)", inputsSizer);
-    _smtpDomain = addTextCtrlToSizer(panel, "SMTP Domain (optional)", inputsSizer);
+    _password = addTextCtrlToSizer(panel, "Password", inputsSizer, wxTE_PASSWORD);
+
+    auto twoColumnHorizSizer = new wxBoxSizer(wxHORIZONTAL);
     
+    auto pop3Sizer = new wxBoxSizer(wxVERTICAL);
+    _pop3Port = addTextCtrlToSizer(panel, "POP3 Port (optional)", pop3Sizer, 0, true);
+    _pop3SSL = new wxCheckBox(panel, wxID_ANY, "Enable SSL for POP3");
+    pop3Sizer->Add(_pop3SSL, 0, wxALL, MARGIN);
+    _pop3Domain = addTextCtrlToSizer(panel, "POP3 Domain (optional)", pop3Sizer);
+    _pop3Username = addTextCtrlToSizer(panel, "POP3 Username (optional)", pop3Sizer);
+
+    auto smtpSizer = new wxBoxSizer(wxVERTICAL);
+    _smtpPort = addTextCtrlToSizer(panel, "SMTP Port (optional)", smtpSizer, 0, true);
+    _smtpSSL = new wxCheckBox(panel, wxID_ANY, "Enable SSL for SMTP");
+    smtpSizer->Add(_smtpSSL, 0, wxALL, MARGIN);
+    _smtpDomain = addTextCtrlToSizer(panel, "SMTP Domain (optional)", smtpSizer);
+    _smtpAuth = new wxCheckBox(panel, wxID_ANY, "Enable SMTP authentication (Plain)");
+    smtpSizer->Add(_smtpAuth, 0, wxALL, MARGIN);
+    _smtpDomain = addTextCtrlToSizer(panel, "SMTP Username (optional)", smtpSizer);
+
+    twoColumnHorizSizer->Add(pop3Sizer, 1, wxEXPAND);
+    twoColumnHorizSizer->Add(smtpSizer, 1, wxEXPAND);
+
+    inputsSizer->Add(twoColumnHorizSizer, 0, wxEXPAND);
+
     _loginButton = new wxButton(panel, wxID_ANY, "Login");
     inputsSizer->Add(_loginButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, MARGIN);
 
     auto horizontalSizer = new wxBoxSizer(wxHORIZONTAL);
 
     horizontalSizer->AddStretchSpacer(1);
-    horizontalSizer->Add(inputsSizer, 10, wxALIGN_CENTER_VERTICAL);
+    horizontalSizer->Add(inputsSizer, 0, wxALIGN_CENTER_VERTICAL);
     horizontalSizer->AddStretchSpacer(1);
 
     auto mainSizer = new wxBoxSizer(wxVERTICAL);
     
-    mainSizer->AddStretchSpacer(1);
-    mainSizer->Add(horizontalSizer, 10);
-    mainSizer->AddStretchSpacer(1);
+    mainSizer->Add(horizontalSizer, 1);
 
     panel->SetSizerAndFit(mainSizer);
 

@@ -210,7 +210,8 @@ void DashboardFrame::updateViewMailPanel(const Mail& mail) {
 
     try {
         auto htmlText = mail.getHTMLPart();
-        _htmlDisplayer->SetPage(htmlText);
+        wxString x = wxString::FromUTF8(htmlText.c_str());
+        _htmlDisplayer->SetPage(x);
         _plainTextDisplayer->Hide();
         _htmlDisplayer->Show();
     }

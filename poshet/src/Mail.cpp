@@ -1,7 +1,7 @@
 #include "Mail.hpp"
 
 Mail::Mail(const std::string& plainTextData) : _plainText(plainTextData) {
-    _type = Type::FROM_PLAINTEXT;   
+    _type = ConstructType::FROM_PLAINTEXT;   
     parsePlainText();
 }
 
@@ -64,6 +64,9 @@ const std::string& Mail::plainText() const {
 }
 
 std::string Mail::getHTMLPart() const {
+    std::ofstream f("output.txt");
+    vmime::utility::outputStreamAdapter out(f) ;
+    _message->generate(out) ;
     for (size_t i = 0 ; i < _messageParser->getTextPartCount() ; ++i) {
         const vmime::textPart& part = *_messageParser->getTextPartAt(i);
         // text/html
