@@ -102,10 +102,10 @@ void DashboardFrame::initViewMailPanel() {
     auto mailContentsPanel = new wxPanel(viewMailPanel(), wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SUNKEN);
     auto mailContentsSizer = new wxBoxSizer(wxVERTICAL);
 
-    _plainTextDisplayer = new wxTextCtrl(mailContentsPanel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
+    _plainTextDisplayer = new wxTextCtrl(mailContentsPanel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_WORDWRAP | wxTE_READONLY);
     _htmlDisplayer = new wxHtmlWindow(mailContentsPanel, wxID_ANY);
-    //_plainTextDisplayer->Hide();
-    //_htmlDisplayer->Hide();
+    _plainTextDisplayer->Hide();
+    _htmlDisplayer->Hide();
 
     _displayer = new wxBoxSizer(wxVERTICAL);
 
@@ -190,8 +190,8 @@ void DashboardFrame::setMailList(const std::vector<Mail>& mails) {
         _mailList->InsertItem(item);
 
         for (int i = 0; i < _fields.size(); ++i) {
-            auto fieldValue = mail.getHeaderField(_fields[i]);
-            _mailList->SetItem(index, i, fieldValue);
+            auto fieldValue = mail.getHeaderField(_fields[i], true);
+            _mailList->SetItem(index, i, wxString::FromUTF8(fieldValue.c_str()));
         }
     }
     for (int i = 0; i < _fields.size(); ++i) {
@@ -206,21 +206,31 @@ void DashboardFrame::updateViewMailPanel(const Mail& mail) {
     initViewMailPanel();
     _selectedMailFrom->SetLabel("From: " + mail.getHeaderField("From"));
     _selectedMailTo->SetLabel("To: " + mail.getHeaderField("To"));
-    _selectedMailSubject->SetLabel(mail.getHeaderField("Subject"));
+    _selectedMailSubject->SetLabel(wxString::FromUTF8(mail.getHeaderField("Subject", true).c_str()));
 
     try {
-        auto htmlText = mail.getHTML();
+        auto htmlText = mail.getHTMLPart();
         _htmlDisplayer->SetPage(htmlText);
         _plainTextDisplayer->Hide();
         _htmlDisplayer->Show();
     }
     catch (MailException& e) {
-        std::wstring x = L"test string. should also work with unicode. abcăîșț";
-        _plainTextDisplayer->SetValue(wxString(x));
-        _plainTextDisplayer->Show();
-        _htmlDisplayer->Hide();
+        try {
+            std::cout << "[DashboardFrame] Warning: " << e.what() << "\n";
+            auto plainText = mail.getPlainTextPart();
+            wxString x = wxString::FromUTF8(plainText.c_str());
+            _plainTextDisplayer->SetValue(x);
+            _plainTextDisplayer->Show();
+            _htmlDisplayer->Hide();
+        }
+        catch (MailException& e) {
+            std::cout << "[DashboardFrame] Warning: " << e.what() << "\n";
+            wxString x = wxString::FromUTF8("Unfortunately, mail contents could not be displayed");
+            _plainTextDisplayer->SetValue(x);
+            _plainTextDisplayer->Show();
+            _htmlDisplayer->Hide();
+        }
     }
-
     refreshViewMailPanel();
 }
 

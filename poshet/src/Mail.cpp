@@ -40,24 +40,30 @@ Mail::~Mail() {
     delete _messageParser;
 }
 
-std::string Mail::getHeaderField(const std::string& key) const {
+std::string Mail::getHeaderField(const std::string& key, bool unicode) const {
     if (!_isMimeMessageInit) {
         throw MailException("Mail not parsed yet");
     }
     if (_message->getHeader()->hasField(key)) {
-        return _message->getHeader()->getField(key)->getValue()->generate();
+        // possibly undecoded
+        auto data = _message->getHeader()->getField(key)->getValue()->generate();
+        if (!unicode) {
+            return vmime::text::decodeAndUnfold(data)->getConvertedText(vmime::charset("ascii"));
+        }
+        else {
+            return vmime::text::decodeAndUnfold(data)->getConvertedText(vmime::charset("utf-8"));
+        }
     }
     else {
         return ""; //temporary
     }
-    
 }
 
 const std::string& Mail::plainText() const {
     return _plainText;
 }
 
-std::string Mail::getHTML() const {
+std::string Mail::getHTMLPart() const {
     for (size_t i = 0 ; i < _messageParser->getTextPartCount() ; ++i) {
         const vmime::textPart& part = *_messageParser->getTextPartAt(i);
         // text/html
@@ -71,4 +77,19 @@ std::string Mail::getHTML() const {
         }
     }
     throw MailException("Mail does not have HTML parts");
+}
+
+std::string Mail::getPlainTextPart() const {
+    for (size_t i = 0 ; i < _messageParser->getTextPartCount() ; ++i) {
+        const vmime::textPart& part = *_messageParser->getTextPartAt(i);
+        // text/html
+        if (part.getType().getSubType() == vmime::mediaTypes::TEXT_PLAIN) {
+            const vmime::textPart& tp = dynamic_cast<const vmime::textPart&>(part);
+            std::string htmlText;
+            vmime::utility::outputStreamStringAdapter x(htmlText);
+            tp.getText()->extract(x);
+            return htmlText;
+        }
+    }
+    throw MailException("Mail does not have plain parts");
 }

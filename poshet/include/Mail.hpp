@@ -38,9 +38,11 @@ public:
     ~Mail();
 
     const std::string& plainText() const;
-    std::string getHeaderField(const std::string& key) const;
+    
+    std::string getHeaderField(const std::string& key, bool unicode = false) const;
 
-    std::string getHTML() const;
+    std::string getHTMLPart() const;
+    std::string getPlainTextPart() const;
 };
 
 
