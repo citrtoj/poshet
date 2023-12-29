@@ -27,4 +27,5 @@ namespace Utils {
     std::string strip(const std::string& str);
     std::string sha256(const std::string& input);
     std::string fileSizeToString(unsigned long long fileSize);
+    std::time_t mailDateToUnixTimestamp(const std::string& dateString);
 }

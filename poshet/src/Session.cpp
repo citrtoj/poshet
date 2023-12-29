@@ -64,13 +64,14 @@ void Session::getAllPop3AndSaveLocally() {
             // info for db
             auto uidl = rawMailData.UIDL;
             auto id = mail.getHeaderField("Message-Id");
+            auto date = mail.getHeaderField("Date");
             auto hash = Utils::sha256(mail.plainText());
             auto fullMailId = id + "_" + hash;
 
             // save to fileManager, then to db
             _fileManager->saveMail(_userData.pop3Domain(), MailFileManager::MailType::RECEIVED, fullMailId, mail.plainText());
             // if this didn't fail, save all related info to db
-            _db.addReceivedMail(fullMailId, _userData.dbId(), uidl);
+            _db.addReceivedMail(fullMailId, _userData.dbId(), uidl, static_cast<unsigned long long>(Utils::mailDateToUnixTimestamp(date)));
         }
         catch (ServerException& e) {
             std::cout << "[Session] SERVER WARNING: " << e.what() << "\n";
@@ -92,7 +93,6 @@ std::vector<std::string> Session::getAllMailIdsFromDatabase() {
 
 void Session::loadMail(int count) {
     _mails.clear();
-    getAllPop3AndSaveLocally();
     
     auto mailIds = getAllMailIdsFromDatabase();
     _mails.reserve(mailIds.size());
@@ -100,12 +100,12 @@ void Session::loadMail(int count) {
         auto x = _fileManager->getMail(_userData.pop3Domain(), MailFileManager::MailType::RECEIVED, mailId);
         _mails.push_back(Mail(x));
     }
-
 }
 
 const std::vector<Mail>& Session::retrieveMail(bool force) {
     if (force) {
         try {
+            getAllPop3AndSaveLocally();
             loadMail();
         }
         catch (Exception& e) {

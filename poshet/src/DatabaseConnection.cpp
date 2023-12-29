@@ -28,7 +28,7 @@ void DatabaseConnection::initTables() {
     if (code) {
         throw DatabaseException("Could not create database table: users");
     }
-    mailsTableQuery = "CREATE TABLE IF NOT EXISTS received_mail (mail_id TEXT PRIMARY KEY, user_id INTEGER, tag TEXT, uidl TEXT, timestamp INTEGER NOT NULL, marked_for_deletion INTEGER DEFAULT 0 NOT NULL, FOREIGN KEY(user_id) REFERENCES users(user_id));" ;
+    mailsTableQuery = "CREATE TABLE IF NOT EXISTS received_mail (mail_id TEXT PRIMARY KEY, user_id INTEGER, tag TEXT, uidl TEXT, timestamp INTEGER NOT NULL, pop3_timestamp INTEGER NOT NULL, marked_for_deletion INTEGER DEFAULT 0 NOT NULL, FOREIGN KEY(user_id) REFERENCES users(user_id));" ;
     code = sqlite3_exec(_db, mailsTableQuery.c_str(), nullptr, nullptr, nullptr);
     if (code) {
         throw DatabaseException("Could not create database table: received_mail");
@@ -70,17 +70,18 @@ int DatabaseConnection::getUser(const std::string& mailAddress, const std::strin
     return result;
 }
 
-void DatabaseConnection::addReceivedMail(const std::string& mailId, int userId, const std::string& uidl, const std::string tag) {
+void DatabaseConnection::addReceivedMail(const std::string& mailId, int userId, const std::string& uidl, unsigned long long date, const std::string tag) {
     // momentan presupunem ca toate serverele au UIDL
     auto currentTime = std::chrono::system_clock::now();
     std::time_t currentTime_t = std::chrono::system_clock::to_time_t(currentTime);
-    int unixTimestamp = static_cast<int>(currentTime_t);
-    std::string query = "INSERT OR IGNORE INTO received_mail (mail_id, user_id, tag, uidl, timestamp) VALUES"
+    unsigned long long receivedTimestamp = static_cast<unsigned long long>(currentTime_t);
+    std::string query = "INSERT OR IGNORE INTO received_mail (mail_id, user_id, tag, uidl, timestamp, pop3_timestamp) VALUES"
                         "('" + mailId
                         + "', " + std::to_string(userId)
                         + "," +  (tag.empty() ? "NULL":  "'" + tag + "'")
                         + ", '" + uidl +
-                        "', " + std::to_string(unixTimestamp) + ");";
+                        "', " + std::to_string(date) +
+                        ", " + std::to_string(receivedTimestamp) + ");";
     int code = sqlite3_exec(_db, query.c_str(), nullptr, nullptr, nullptr);
     if (code) {
         throw DatabaseException(std::string("Could not add mail to database: ") + sqlite3_errmsg(_db));

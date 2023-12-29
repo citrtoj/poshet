@@ -61,8 +61,14 @@ void AppController::onRefreshMailList() {
 }
 
 void AppController::getSetMail(bool force) {
-    const auto& mails = _session->retrieveMail(force);
-    _dashboardFrame->setMailList(mails);
+    try {
+        const auto& mails = _session->retrieveMail(force);
+        _dashboardFrame->setMailList(mails);
+    }
+    catch (Exception& e) {
+        showException(e.what());
+        onCloseApp();
+    }
 }
 
 void AppController::onSelectMail() {

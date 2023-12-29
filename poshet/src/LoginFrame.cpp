@@ -31,7 +31,7 @@ LoginFrame::LoginFrame(const wxString& title) :
     _pop3SSL = new wxCheckBox(panel, wxID_ANY, "Enable SSL for POP3");
     pop3Sizer->Add(_pop3SSL, 0, wxALL, MARGIN);
     _pop3Domain = addTextCtrlToSizer(panel, "POP3 Domain (default: domain of email address)", pop3Sizer);
-    _pop3Username = addTextCtrlToSizer(panel, "POP3 Username (default: local part of email address)", pop3Sizer);
+    _pop3Username = addTextCtrlToSizer(panel, "POP3 Username (default: email address)", pop3Sizer);
 
     auto smtpSizer = new wxBoxSizer(wxVERTICAL);
     _smtpPort = addTextCtrlToSizer(panel, "SMTP Port (default: 25 / 465 for SSL)", smtpSizer, 0, true);
@@ -40,7 +40,7 @@ LoginFrame::LoginFrame(const wxString& title) :
     _smtpDomain = addTextCtrlToSizer(panel, "SMTP Domain (default: domain of email address)", smtpSizer);
     _smtpAuth = new wxCheckBox(panel, wxID_ANY, "Enable SMTP authentication (Plain)");
     smtpSizer->Add(_smtpAuth, 0, wxALL, MARGIN);
-    _smtpUsername = addTextCtrlToSizer(panel, "SMTP Username (default: local part of email address)", smtpSizer);
+    _smtpUsername = addTextCtrlToSizer(panel, "SMTP Username (default: email address)", smtpSizer);
 
     twoColumnHorizSizer->Add(pop3Sizer, 1, wxEXPAND);
     twoColumnHorizSizer->Add(smtpSizer, 1, wxEXPAND);

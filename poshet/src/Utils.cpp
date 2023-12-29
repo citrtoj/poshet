@@ -137,3 +137,16 @@ std::string Utils::fileSizeToString(unsigned long long fileSize) {
     std::string filesizeString = stream.str();
     return filesizeString + " " + sizes[i];
 }
+
+std::time_t Utils::mailDateToUnixTimestamp(const std::string& dateString) {
+    std::tm timeStruct = {};
+    std::istringstream ss(dateString);
+    ss >> std::get_time(&timeStruct, "%a, %d %b %Y %H:%M:%S");
+    if (ss.fail()) {
+        return -1;
+    }
+    int timezoneOffset;
+    ss >> timezoneOffset;
+    std::time_t timestamp = std::mktime(&timeStruct) - timezoneOffset * 3600;
+    return timestamp;
+}
