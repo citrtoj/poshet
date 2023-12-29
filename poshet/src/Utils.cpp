@@ -1,8 +1,6 @@
 #include "Utils.hpp"
 
 namespace Utils {
-    
-
     ssize_t readLoop(int fd, void* buffer, size_t nbytes) {
         // if returned number is positive: if equal to nbytes then succeeded writing, else it piped somewhere
         // if returned number is negative: returns -readSofar - 1 (to distinguish from error on first read)
@@ -124,4 +122,18 @@ namespace Utils {
 
         return hashedString;
     }
+}
+
+std::string Utils::fileSizeToString(unsigned long long fileSize) {
+    std::ostringstream stream;
+    double doubleFileSize = fileSize;
+    std::vector<std::string> sizes = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
+    int i = 0;
+    while (doubleFileSize >= 1024 && i < sizes.size()) {
+        doubleFileSize /= 1024;
+        i++;
+    }
+    stream << std::setprecision(3) <<  doubleFileSize;
+    std::string filesizeString = stream.str();
+    return filesizeString + " " + sizes[i];
 }

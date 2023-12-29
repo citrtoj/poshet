@@ -51,6 +51,7 @@ public:
     void onReplyMail() override;
     void onForwardMail() override;
     void onDeleteMail() override;
+    void onAttachmentClick(int index) override;
 
     void onMailCreatorSend() override;
     void onMailCreatorClose() override;

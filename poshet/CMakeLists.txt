@@ -27,6 +27,7 @@ set(SOURCES
     src/App.cpp
     src/LoginFrame.cpp
     src/DashboardFrame.cpp
+    src/GUIComponents.cpp
     src/MailCreatorFrame.cpp
 )
 

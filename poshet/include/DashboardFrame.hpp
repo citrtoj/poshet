@@ -8,6 +8,8 @@
 
 #include <wx/wx.h>
 #include <wx/wxhtml.h>
+#include <wx/scrolwin.h>
+#include <wx/wrapsizer.h>
 #include <wx/listctrl.h>
 #include <wx/richtext/richtextctrl.h>
 #include <wx/splitter.h>
@@ -18,6 +20,7 @@
 #include <mimetic/mimetic.h>
 
 #include "Mail.hpp"
+#include "GUIComponents.hpp"
 #include "FrameSubscribers.hpp"
 
 class DashboardFrame : public wxFrame {
@@ -53,6 +56,8 @@ protected:
     wxButton* _replyMailBtn;
     wxButton* _forwardMailBtn;
     wxButton* _deleteMailBtn;
+    wxScrolledWindow* _mailAttachmentsPanel;
+    wxBoxSizer* _mailAttachmentsSizer;
 
     // wxWidgets-specific event handlers
     void OnListBoxEvent(wxCommandEvent& e);
@@ -61,7 +66,7 @@ protected:
     void OnRefreshMailList(wxCommandEvent& e);
     void OnNewMail(wxCommandEvent& e);
     void OnDeleteMail(wxCommandEvent& e);
-
+    void OnAttachmentClick(wxCommandEvent& e);
 
     // internal getters
     wxPanel* viewMailPanel() const;

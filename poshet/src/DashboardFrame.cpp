@@ -115,10 +115,20 @@ void DashboardFrame::initViewMailPanel() {
     mailContentsSizer->Add(_displayer, 1, wxEXPAND);
     mailContentsPanel->SetSizer(mailContentsSizer);
 
+    _mailAttachmentsPanel = new wxScrolledWindow(viewMailPanel(), wxID_ANY, wxDefaultPosition, {-1, -1}, wxBORDER_SUNKEN);
+    _mailAttachmentsPanel->Bind(wxEVT_BUTTON, &DashboardFrame::OnAttachmentClick, this);
+
+    _mailAttachmentsSizer = new wxBoxSizer(wxHORIZONTAL);
+    _mailAttachmentsPanel->SetSizer(_mailAttachmentsSizer);
+
+    _mailAttachmentsPanel->SetScrollRate(5, 0);
+
     _viewMailSizer = new wxBoxSizer(wxVERTICAL);
     _viewMailSizer->Add(headerSizer, 0, wxEXPAND);
     _viewMailSizer->Add(mailSubjectSizer, 0, wxEXPAND | wxALL, MARGIN);
     _viewMailSizer->Add(mailContentsPanel, 1, wxEXPAND | wxALL, MARGIN);
+    _viewMailSizer->Add(_mailAttachmentsPanel, 0, wxEXPAND | wxALL, MARGIN);
+    _mailAttachmentsPanel->Hide();
 
     _viewMailPanel->SetSizerAndFit(_viewMailSizer);
     _isViewMailPanelInit = true;
@@ -128,6 +138,7 @@ void DashboardFrame::initViewMailPanel() {
 void DashboardFrame::refreshViewMailPanel() {
     if (_isViewMailPanelInit) {
         _splitter->SplitVertically(_mailList, _viewMailPanel);
+        _mailAttachmentsPanel->SetSizerAndFit(_mailAttachmentsSizer);
         _viewMailPanel->Layout();
     }
 }
@@ -208,6 +219,27 @@ void DashboardFrame::updateViewMailPanel(const Mail& mail) {
     _selectedMailTo->SetLabel("To: " + mail.getHeaderField("To"));
     _selectedMailSubject->SetLabel(wxString::FromUTF8(mail.getHeaderField("Subject", true).c_str()));
 
+    auto attachmentMetadata = mail.attachmentMetadata();
+    if (attachmentMetadata.size() == 0) {
+        _mailAttachmentsPanel->Hide();
+    }
+    else {
+        // clear attachments
+        wxWindowList& children = _mailAttachmentsPanel->GetChildren();
+        for (wxWindowList::iterator it = children.begin(); it != children.end(); ++it) {
+            wxWindow* child = *it;
+            if (child->IsKindOf(wxCLASSINFO(AttachmentButton))) {
+                child->Destroy();
+            }
+        }
+        for (size_t i = 0; i < attachmentMetadata.size(); ++i) {
+            auto x = new AttachmentButton(_mailAttachmentsPanel, i, attachmentMetadata[i]._filename, attachmentMetadata[i]._size);
+            _mailAttachmentsSizer->Add(x, 0, wxALL, MARGIN);
+        }
+        _mailAttachmentsPanel->Show();
+    }
+    
+
     try {
         auto htmlText = mail.getHTMLPart();
         wxString x = wxString::FromUTF8(htmlText.c_str());
@@ -237,4 +269,8 @@ void DashboardFrame::updateViewMailPanel(const Mail& mail) {
 
 long DashboardFrame::selected() const {
     return _mailList->GetFirstSelected();
+}
+
+void DashboardFrame::OnAttachmentClick(wxCommandEvent& e) {
+    _subscriber->onAttachmentClick(e.GetInt());
 }

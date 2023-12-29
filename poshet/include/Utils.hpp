@@ -11,6 +11,8 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
+#include <sstream>
+#include <iomanip>
 
 #include <openssl/evp.h>
 #include <openssl/sha.h>
@@ -24,4 +26,5 @@ namespace Utils {
 
     std::string strip(const std::string& str);
     std::string sha256(const std::string& input);
+    std::string fileSizeToString(unsigned long long fileSize);
 }

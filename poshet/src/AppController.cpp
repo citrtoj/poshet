@@ -5,7 +5,7 @@ AppController::AppController(wxApp* app) :
     _loginFrame(new LoginFrame("Login to Poshet")),
     _dashboardFrame(new DashboardFrame("Poshet"))
 {
-    // perhaps get config settings before this??
+    // todo: perhaps get config settings before this??
     try {
         _fileManager = new MailFileManager();
         _session = new Session(_fileManager);
@@ -43,7 +43,7 @@ void AppController::login() {
     }
     catch (Exception& e) {
         showException(e.what());
-        // perhaps handle it or something... reset session?
+        // todo: perhaps handle it or something... reset session?
         return;
     }
     try {
@@ -109,6 +109,7 @@ void AppController::onMailCreatorSend() {
 }
 
 void AppController::onMailCreatorClose() {
+    // todo: recheck this
     // shouldn't lead to bugs, despite it seemingly being a "i'm pretending it's done before it's actually done" situation
     // the GUI is singlethreaded, so immediately after this is set to false, the window of the mail creator frame receives the close event, and then that starts closing itself, more safely than I would have closed it manually using Destroy();
     // and only then would the user theoretically be even able to press the "new message" button again
@@ -116,6 +117,11 @@ void AppController::onMailCreatorClose() {
     // but that would mean a more complicated subscriber system, I think
     // or the creator would have to send a pointer/index to itself... or something
     _isMailCreatorOpen = false;
+}
+
+void AppController::onAttachmentClick(int index) {
+    // todo: do stuff. open a Save As window, use FileManager to save the file locally, etc etc
+    std::cout << "att index: " << index << "\n";
 }
 
 AppController::~AppController() {

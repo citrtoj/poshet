@@ -14,16 +14,19 @@
 #include "Utils.hpp"
 #include "Exceptions.hpp"
 
+struct AttachmentMetadata {
+    std::string _filename, _contentType;
+    unsigned long long _size;
+};
+
+struct Attachment {
+    AttachmentMetadata _metadata;
+    // temp???
+    std::string _data;
+};
 
 class Mail {
 protected:
-    enum ConstructType {
-        FROM_PLAINTEXT,
-        FROM_USER_INPUT,
-    };
-
-    ConstructType _type;
-
     std::string _plainText;
 
     vmime::shared_ptr<vmime::message> _message;
@@ -44,6 +47,20 @@ public:
 
     std::string getHTMLPart() const;
     std::string getPlainTextPart() const;
+
+    std::vector<AttachmentMetadata> attachmentMetadata() const;
+};
+
+class MailBuilder {
+public:
+    enum ReferenceType {
+        NONE,
+        REPLY,
+        FORWARD
+    };
+    
+    MailBuilder(); // no reference
+    MailBuilder(const Mail& mail, ReferenceType type);
 };
 
 

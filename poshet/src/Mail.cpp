@@ -1,7 +1,6 @@
 #include "Mail.hpp"
 
-Mail::Mail(const std::string& plainTextData) : _plainText(plainTextData) {
-    _type = ConstructType::FROM_PLAINTEXT;   
+Mail::Mail(const std::string& plainTextData) : _plainText(plainTextData) {  
     parsePlainText();
 }
 
@@ -14,23 +13,15 @@ void Mail::parsePlainText() {
 
 Mail::Mail(const Mail& rhs) {
     std::cout << "[Mail] Copy ctor\n";
-    _type = rhs._type;
-    if (_type == FROM_PLAINTEXT) {
-        _plainText = rhs._plainText;
-        parsePlainText();
-    }
-    else {
-        throw MailException("Unsupported");
-    }
+    _plainText = rhs._plainText;
+    parsePlainText();
 }
 
 Mail::Mail(Mail&& rhs) {
     std::cout << "[Mail] Move ctor\n";
-    _type = rhs._type;
     _plainText = rhs._plainText;
     _messageParser = rhs._messageParser;
     rhs._messageParser = nullptr;
-            // Transfer ownership of the shared_ptr
     _message = std::move(rhs._message);
     _isMimeMessageInit = rhs._isMimeMessageInit;
     rhs._isMimeMessageInit = false;
@@ -91,5 +82,18 @@ std::string Mail::getPlainTextPart() const {
             return htmlText;
         }
     }
-    throw MailException("Mail does not have plain parts");
+    throw MailException("Mail does not have plaintext parts");
+}
+
+std::vector<AttachmentMetadata> Mail::attachmentMetadata() const {
+    std::vector<AttachmentMetadata> data;
+    for (size_t i = 0; i < _messageParser -> getAttachmentCount(); ++i) {
+        const vmime::attachment& attachment = *_messageParser->getAttachmentAt(i);
+        data.push_back({
+            attachment.getName().generate(),
+            attachment.getType().generate(),
+            attachment.getData()->getLength()
+        });
+    }
+    return data;
 }
