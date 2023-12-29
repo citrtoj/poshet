@@ -98,7 +98,7 @@ namespace Utils {
         return (start < end) ? std::string(start, end) : std::string();
     }
 
-    std::string sha256(const std::string& input) {
+    std::string encodeToSHA256(const std::string& input) {
         EVP_MD_CTX *mdctx;
         const EVP_MD *md;
         unsigned char hash[SHA256_DIGEST_LENGTH];
@@ -122,31 +122,45 @@ namespace Utils {
 
         return hashedString;
     }
+    std::string fileSizeToString(unsigned long long fileSize) {
+        std::ostringstream stream;
+        double doubleFileSize = fileSize;
+        std::vector<std::string> sizes = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
+        int i = 0;
+        while (doubleFileSize >= 1024 && i < sizes.size()) {
+            doubleFileSize /= 1024;
+            i++;
+        }
+        stream << std::setprecision(3) <<  doubleFileSize;
+        std::string filesizeString = stream.str();
+        return filesizeString + " " + sizes[i];
+    }
+
+    std::time_t mailDateToUnixTimestamp(const std::string& dateString) {
+        std::tm timeStruct = {};
+        std::istringstream ss(dateString);
+        ss >> std::get_time(&timeStruct, "%a, %d %b %Y %H:%M:%S");
+        if (ss.fail()) {
+            return -1;
+        }
+        int timezoneOffset;
+        ss >> timezoneOffset;
+        std::time_t timestamp = std::mktime(&timeStruct) - timezoneOffset * 3600;
+        return timestamp;
+    }
+
+    std::string encodeToBase64(const std::string& input) {
+        BIO *bio, *b64;
+        BUF_MEM *bptr;
+        b64 = BIO_new(BIO_f_base64());
+        bio = BIO_new(BIO_s_mem());
+        bio = BIO_push(b64, bio);
+        BIO_write(bio, input.c_str(), input.length());
+        BIO_flush(bio);
+        BIO_get_mem_ptr(bio, &bptr);
+        std::string result(bptr->data, bptr->length);
+        BIO_free_all(bio);
+        return result;
+    }
 }
 
-std::string Utils::fileSizeToString(unsigned long long fileSize) {
-    std::ostringstream stream;
-    double doubleFileSize = fileSize;
-    std::vector<std::string> sizes = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
-    int i = 0;
-    while (doubleFileSize >= 1024 && i < sizes.size()) {
-        doubleFileSize /= 1024;
-        i++;
-    }
-    stream << std::setprecision(3) <<  doubleFileSize;
-    std::string filesizeString = stream.str();
-    return filesizeString + " " + sizes[i];
-}
-
-std::time_t Utils::mailDateToUnixTimestamp(const std::string& dateString) {
-    std::tm timeStruct = {};
-    std::istringstream ss(dateString);
-    ss >> std::get_time(&timeStruct, "%a, %d %b %Y %H:%M:%S");
-    if (ss.fail()) {
-        return -1;
-    }
-    int timezoneOffset;
-    ss >> timezoneOffset;
-    std::time_t timestamp = std::mktime(&timeStruct) - timezoneOffset * 3600;
-    return timestamp;
-}

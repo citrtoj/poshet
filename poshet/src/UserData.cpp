@@ -71,10 +71,10 @@ const std::string& UserData::smtpDomain() const {
     return _smtpDomain;
 }
 
-void UserData::setDbId(int dbId) {
+void UserData::setDbId(const std::string& dbId) {
     _dbId = dbId;
 }
 
-int UserData::dbId() const {
+const std::string& UserData::dbId() const {
     return _dbId;
 }

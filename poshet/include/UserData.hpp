@@ -29,7 +29,7 @@ private:
     bool _smtpAuth = false;
     std::string _smtpUsername;
 
-    int _dbId = -1;
+    std::string _dbId = "";
 
 public:
     static constexpr int MIN_ARGS = 5;
@@ -69,9 +69,16 @@ public:
     const std::string& pop3Port() const {
         return _pop3Port;
     }
+    const std::string& smtpPort() const {
+        return _smtpPort;
+    }
     
-    int dbId() const;
-    void setDbId(int dbId);
+    bool smtpAuth() const {
+        return _smtpAuth;
+    }
+
+    const std::string& dbId() const;
+    void setDbId(const std::string& dbId);
 };
 
 class ValidationException : public Exception {

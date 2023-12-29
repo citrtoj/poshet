@@ -29,10 +29,10 @@ public:
     void init(); // opens db, creates tables if they don't exist
 
     void addUser(const std::string& mailAddress, const std::string& incomingServer);
-    int getUser(const std::string& mailAddress, const std::string& incomingServer);
+    std::string getUser(const std::string& mailAddress, const std::string& incomingServer);
 
-    void addReceivedMail(const std::string& mailId, int userId, const std::string& uidl, unsigned long long date, const std::string tag = "");
-    std::vector<std::string> getReceivedMailIdsOfUser(int id);
+    void addReceivedMail(const std::string& mailId, const std::string& userId, const std::string& uidl, unsigned long long date, const std::string tag = "");
+    std::vector<std::string> getReceivedMailIdsOfUser(const std::string& id, const std::string& tag = "");
 
     void tagReceivedMail(const std::string& mailId, const std::string& tag);
 

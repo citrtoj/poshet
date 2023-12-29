@@ -46,6 +46,18 @@ protected:
     ssize_t readFromSocket(void* buffer, size_t nbytes);
     ssize_t writeToSocket(const void* buffer, size_t nbytes);
 
+    enum State {
+        DISCONNECTED,
+        DISCONNECTING,
+        AUTHORIZATION,
+        TRANSACTION
+    };
+    enum SingleLineMessage { // should readSingleLineMessage replace \r\n with \n or not?
+        PROCESSED,
+        RAW
+    };
+    int _timeoutSecs = 5;
+
 public:
     static bool _isOpenSSLInit;
     void InitializeOpenSSL();

@@ -12,16 +12,21 @@ void Session::setLoginData(const UserData& data) {
     _userData = data;
     _pop3.setHost(_userData.pop3Domain());
     _pop3.setSSL(_userData.pop3SSL());
+    _smtp.setSSL(_userData.smtpSSL());
     _pop3.setPort(_userData.pop3Port());
-    //_smtp.setHost(_userData.smtpDomain());
+    _smtp.setHost(_userData.smtpDomain());
+    _smtp.setPort(_userData.smtpPort());
     std::cout << "[Session] Set data\n";
 }
 
 void Session::connectAndLoginToServers() {
     try {
         _pop3.connectToServer();
-        //_smtp.connectToServer();
+        _smtp.connectToServer();
         _pop3.login(_userData.pop3Username(), _userData.password());
+        if (_userData.smtpAuth()) {
+            _smtp.login(_userData.pop3Username(), _userData.password());
+        }
         _db.addUser(_userData.emailAddress(), _userData.pop3Domain());
         _userData.setDbId(_db.getUser(_userData.emailAddress(), _userData.pop3Domain()));
     }
@@ -65,7 +70,7 @@ void Session::getAllPop3AndSaveLocally() {
             auto uidl = rawMailData.UIDL;
             auto id = mail.getHeaderField("Message-Id");
             auto date = mail.getHeaderField("Date");
-            auto hash = Utils::sha256(mail.plainText());
+            auto hash = Utils::encodeToSHA256(mail.plainText());
             auto fullMailId = id + "_" + hash;
 
             // save to fileManager, then to db

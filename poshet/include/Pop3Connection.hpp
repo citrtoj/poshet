@@ -27,17 +27,6 @@ public:
         RawMailData(size_t index, size_t byteSize) : index(index), byteSize(byteSize) {}
         RawMailData() {}
     };
-    enum State {
-        DISCONNECTED,
-        DISCONNECTING,
-        AUTHORIZATION,  // after opening socket
-        TRANSACTION
-    };
-    enum SingleLineMessage { // should readSingleLineMessage replace \r\n with \n or not?
-        PROCESSED,
-        RAW
-    };
-    int _timeoutSecs = 60;
 
 protected:
     std::string _user, _pass;
@@ -51,6 +40,8 @@ protected:
     std::condition_variable cv;
 
     void sendCommand(const std::string& command); // NOT THREAD SAFE
+
+    std::string _ehloResponse;
 
     std::string readLineResponse(bool raw = SingleLineMessage::PROCESSED);
     std::string readMultiLineResponse();

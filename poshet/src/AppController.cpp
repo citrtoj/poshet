@@ -40,19 +40,14 @@ void AppController::login() {
     try {
         _session->setLoginData(_loginFrame->userInput());
         _session->connectAndLoginToServers();
-    }
-    catch (Exception& e) {
-        showException(e.what());
-        // todo: perhaps handle it or something... reset session?
-        return;
-    }
-    try {
         _loginFrame->Hide();
         _dashboardFrame->Show();
         getSetMail(true);
     }
     catch (Exception& e) {
         showException(e.what());
+        // todo: perhaps handle it or something... reset session?
+        return;
     }
 }
 

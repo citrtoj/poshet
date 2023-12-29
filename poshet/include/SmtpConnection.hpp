@@ -9,25 +9,25 @@
 #include <mutex>
 #include <condition_variable>
 #include <atomic>
+#include <functional>
 
 #include "Mail.hpp"
+#include "Utils.hpp"
 #include "ConnectionBase.hpp"
 
 class SMTPConnection : public ConnectionBase {
-    enum State {
-        DISCONNECTED,
-        DISCONNECTING, 
-        TRANSACTION
+public:
+    enum LoginType {
+        NONE,
+        PLAIN,
+        LOGIN
     };
-    enum SingleLineMessage { // should readSingleLineMessage replace \r\n with \n or not?
-        PROCESSED,
-        RAW
-    };
-    int _timeoutSecs = 60;
 protected:
+    std::string _user, _pass;
+    LoginType _loginType = NONE;
     std::string _clientDomain = "localhost";
     
-    State _state = State::DISCONNECTED;
+    State _state = DISCONNECTED;
 
     std::thread _noopThread;
     bool _threadStarted = false;
@@ -35,11 +35,17 @@ protected:
     std::mutex _stateMutex;
     std::condition_variable cv;
 
-    void sendCommand(const std::string& command); // NOT THREAD SAFE; only sends the command, without reading response
+    std::string _ehloResponse;
 
-    std::string execCommand(const std::string& command); // THREAD SAFE; sends commands, returns response
+    void sendCommand(const std::string& command, bool addCRLF = true); // NOT THREAD SAFE; only sends the command, without reading response
+
+    std::string execCommand(const std::string& command, bool addCRLF = true); // THREAD SAFE; sends commands, returns response
 
     void keepAlive();
+    
+    std::unordered_map<LoginType, std::function<void()>> _loginMethods;
+    void initLoginMethods();
+
 public:
     SMTPConnection(const std::string& host);
     SMTPConnection();
@@ -54,6 +60,9 @@ public:
 
     void connectToServer() override;
     void closeConnection() override;
+
+    void login();
+    void login(const std::string& user, const std::string& pass);
 
     std::string readResponse();
 

@@ -12,10 +12,32 @@ int SMTPConnection::DefaultPort(bool SSL) {
 SMTPConnection::SMTPConnection() {
     _nameOfConnection = "SMTP Connection";
     setPort(std::to_string(DefaultPort(_isSSLEnabled)));
+    initLoginMethods();
 }
 
 SMTPConnection::SMTPConnection(const std::string& host) : SMTPConnection() {
     setHost(host);
+}
+
+void SMTPConnection::initLoginMethods() {
+    _loginMethods = { {
+            PLAIN, [this]() {
+                // todo: IMPLEMENT
+                std::cout << "PLAIN\n";
+            }
+        }, {
+            LOGIN, [&]() {
+                log(execCommand("AUTH LOGIN"));
+
+                // todo: assert commands, check for errors in message
+
+                auto base64User = Utils::encodeToBase64(_user + "\n");
+                log(execCommand(base64User, false));
+                auto base64Pass = Utils::encodeToBase64(_pass + "\n");
+                log(execCommand(base64Pass, false));
+            }
+        }
+    };
 }
 
 void SMTPConnection::setClientDomain(const std::string& domain) {
@@ -46,8 +68,11 @@ std::string SMTPConnection::readResponse() {
     return finalResult;
 }
 
-void SMTPConnection::sendCommand(const std::string& command) {
-    std::string tmpCommand = command + "\r\n";
+void SMTPConnection::sendCommand(const std::string& command, bool addCRLF) {
+    std::string tmpCommand = command;
+    if (addCRLF) {
+        tmpCommand += "\r\n";
+    }
     int status = writeToSocket(tmpCommand.c_str(), tmpCommand.length());
     if (status < 0) {
         throw Exception("Error writing command to server");
@@ -57,7 +82,7 @@ void SMTPConnection::sendCommand(const std::string& command) {
 void SMTPConnection::connectToServer() {
     connectSocket();
     readResponse();
-    execCommand("EHLO " + _clientDomain);
+    _ehloResponse = execCommand("EHLO " + _clientDomain);
 
     // pot de pe acum sa trimit NOOP in thread
     _noopThread = std::thread(&SMTPConnection::keepAlive, this);
@@ -75,15 +100,21 @@ void SMTPConnection::keepAlive() {
                 break;
             }
         }
-        execCommand("NOOP");
+        try {
+            execCommand("NOOP");
+        }
+        catch(Exception& e) {
+            std::cout << e.what() << "\n";
+            throw;
+        }
         log("Sent NOOP");
     }
 }
 
-std::string SMTPConnection::execCommand(const std::string& command) {
+std::string SMTPConnection::execCommand(const std::string& command, bool addCRLF) {
     std::lock_guard<std::mutex> lock(_commandMutex);
 
-    sendCommand(command);
+    sendCommand(command, addCRLF);
     return readResponse();
 }
 
@@ -125,4 +156,18 @@ void SMTPConnection::sendMail(const Mail& mail) {
 
 SMTPConnection::~SMTPConnection() {
     closeConnection();
+}
+
+void SMTPConnection::login(const std::string& user, const std::string& pass) {
+    _user = user;
+    _pass = pass;
+
+    login();
+}
+
+void SMTPConnection::login() {
+    // get login types from ehlo... see if any are supported by us
+    // for now, pretend that all the servers support this
+    // todo: actually implement this
+    _loginMethods.find(LOGIN)->second();
 }
