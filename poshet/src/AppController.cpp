@@ -143,14 +143,22 @@ void AppController::onMailCreatorClose(wxCommandEvent& e) {
 }
 
 void AppController::onAttachmentDownload(wxCommandEvent& e) {
-    // _selectedMail is definitely positive otherwise there wouldn't be attachment download buttons lol
     auto attachmentIdx = e.GetInt();
     const auto& mail = _session->getMailAt(_selectedMail);
     auto attachmentData = mail.attachmentMetadataAt(e.GetInt());
 
     wxFileDialog saveFileDialog(nullptr, "Save As", wxEmptyString, wxEmptyString, wxT("All files (*.*)|*.*"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-    // todo: encode the slashes and whatnot from the data
-    saveFileDialog.SetFilename(attachmentData._filename);
+    std::string filename = "";
+    for (char ch : attachmentData._filename) {
+        if (std::isalnum(ch)) {
+            filename += ch;
+        }
+        else {
+            filename += "_";
+        }
+    }
+
+    saveFileDialog.SetFilename(filename);
 
     if (saveFileDialog.ShowModal() == wxID_CANCEL) {
         return;
