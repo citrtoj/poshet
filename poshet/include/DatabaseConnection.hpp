@@ -4,11 +4,16 @@
 #include <chrono>
 #include <ctime>
 #include <vector>
+#include <array>
 
 #include <sqlite3.h>
 
 #include "Utils.hpp"
 #include "Exceptions.hpp"
+
+struct DBMailData {
+    std::string _mailId, _mailTag;
+};
 
 class DatabaseConnection {
 protected:
@@ -22,8 +27,10 @@ protected:
     void openDb();
     
 public:
+
     DatabaseConnection();
     DatabaseConnection(const std::string& dbPath);
+    ~DatabaseConnection();
 
     void setPath(const std::string& dbPath);
     void init(); // opens db, creates tables if they don't exist
@@ -32,10 +39,13 @@ public:
     std::string getUser(const std::string& mailAddress, const std::string& incomingServer);
 
     void addReceivedMail(const std::string& mailId, const std::string& userId, const std::string& uidl, unsigned long long date, const std::string tag = "");
-    std::vector<std::string> getReceivedMailIdsOfUser(const std::string& id, const std::string& tag = "");
+    std::vector<DBMailData> getReceivedMailOfUser(const std::string& id, const std::string& tag = "");
 
     void tagReceivedMail(const std::string& mailId, const std::string& tag);
 
+    std::vector<std::string> getMailTags() const;
+
+    void deleteMail(const std::string& mailId);
 };
 
 class DatabaseException : public Exception {

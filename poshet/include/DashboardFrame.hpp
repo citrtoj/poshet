@@ -32,11 +32,10 @@ wxDECLARE_EVENT(ATTACHMENT_DOWNLOAD, wxCommandEvent);
 
 class DashboardFrame : public wxFrame {
 protected:
-    //DashboardFrameSubscriber* _subscriber;
-
     static const int MARGIN = 5;
 
     const std::vector<std::string> _fields = {
+        // they have to be actual fields that would be found in a mail header
         "From", "Subject", "Date"
     };
 
@@ -44,11 +43,13 @@ protected:
     wxPanel* _sidebarPanel;
     wxButton* _refreshMailBtn;
     wxButton* _newMailBtn;
+
     wxListBox* _folderList;
+    std::vector<std::string> _folders;
+
     wxListView* _mailList;
     wxSplitterWindow* _splitter;
 
-    //Mail* currentMail;
     bool _isViewMailPanelInit = false;
     wxPanel* _viewMailPanel;
     wxBoxSizer* _viewMailSizer;
@@ -66,7 +67,6 @@ protected:
     wxScrolledWindow* _mailAttachmentsPanel;
     wxBoxSizer* _mailAttachmentsSizer;
 
-    // wxWidgets-specific event handlers
     void OnListBoxEvent(wxCommandEvent& e);
     void OnViewMailResize(wxSplitterEvent& e);
     void OnRefreshMailList(wxCommandEvent& e);
@@ -76,15 +76,14 @@ protected:
     void OnDeleteMail(wxCommandEvent& e);
     void OnAttachmentDownload(wxCommandEvent& e);
 
-    // internal getters
     wxPanel* viewMailPanel() const;
     
-    // internal functions
     void initViewMailPanel();
     void refreshViewMailPanel();
     void resetSash();
 
     std::string memoryPrefix() const {
+        // for wxMemoryFSHandler??
         return "___DASHBOARD_FRAME_";
     }
 
@@ -92,7 +91,7 @@ public:
     DashboardFrame(const wxString& title);
 
     // external setters to be used by outside controllers
-    void setMailList(const std::vector<Mail>& mail);
+    void setMailList(const std::vector<const Mail*>& mail);
     void updateViewMailPanel(const Mail& mail);
 
     // external getters

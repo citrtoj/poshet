@@ -137,9 +137,10 @@ std::string MailFileManager::getMail(const std::string& mailboxName, MailFileMan
     do {
         memset(buffer, 0, (BUFFER_SIZE + 1) * sizeof(char));
         readCode = Utils::readLoop(mailFD , buffer, BUFFER_SIZE * sizeof(char));
-        // todo: error handling. if == 1...
+        if (readCode < 0) {
+            throw FileManagerException("Could not read file from disk");
+        }
         readSoFar += readCode;
-        //std::cout << "[FileManager] Readcode: " << readCode << "\n";
         result += buffer;
     }
     while (readCode == BUFFER_SIZE); 

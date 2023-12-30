@@ -23,13 +23,14 @@ typedef std::string AttachmentData;
 
 struct Attachment {
     AttachmentMetadata _metadata;
-    // temp???
     AttachmentData _data;
 };
 
 class Mail {
 protected:
     std::string _plainText;
+    std::string _mailId;
+    std::string _tag;
 
     vmime::shared_ptr<vmime::message> _message;
     vmime::messageParser* _messageParser;
@@ -38,12 +39,14 @@ protected:
 
 public:
     bool _isMimeMessageInit;
-    Mail(const std::string& plainTextData);
+    Mail(const std::string& plainTextData, const std::string& mailId, const std::string& tag = "");
     Mail(const Mail& rhs);
     Mail(Mail&& rhs);
     ~Mail();
 
     const std::string& plainText() const;
+    const std::string& mailId() const;
+    const std::string& tag() const;
     
     std::string getHeaderField(const std::string& key, bool unicode = false) const;
 
@@ -68,7 +71,7 @@ public:
         FORWARD
     };
     
-    MailBuilder(); // no reference
+    MailBuilder(); // no reference, for new mail
     MailBuilder(const Mail& mail, ReferenceType type);
 };
 

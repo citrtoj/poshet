@@ -1,7 +1,9 @@
 #include "App.hpp"
 
 bool App::OnInit() {
-    controller = new AppController(this);
+    loginFrame = new LoginFrame("Login");
+    dashboardFrame = new DashboardFrame("Dashboard");
+    controller = new AppController(this, loginFrame, dashboardFrame);
     Bind(wxEVT_CLOSE_WINDOW, &App::OnClose, this);
     ::wxInitAllImageHandlers();
     return true;
@@ -9,6 +11,8 @@ bool App::OnInit() {
 
 int App::OnExit() {
     delete controller;
+    loginFrame->Destroy();
+    dashboardFrame->Destroy();
     return 0;
 }
 

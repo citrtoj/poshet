@@ -1,11 +1,9 @@
 #include "AppController.hpp"
-
-AppController::AppController(wxApp* app) :
+AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame* dashboardFrame) :
     _mainApp(app),
-    _loginFrame(new LoginFrame("Login to Poshet")),
-    _dashboardFrame(new DashboardFrame("Poshet"))
+    _loginFrame(loginFrame),
+    _dashboardFrame(dashboardFrame)
 {
-    // todo: perhaps get config settings before this??
     try {
         _fileManager = new MailFileManager();
         _session = new Session(_fileManager);
@@ -13,8 +11,6 @@ AppController::AppController(wxApp* app) :
     catch (Exception& e) {
         showException(e.what());
     }
-    //_loginFrame->subscribe(this);
-    //_dashboardFrame->subscribe(this);
 
     _loginFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onCloseApp, this);
     _dashboardFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onCloseApp, this);
@@ -25,13 +21,13 @@ AppController::AppController(wxApp* app) :
     _dashboardFrame->Bind(ATTACHMENT_DOWNLOAD, &AppController::onAttachmentDownload, this);
     _dashboardFrame->Bind(REPLY_MAIL, &AppController::onReplyMail, this);
     _dashboardFrame->Bind(FORWARD_MAIL, &AppController::onForwardMail, this);
-
+    _dashboardFrame->Bind(DELETE_MAIL, &AppController::onDeleteMail, this);
 
     _loginFrame->Show(true);
 }
 
-void AppController::showSuccess(const std::string& msg) {
-    wxMessageBox(msg, "Success", wxOK | wxICON_INFORMATION);
+void AppController::showInfo(const std::string& msg) {
+    wxMessageBox(msg, "Info", wxOK | wxICON_INFORMATION);
 }
 
 void AppController::showException(const std::string& msg) {
@@ -39,12 +35,16 @@ void AppController::showException(const std::string& msg) {
 }
 
 void AppController::warnUnimplemented() {
-    std::cout << "Feature not yet implemented\n";
+    showInfo("Feature unimplemented");
+}
+
+void AppController::closeApp() {
+    wxCloseEvent close(wxEVT_CLOSE_WINDOW);
+    wxPostEvent(_mainApp, close);
 }
 
 void AppController::onCloseApp(wxCloseEvent& e) {
-    wxCloseEvent close(wxEVT_CLOSE_WINDOW);
-    wxPostEvent(_mainApp, close);
+    closeApp();
 }
 
 void AppController::onLoginSubmit(wxCommandEvent& e) {
@@ -72,19 +72,18 @@ void AppController::onRefreshMailList(wxCommandEvent& e) {
 
 void AppController::getSetMail(bool force) {
     try {
-        const auto& mails = _session->retrieveMail(force);
-        _dashboardFrame->setMailList(mails);
+        _currentMail = _session->retrieveAllMail(force);
+        _dashboardFrame->setMailList(_currentMail);
     }
     catch (Exception& e) {
         showException(e.what());
-        // todo: replace
-        // onCloseApp();
+        closeApp();
     }
 }
 
 void AppController::onSelectMail(wxCommandEvent& e) {
     _selectedMail = _dashboardFrame->selected();
-    const auto& mail = _session->getMailAt(_selectedMail);
+    const auto& mail = *(_currentMail[_selectedMail]);
     _dashboardFrame->updateViewMailPanel(mail);
 }
 
@@ -106,6 +105,10 @@ void AppController::onForwardMail(wxCommandEvent& e) {
 }
 
 void AppController::onDeleteMail(wxCommandEvent& e) {
+    // ask for confirmation
+
+    
+
     auto selected = _dashboardFrame->selected();
     _session->deleteMail(selected);
     getSetMail(true);
@@ -137,14 +140,10 @@ void AppController::onMailCreatorClose(wxCommandEvent& e) {
 }
 
 void AppController::onAttachmentDownload(wxCommandEvent& e) {
-    // todo: do stuff. open a Save As window, use FileManager to save the file locally, etc etc
-    std::cout << "att index: " << e.GetInt() << "\n";
-
     // _selectedMail is definitely positive otherwise there wouldn't be attachment download buttons lol
     auto attachmentIdx = e.GetInt();
     const auto& mail = _session->getMailAt(_selectedMail);
     auto attachmentData = mail.attachmentMetadataAt(e.GetInt());
-
 
     wxFileDialog saveFileDialog(nullptr, "Save As", wxEmptyString, wxEmptyString, wxT("All files (*.*)|*.*"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
     // todo: encode the slashes and whatnot from the data
@@ -157,7 +156,7 @@ void AppController::onAttachmentDownload(wxCommandEvent& e) {
     auto attachment = mail.attachmentDataAt(e.GetInt());
     try {
         _fileManager->saveAttachment(saveFileDialog.GetPath().ToStdString(), attachment, true);
-        showSuccess("File saved successfully");
+        showInfo("File saved successfully");
     }
     catch(FileManagerException& e) {
         showException(e.what());
@@ -165,9 +164,8 @@ void AppController::onAttachmentDownload(wxCommandEvent& e) {
 }
 
 AppController::~AppController() {
-    // destroy business-logic. not my business to delete the frames they're all managed by the wxWidgets system and whatnot
-    // in fact i might inject the frames lol
-    
+    // destroy business-logic
+    // don't delete UIs
     delete _fileManager;
     delete _session;
 }

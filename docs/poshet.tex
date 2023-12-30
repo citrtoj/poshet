@@ -202,9 +202,9 @@ Conexiunile cu serverele POP3 și SMTP sunt administrate de clasele POP3Connecti
 
 \section{Concluzii}
 
-Proiectul funcționează într-un scenariu limitat. Acesta comunică ne-încriptat cu un server POP3 pe \texttt{localhost} cu autentificare bazată pe username și parolă în plain-text, și cu un server SMTP ne-încriptat, fără autentificare, care trimite mailuri doar în rețeaua locală. Din păcate, majoritatea serverelor POP3 și SMTP externe existente astăzi cer un anumit nivel de încriptare a datelor trimise în rețea și de o configurare mai complexă; așadar, practicalitatea proiectului este limitată. Modificarea proiectului pentru a permite comunicarea cu aceste servere nu ar fi imposibilă, dar ar necesita un grad mai mare de complexitate și ar implica dependențe față de mai multe librării externe care să se ocupe de comunicarea securizată în rețea.
+Clientul Poshet este în principal single-threaded, folosind mai multe fire de execuție doar pentru a menține active conexiunile POP3 și SMTP. O posibilă îmbunătățire ar fi adăugarea mai multor fire de execuție și modularizarea codului pentru a permite încărcarea mailurilor din inboxul POP3 "in the background" (pentru ca interfața să nu apară ca fiind "not responding" în timpul acestui proces), dar și pentru a putea întrerupe procesul dacă se dorește acest lucru.
 
-De asemenea, librăria wxWidgets are propriile limitări. Fiindcă se bazează pe elemente existente în interfețele sistemelor de operare cu care este compatibilă\cite{ref_wxwidgets}, aceasta nu este la fel de personalizabilă ca unele alternative precum Qt. O posibilă îmbunătățire (dacă se dorește personalizarea mai detaliată a proiectului) ar putea fi portarea la o altă librărie pentru interfața grafică.
+De asemenea, librăria wxWidgets are propriile limitări. Comparativ cu alte librării precum Qt, widget-ul \texttt{wxRichTextCtrl} nu permite importarea fișierelor HTML, ceea ce limitează anumite abilități precum "Reply" și "Forward" la a funcționa doar în format plaintext. O îmbunătățire ar putea fi portarea proiectului la o altă librărie cu un editor WYSIWYG, precum Qt, sau dezvoltarea unui propriu "handler" bazat pe wxWidgets care să permită importarea HTML.
 %
 % ---- Bibliography ----
 %

@@ -7,6 +7,12 @@ DatabaseConnection::DatabaseConnection(const std::string& dbPath) : _path(dbPath
     init();
 }
 
+DatabaseConnection::~DatabaseConnection() {
+    if (_db != nullptr) {
+        sqlite3_close(_db);
+    }
+}
+
 void DatabaseConnection::setPath(const std::string& dbPath) {
     _path = dbPath;
     _isPathSet = true;
@@ -28,15 +34,10 @@ void DatabaseConnection::initTables() {
     if (code) {
         throw DatabaseException("Could not create database table: users");
     }
-    mailsTableQuery = "CREATE TABLE IF NOT EXISTS received_mail (mail_id TEXT PRIMARY KEY, user_id TEXT NOT NULL, tag TEXT, uidl TEXT, timestamp INTEGER NOT NULL, pop3_timestamp INTEGER NOT NULL, FOREIGN KEY(user_id) REFERENCES users(user_id));" ;
+    mailsTableQuery = "CREATE TABLE IF NOT EXISTS received_mail (mail_id TEXT PRIMARY KEY NOT NULL, user_id TEXT NOT NULL, tag TEXT, uidl TEXT, timestamp INTEGER NOT NULL, pop3_timestamp INTEGER NOT NULL, FOREIGN KEY(user_id) REFERENCES users(user_id));" ;
     code = sqlite3_exec(_db, mailsTableQuery.c_str(), nullptr, nullptr, nullptr);
     if (code) {
         throw DatabaseException("Could not create database table: received_mail");
-    }
-    mailsTableQuery = "CREATE TABLE IF NOT EXISTS sent_mail (mail_id TEXT PRIMARY KEY, user_id INTEGER, tag TEXT, timestamp INTEGER NOT NULL, FOREIGN KEY(user_id) REFERENCES users(user_id));" ;
-    code = sqlite3_exec(_db, mailsTableQuery.c_str(), nullptr, nullptr, nullptr);
-    if (code) {
-        throw DatabaseException("Could not create database table: sent_mail");
     }
 }
 
@@ -88,8 +89,8 @@ void DatabaseConnection::addReceivedMail(const std::string& mailId, const std::s
     }
 }
 
-std::vector<std::string> DatabaseConnection::getReceivedMailIdsOfUser(const std::string& id, const std::string& tag) {
-    std::vector<std::string> result;
+std::vector<DBMailData> DatabaseConnection::getReceivedMailOfUser(const std::string& id, const std::string& tag) {
+    std::vector<DBMailData> result;
     std::string query = "SELECT mail_id FROM received_mail m join users u on m.user_id = u.user_id WHERE m.user_id = '" + id + "' ";
 
     if (!tag.empty()) {
@@ -104,7 +105,11 @@ std::vector<std::string> DatabaseConnection::getReceivedMailIdsOfUser(const std:
     }
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         auto mailId = sqlite3_column_text(stmt, 0);
-        result.push_back((const char*)(mailId));
+        auto mailTag = sqlite3_column_text(stmt, 2);
+        result.push_back({
+            (const char*)(mailId),
+            mailTag != nullptr ? (const char*) mailTag : ""
+        });
     }
     sqlite3_finalize(stmt);
     return result;
@@ -112,6 +117,39 @@ std::vector<std::string> DatabaseConnection::getReceivedMailIdsOfUser(const std:
 
 void DatabaseConnection::tagReceivedMail(const std::string& mailId, const std::string& tag) {
     std::string query = "UPDATE received_mail set tag='" + tag + "' where mail_id = '" + mailId + "';";
+    int code = sqlite3_exec(_db, query.c_str(), nullptr, nullptr, nullptr);
+    if (code) {
+        throw DatabaseException(std::string("Could not add mail to database: ") + sqlite3_errmsg(_db));
+    }
+}
+
+std::vector<std::string> DatabaseConnection::getMailTags() const {
+    std::vector<std::string> result;
+    std::string query = "SELECT DISTINCT tag from received_mail";
+
+    sqlite3_stmt *stmt;
+
+    if (sqlite3_prepare_v2(_db, query.c_str(), -1, &stmt, NULL) != SQLITE_OK) {
+        throw DatabaseException(std::string("Can't prepare statement: ") + sqlite3_errmsg(_db));
+    }
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        auto sqliteData = sqlite3_column_text(stmt, 0);
+        if (sqliteData == nullptr) {
+            continue;
+        }
+        std::string tag((const char*)sqliteData);
+        if (!tag.empty()) {
+            result.push_back(tag);
+        }
+    }
+    sqlite3_finalize(stmt);
+    return result;
+}
+
+
+void DatabaseConnection::deleteMail(const std::string& mailId) {
+    std::cout << mailId << "\n";
+    std::string query = "DELETE FROM received_mail where mail_id = '" + mailId + "';";
     int code = sqlite3_exec(_db, query.c_str(), nullptr, nullptr, nullptr);
     if (code) {
         throw DatabaseException(std::string("Could not add mail to database: ") + sqlite3_errmsg(_db));

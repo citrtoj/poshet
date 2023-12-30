@@ -40,7 +40,7 @@ LoginFrame::LoginFrame(const wxString& title) :
     _smtpSSL = new wxCheckBox(panel, wxID_ANY, "Enable SSL for SMTP");
     smtpSizer->Add(_smtpSSL, 0, wxALL, MARGIN);
     _smtpDomain = addTextCtrlToSizer(panel, "SMTP Domain (default: domain of email address)", smtpSizer);
-    _smtpAuth = new wxCheckBox(panel, wxID_ANY, "Enable SMTP authentication (Plain)");
+    _smtpAuth = new wxCheckBox(panel, wxID_ANY, "Enable SMTP authentication (AUTH LOGIN)");
     smtpSizer->Add(_smtpAuth, 0, wxALL, MARGIN);
     _smtpUsername = addTextCtrlToSizer(panel, "SMTP Username (default: email address)", smtpSizer);
 

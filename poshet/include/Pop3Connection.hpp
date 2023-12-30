@@ -15,19 +15,23 @@
 #include "Mail.hpp"
 #include "ConnectionBase.hpp"
 
-class POP3Connection : public ConnectionBase {
+class RawMailMetadata {
 public:
-    class RawMailData {
-    public:
-        size_t index;
-        size_t byteSize;
-        std::string UIDL;
-        std::string plainData;
+    size_t index;
+    size_t byteSize;
 
-        RawMailData(size_t index, size_t byteSize) : index(index), byteSize(byteSize) {}
-        RawMailData() {}
-    };
+    RawMailMetadata(size_t index, size_t byteSize) : index(index), byteSize(byteSize) {}
+};
 
+typedef std::string RawMailData;
+
+class RawMail {
+public:
+    RawMailMetadata metadata;
+    RawMailData plainData;
+};
+
+class POP3Connection : public ConnectionBase {
 protected:
     std::string _user, _pass;
     State _state = State::DISCONNECTED;
@@ -38,6 +42,8 @@ protected:
     std::mutex _commandMutex;
     std::mutex _stateMutex;
     std::condition_variable cv;
+
+    bool _isUIDLValid = true;
 
     void sendCommand(const std::string& command); // NOT THREAD SAFE
 
@@ -50,8 +56,7 @@ protected:
 
     std::string execCommand(const std::string& command, bool expectsMultiline = false, SingleLineMessage processing = SingleLineMessage::PROCESSED); // THREAD SAFE
 
-    std::string retrieveOneMail(size_t currentMailIndex, size_t byteSize);
-    std::string retrieveOneMailHeader(size_t currentMailIndex);
+    // std::string retrieveOneMailHeader(size_t currentMailIndex);
 
 public:
     POP3Connection();
@@ -73,11 +78,13 @@ public:
     void login();
     void login(const std::string& user, const std::string& pass);
 
-    std::vector<RawMailData> retrieveAllMail();
-    std::vector<RawMailData> retrieveAllMailHeaders();
+    std::vector<RawMailMetadata> retrieveAllMailMetadata();
 
     void markMailForDeletion(long idx);
 
     static bool isError(const std::string& message);
     static void assertResponse(const std::string& response);
+
+    std::string retrieveOneMailUIDL(size_t currentMailIndex);
+    std::string retrieveOneMail(size_t currentMailIndex, size_t byteSize);
 };

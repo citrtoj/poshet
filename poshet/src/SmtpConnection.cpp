@@ -22,8 +22,7 @@ SMTPConnection::SMTPConnection(const std::string& host) : SMTPConnection() {
 void SMTPConnection::initLoginMethods() {
     _loginMethods = { {
             PLAIN, [this]() {
-                // todo: IMPLEMENT
-                std::cout << "PLAIN\n";
+                throw ConnectException("PLAIN Login method not implemented");
             }
         }, {
             LOGIN, [&]() {
@@ -45,9 +44,9 @@ void SMTPConnection::setClientDomain(const std::string& domain) {
 }
 
 std::string SMTPConnection::readResponse() {
-    std::string finalResult;
+    std::string finalResult = "";
     while (true) {
-        char buffer[4 + 1];
+        char buffer[4 + 1] = {0};
         int readCode = readFromSocket(buffer, 4);
         if (readCode < 0) {
             throw Exception("Error reading status code from server");

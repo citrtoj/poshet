@@ -95,3 +95,8 @@ class ServerException : public Exception {
 public:
     ServerException(const std::string& message) : Exception(message) {}
 };
+
+class ServerResponseException : public ServerException {
+public:
+    ServerResponseException(const std::string& message) : ServerException(message) {}
+};

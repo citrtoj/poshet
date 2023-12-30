@@ -52,9 +52,5 @@ public:
     UserData userInput();
     wxButton* loginButton();
 
-    // void subscribe(LoginFrameSubscriber* sub) {
-    //     _subscriber = sub;
-    // }
-
     void showError(const std::string& errorString);
 };

@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <array>
 
 #include "Exceptions.hpp"
 #include "Pop3Connection.hpp"
@@ -24,18 +25,21 @@ protected:
     UserData _userData;
 
     std::vector<Mail> _mails;
-    int _currentMail;
+    std::vector<const Mail*> _mailsFilterCache;
+    bool _isMailCacheDirty = true;
+    //int _currentMail;
     std::string _currentTag;
     
     bool _shouldRefreshConnection = false;
     bool _shouldRepopulateMail = true;
 
     void loadMail(int count = -1);
+    std::vector<std::string> mailTags() const;
 
-    void getAllPop3AndSaveLocally(); // might either do this only once, at startup, or offer a Refresh button
-    
-    std::vector<std::string> getAllMailIdsFromDatabase();
-    void dropUIDLFromPop3(/* list of UIDLs marked as deleted */);
+    void saveOnePop3MailLocally(size_t index, size_t byteSize);
+    void getAllPop3AndSaveLocally();
+
+    std::vector<DBMailData> getAllMailFromDatabase();
 
 public:
     Session(MailFileManager* manager);
@@ -46,8 +50,9 @@ public:
     void closeConnections();
     void resetConnections();
 
-    const std::vector<Mail>& retrieveMail(bool force = false);
-    const Mail& getMailAt(size_t idx);
+    const std::vector<const Mail*>& retrieveMail(const std::string& tag = "", bool forceReload = false);
+    const std::vector<const Mail*>& retrieveAllMail(bool forceReload = false);
+    const Mail& getMailAt(size_t idx); // uses currently displayed mail
     void deleteMail(size_t idx);
 
     void sendMail(const std::string& to, const std::string& subject, const std::string& rawBody);

@@ -6,21 +6,12 @@ AttachmentPanel::AttachmentPanel(wxWindow* parent, int index, const wxString& at
     _sizer = new wxBoxSizer(wxHORIZONTAL);
     _text = new wxStaticText(this, wxID_ANY, attachmentLabel(attachmentName, fileSize));
     _sizer->Add(_text, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2 * MARGIN);
-    // bind mousedown on panel to attachment click
-    // Bind(wxEVT_LEFT_DOWN, &AttachmentPanel::onAttachmentPanelClick, this);
 
     this->SetSizerAndFit(_sizer);
     _attachmentName = attachmentName;
     _index = index;
     _fileSize = fileSize;
 }
-
-// void AttachmentPanel::onAttachmentPanelClick(wxMouseEvent& event) {
-//     wxCommandEvent newEvent(ATTACHMENT_CLICK_EVENT);
-//     newEvent.SetInt(_index);
-//     wxPostEvent(GetEventHandler(), newEvent);
-// }
-
 wxString AttachmentPanel::attachmentLabel(const wxString& attachment, unsigned long long fileSize) {
     return wxString::Format("%-20s %20s", attachment, Utils::fileSizeToString(fileSize));
 }

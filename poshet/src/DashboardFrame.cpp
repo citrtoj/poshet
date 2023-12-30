@@ -11,8 +11,7 @@ wxDEFINE_EVENT(ATTACHMENT_DOWNLOAD, wxCommandEvent);
 DashboardFrame::DashboardFrame(const wxString& title) :
     wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxDefaultSize)
 {
-    SetDoubleBuffered(true);
-    this->Bind(wxEVT_SPLITTER_SASH_POS_CHANGED, &DashboardFrame::OnViewMailResize, this);
+    Bind(wxEVT_SPLITTER_SASH_POS_CHANGED, &DashboardFrame::OnViewMailResize, this);
 
     //top menu... not sure if I'll truly need it but...
     auto *menuFile = new wxMenu;
@@ -215,7 +214,7 @@ wxPanel* DashboardFrame::viewMailPanel() const {
 
 // ---- external setters to be used by outside controllers
 
-void DashboardFrame::setMailList(const std::vector<Mail>& mails) {
+void DashboardFrame::setMailList(const std::vector<const Mail*>& mails) {
     _mailList->DeleteAllItems();
     for (const auto& mail : mails) {
         int index = _mailList->GetItemCount();
@@ -224,7 +223,7 @@ void DashboardFrame::setMailList(const std::vector<Mail>& mails) {
         _mailList->InsertItem(item);
 
         for (int i = 0; i < _fields.size(); ++i) {
-            auto fieldValue = mail.getHeaderField(_fields[i], true);
+            auto fieldValue = mail->getHeaderField(_fields[i], true);
             _mailList->SetItem(index, i, wxString::FromUTF8(fieldValue.c_str()));
         }
     }
@@ -256,13 +255,12 @@ void DashboardFrame::updateViewMailPanel(const Mail& mail) {
             }
         }
         for (size_t i = 0; i < attachmentMetadata.size(); ++i) {
-            auto x = new AttachmentPanelWithButton(_mailAttachmentsPanel, i, attachmentMetadata[i]._filename, attachmentMetadata[i]._size, "Download", MARGIN);
+            auto x = new AttachmentPanelWithButton(_mailAttachmentsPanel, i, attachmentMetadata[i]._filename, attachmentMetadata[i]._size, "Save", MARGIN);
             _mailAttachmentsSizer->Add(x, 0, wxALL, MARGIN);
         }
         _mailAttachmentsPanel->Show();
     }
     
-
     try {
         auto htmlText = mail.getHTMLPart();
         wxString x = wxString::FromUTF8(htmlText.c_str());

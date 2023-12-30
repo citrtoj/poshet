@@ -26,6 +26,7 @@ protected:
 
     MailFileManager* _fileManager;
     
+    std::vector<const Mail*> _currentMail;
     ssize_t _selectedMail = -1;
 
     // internal methods
@@ -33,14 +34,13 @@ protected:
     void getSetMail(bool force = false);
     void warnUnimplemented();
 
-    void showSuccess(const std::string& msg);
+    void showInfo(const std::string& msg);
     void showException(const std::string& msg);
 public:
-    AppController(wxApp* app);
+    AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame* dashboardFrame);
     ~AppController();
-
-    // subscriber overrides
     
+    void closeApp();
     void onCloseApp(wxCloseEvent& e);
     
     void onLoginSubmit(wxCommandEvent& e);

@@ -1,6 +1,6 @@
 #include "Mail.hpp"
 
-Mail::Mail(const std::string& plainTextData) : _plainText(plainTextData) {  
+Mail::Mail(const std::string& plainTextData, const std::string& mailId, const std::string& tag) : _plainText(plainTextData), _mailId(mailId), _tag(tag) {
     parsePlainText();
 }
 
@@ -12,19 +12,23 @@ void Mail::parsePlainText() {
 }
 
 Mail::Mail(const Mail& rhs) {
-    std::cout << "[Mail] Copy ctor\n";
+    //std::cout << "[Mail] Copy ctor\n";
     _plainText = rhs._plainText;
     parsePlainText();
 }
 
 Mail::Mail(Mail&& rhs) {
-    std::cout << "[Mail] Move ctor\n";
-    _plainText = rhs._plainText;
-    _messageParser = rhs._messageParser;
-    rhs._messageParser = nullptr;
+    //std::cout << "[Mail] Move ctor\n";
+    _plainText = std::move(rhs._plainText);
+    _mailId = std::move(rhs._mailId);
+    _tag = std::move(rhs._tag);
+
     _message = std::move(rhs._message);
+
     _isMimeMessageInit = rhs._isMimeMessageInit;
     rhs._isMimeMessageInit = false;
+
+    parsePlainText();
 }
 
 Mail::~Mail() {
@@ -55,9 +59,6 @@ const std::string& Mail::plainText() const {
 }
 
 std::string Mail::getHTMLPart() const {
-    // std::ofstream f("output.txt");
-    // vmime::utility::outputStreamAdapter out(f) ;
-    // _message->generate(out) ;
     for (size_t i = 0 ; i < _messageParser->getTextPartCount() ; ++i) {
         const vmime::textPart& part = *_messageParser->getTextPartAt(i);
         if (part.getType().getSubType() == vmime::mediaTypes::TEXT_HTML) {
@@ -110,4 +111,13 @@ AttachmentData Mail::attachmentDataAt(size_t index) const {
     vmime::utility::outputStreamStringAdapter x(data);
     attachment.getData()->extract(x);
     return data;
+}
+
+const std::string& Mail::tag() const {
+    return _tag;
+}
+
+const std::string& Mail::mailId() const {
+    std::cout << "mail id in ctor: " << _mailId << "\n";
+    return _mailId;
 }

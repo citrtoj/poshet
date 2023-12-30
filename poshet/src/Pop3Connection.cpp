@@ -67,7 +67,6 @@ void POP3Connection::login(const std::string& user, const std::string& pass) {
 
 void POP3Connection::sendCommand(const std::string& command) {
     std::string tmpCommand = command + "\r\n";  //CRLF ending
-    log(command);
     int status = writeToSocket(tmpCommand.c_str(), tmpCommand.length());
     if (status < 0) {
         throw Exception("Error writing command to server");
@@ -171,6 +170,7 @@ void POP3Connection::closeConnection() {
     closeSocket();
     _state = DISCONNECTED;
     log("Successfully closed connection");
+    _isUIDLValid = true;
 }
 
 void POP3Connection::quitConnection() {
@@ -200,8 +200,8 @@ void POP3Connection::quitConnection() {
     
     closeSocket();
     _state = DISCONNECTED;
-
     log("Successfully closed connection");
+    _isUIDLValid = true;
     
 }
 
@@ -214,48 +214,19 @@ std::string POP3Connection::retrieveOneMail(size_t currentMailIndex, size_t byte
 
     buffer[byteSize] = 0;
     int readCode = readFromSocket(buffer, byteSize);
-    // todo: handle readCode
-    readMultiLineResponse(); // to read whatever other termination chars are at the end
+    if (readCode < 0) {
+        throw ServerException("Could not read from POP3 socket\n");
+    }
+    readMultiLineResponse();
     std::string x = buffer;
 
     delete[] buffer;
-
     return x;
 }
 
-std::string POP3Connection::retrieveOneMailHeader(size_t currentMailIndex) {
-    auto x = execCommand("TOP " + std::to_string(currentMailIndex) + " 0", true);
-    // todo: trim "+OK"
-    return x;
-}
-
-std::vector<POP3Connection::RawMailData> POP3Connection::retrieveAllMailHeaders() {
+std::vector<RawMailMetadata> POP3Connection::retrieveAllMailMetadata() {
     auto serverResponse = execCommand("LIST", true);
-    std::vector<RawMailData> mailVector;
-
-    std::string buffer;
-    size_t messageNumber;
-
-    std::stringstream strm(serverResponse, std::ios_base::in);
-    strm >> buffer >> messageNumber >> buffer;
-    
-    for (int i = 1; i <= messageNumber; ++i) {
-        int index, byteSize;
-        strm >> index >> byteSize;
-        mailVector.push_back(RawMailData(index, byteSize));
-        try {
-            mailVector.back().plainData = retrieveOneMailHeader(mailVector.back().index);
-        }
-        catch (Exception& e) {
-            mailVector.pop_back();
-        }   
-    }
-    return mailVector;
-}
-
-std::vector<POP3Connection::RawMailData> POP3Connection::retrieveAllMail() {
-    auto serverResponse = execCommand("LIST", true);
-    std::vector<RawMailData> mailVector;
+    std::vector<RawMailMetadata> mailVector;
 
     std::string buffer;
     size_t messageNumber;
@@ -265,36 +236,23 @@ std::vector<POP3Connection::RawMailData> POP3Connection::retrieveAllMail() {
     std::getline(responseStream, firstLine);
     std::istringstream firstLineStream(firstLine);
     // add some sort of sanity check, perhaps, in case there's not even a number
-    firstLineStream >> buffer >> messageNumber;
-
-    mailVector.reserve(messageNumber);
+    firstLineStream >> buffer;
     
     int index, byteSize;
+    std::string restOfLine;
     while (responseStream >> index >> byteSize) {
-        auto data = RawMailData(index, byteSize);
-        try {
-            data.plainData = retrieveOneMail(data.index, data.byteSize);
-        }
-        catch(ServerException& e) {
-            // TODO: actually handle this exception???
-            std::cout << e.what() << "\n";
-        }
-        try {
-            auto UIDLResponse = execCommand("UIDL " + std::to_string(data.index), false, PROCESSED); // TODO: SIMPLIFY! A single UIDL will give you all the needed IDs!!!
-            std::istringstream uidlStream(UIDLResponse);
-            std::string responsePrefix, mailIndex, UIDL;
-            uidlStream >> responsePrefix >> mailIndex >> UIDL;
-            data.UIDL = UIDL;
-        }
-        catch(ServerException& e) {
-            // it means that this pop3 server doesn't even have a UIDL feature in the first place. Unlikely, but it happens
-            // TODO: actually handle this case
-            std::cout << e.what() << "\n";
-        }
-
-        mailVector.push_back(data);
+        std::getline(responseStream, restOfLine);
+        mailVector.push_back(RawMailMetadata(index, byteSize));
     }
     return mailVector;
+}
+
+std::string POP3Connection::retrieveOneMailUIDL(size_t currentMailIndex) {
+    auto UIDLResponse = execCommand("UIDL " + std::to_string(currentMailIndex), false, PROCESSED);
+    std::istringstream uidlStream(UIDLResponse);
+    std::string responsePrefix, mailIndex, UIDL;
+    uidlStream >> responsePrefix >> mailIndex >> UIDL;
+    return UIDL;
 }
 
 void POP3Connection::resetConnection() {
