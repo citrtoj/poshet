@@ -25,9 +25,7 @@ protected:
     bool _isDbOpened = false;
     sqlite3* _db;
     void openDb();
-    
 public:
-
     DatabaseConnection();
     DatabaseConnection(const std::string& dbPath);
     ~DatabaseConnection();
@@ -43,7 +41,7 @@ public:
 
     void tagReceivedMail(const std::string& mailId, const std::string& tag);
 
-    std::vector<std::string> getMailTags() const;
+    std::vector<std::string> getMailTags(const std::string& userId) const;
 
     void deleteMail(const std::string& mailId);
 };

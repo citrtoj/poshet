@@ -126,7 +126,7 @@ void Session::loadMail(int count) {
 }
 
 std::vector<std::string> Session::mailTags() const {
-    return _db.getMailTags();
+    return _db.getMailTags(_userData.dbId());
 }
 
 const std::vector<const Mail*>& Session::retrieveMail(const std::string& tag, bool forceReload) {

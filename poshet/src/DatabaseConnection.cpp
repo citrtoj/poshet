@@ -124,9 +124,9 @@ void DatabaseConnection::tagReceivedMail(const std::string& mailId, const std::s
     }
 }
 
-std::vector<std::string> DatabaseConnection::getMailTags() const {
+std::vector<std::string> DatabaseConnection::getMailTags(const std::string& userId) const {
     std::vector<std::string> result;
-    std::string query = "SELECT DISTINCT tag from received_mail";
+    std::string query = "SELECT DISTINCT tag from received_mail where user_id like '" + userId + "';";
 
     sqlite3_stmt *stmt;
 

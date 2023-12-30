@@ -3,6 +3,7 @@
 wxDEFINE_EVENT(SELECT_MAIL, wxCommandEvent);
 wxDEFINE_EVENT(NEW_MAIL, wxCommandEvent);
 wxDEFINE_EVENT(TAG_MAIL, wxCommandEvent);
+wxDEFINE_EVENT(VIEW_MAIL_WITH_TAG, wxCommandEvent);
 wxDEFINE_EVENT(REPLY_MAIL, wxCommandEvent);
 wxDEFINE_EVENT(FORWARD_MAIL, wxCommandEvent);
 wxDEFINE_EVENT(DELETE_MAIL, wxCommandEvent);
@@ -26,12 +27,13 @@ DashboardFrame::DashboardFrame(const wxString& title) :
 
     _sidebarPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(200, 600), wxBORDER_SUNKEN);
     auto sidebarPanelBoxSizer = new wxBoxSizer(wxVERTICAL);
-    _newMailBtn = new wxButton(_sidebarPanel, wxID_ANY, "Refresh mail list");
-    _newMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnRefreshMailList, this);
     _refreshMailBtn = new wxButton(_sidebarPanel, wxID_ANY, "New message");
     _refreshMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnNewMail, this);
-    _tagList = new wxListBox(_sidebarPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    _newMailBtn = new wxButton(_sidebarPanel, wxID_ANY, "Show all mail");
+    _newMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnRefreshMailList, this);
 
+    _tagList = new wxListBox(_sidebarPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    _tagList->Bind(wxEVT_LISTBOX, &DashboardFrame::OnViewTag, this);
 
     sidebarPanelBoxSizer->Add(_newMailBtn, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, MARGIN);
     sidebarPanelBoxSizer->Add(_refreshMailBtn, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, MARGIN);
@@ -168,9 +170,21 @@ void DashboardFrame::OnListBoxEvent(wxCommandEvent& e) {
 }
 
 void DashboardFrame::OnRefreshMailList(wxCommandEvent& e) {
+    _tagList->SetSelection(-1, false); //unselect tag
+
     wxCommandEvent newEvent(REFRESH_MAIL_LIST);
     wxPostEvent(GetEventHandler(), newEvent);
     _splitter->SetSashPosition(_splitter->GetSize().GetWidth());
+}
+
+void DashboardFrame::OnViewTag(wxCommandEvent& e) {
+    auto i = e.GetSelection();
+    const auto& tag = _tags[i];
+    
+    wxCommandEvent newEvent(VIEW_MAIL_WITH_TAG);
+    newEvent.SetInt(i);
+    newEvent.SetString(tag);
+    wxPostEvent(GetEventHandler(), newEvent);
 }
 
 void DashboardFrame::OnNewMail(wxCommandEvent& e) {

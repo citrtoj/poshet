@@ -17,6 +17,9 @@ AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame*
 
     _loginFrame->Bind(LOGIN_SUBMIT, &AppController::onLoginSubmit, this);
 
+    _dashboardFrame->Bind(REFRESH_MAIL_LIST, &AppController::onRefreshMailList, this);
+    _dashboardFrame->Bind(VIEW_MAIL_WITH_TAG, &AppController::onViewMailWithTag, this);
+    
     _dashboardFrame->Bind(SELECT_MAIL, &AppController::onSelectMail, this);
     _dashboardFrame->Bind(TAG_MAIL, &AppController::onTagMail, this);
     _dashboardFrame->Bind(ATTACHMENT_DOWNLOAD, &AppController::onAttachmentDownload, this);
@@ -74,7 +77,9 @@ void AppController::onRefreshMailList(wxCommandEvent& e) {
 void AppController::getSetMail(bool force) {
     try {
         _currentMail = _session->retrieveAllMail(force);
+        auto tags = _session->mailTags();
         _dashboardFrame->setMailList(_currentMail);
+        _dashboardFrame->setTags(tags);
     }
     catch (Exception& e) {
         showException(e.what());
@@ -173,6 +178,18 @@ void AppController::onTagMail(wxCommandEvent& e) {
     _selectedMail = _dashboardFrame->selected();
     _session->tagMail(_selectedMail, userInput);
     getSetMail(true);
+}
+
+void AppController::onViewMailWithTag(wxCommandEvent& e) {
+    std::string tag = e.GetString().ToStdString();
+    try {
+        _currentMail = _session->retrieveMail(tag, false);
+        _dashboardFrame->setMailList(_currentMail);
+    }
+    catch (Exception& e) {
+        showException(e.what());
+        closeApp();
+    }
 }
 
 AppController::~AppController() {

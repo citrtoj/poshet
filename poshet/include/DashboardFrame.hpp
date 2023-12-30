@@ -26,6 +26,7 @@
 wxDECLARE_EVENT(SELECT_MAIL, wxCommandEvent);
 wxDECLARE_EVENT(NEW_MAIL, wxCommandEvent);
 wxDECLARE_EVENT(TAG_MAIL, wxCommandEvent);
+wxDECLARE_EVENT(VIEW_MAIL_WITH_TAG, wxCommandEvent);
 wxDECLARE_EVENT(REPLY_MAIL, wxCommandEvent);
 wxDECLARE_EVENT(FORWARD_MAIL, wxCommandEvent);
 wxDECLARE_EVENT(DELETE_MAIL, wxCommandEvent);
@@ -48,7 +49,7 @@ protected:
     wxButton* _newMailBtn;
 
     wxListBox* _tagList;
-    std::string _defaultTagName = "All mail";
+    std::string _defaultTagName = "Untagged";
 
     std::vector<std::string> _tags;
 
@@ -76,6 +77,7 @@ protected:
     void OnListBoxEvent(wxCommandEvent& e);
     void OnViewMailResize(wxSplitterEvent& e);
     void OnRefreshMailList(wxCommandEvent& e);
+    void OnViewTag(wxCommandEvent& e);
     void OnNewMail(wxCommandEvent& e);
     void OnTagMail(wxCommandEvent& e);
     void OnReplyMail(wxCommandEvent& e);

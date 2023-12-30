@@ -34,7 +34,6 @@ protected:
     bool _shouldRepopulateMail = true;
 
     void loadMail(int count = -1);
-    std::vector<std::string> mailTags() const;
 
     void saveOnePop3MailLocally(size_t index, size_t byteSize);
     void getAllPop3AndSaveLocally();
@@ -49,6 +48,8 @@ public:
 
     void closeConnections();
     void resetConnections();
+
+    std::vector<std::string> mailTags() const;
 
     const std::vector<const Mail*>& retrieveMail(const std::string& tag = "", bool forceReload = false);
     const std::vector<const Mail*>& retrieveAllMail(bool forceReload = false);
