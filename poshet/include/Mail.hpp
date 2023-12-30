@@ -19,10 +19,12 @@ struct AttachmentMetadata {
     unsigned long long _size;
 };
 
+typedef std::string AttachmentData;
+
 struct Attachment {
     AttachmentMetadata _metadata;
     // temp???
-    std::string _data;
+    AttachmentData _data;
 };
 
 class Mail {
@@ -48,7 +50,14 @@ public:
     std::string getHTMLPart() const;
     std::string getPlainTextPart() const;
 
+    AttachmentMetadata attachmentMetadataAt(size_t index) const;
     std::vector<AttachmentMetadata> attachmentMetadata() const;
+
+    AttachmentData attachmentDataAt(size_t index) const;
+    //std::vector<AttachmentData> attachmentData() const;
+
+    // Attachment attachmentAt(size_t index) const;
+    // std::vector<Attachment> attachments() const;
 };
 
 class MailBuilder {

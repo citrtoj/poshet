@@ -88,23 +88,32 @@ std::string MailFileManager::mailbox(const std::string& mailboxName) {
     return mailboxPath;
 }
 
+void MailFileManager::saveFile(const std::string& filePath, const std::string& rawData, bool overwrite) {
+    if (access(filePath.c_str(), F_OK) != -1 and !overwrite) {
+        throw FileExistsException();
+    }
+    int fd = open(filePath.c_str(), O_CREAT | O_RDWR, PERMISSIONS);
+    if (fd == -1) {
+        throw FileManagerException("Error creating file " + filePath);
+    }
+    // truncate file
+    size_t len = rawData.length();
+    int writeCode = Utils::writeLoop(fd, rawData.c_str(), len * sizeof(char));
+    close(fd);
+}
+
 void MailFileManager::saveMail(const std::string& mailboxName, MailFileManager::MailType type, const std::string& mailFilename, const std::string& rawMailData) {
     // all the filemanager does is save files and get files, not its business to handle how to generate the filenames and everything
     auto mailboxPath = mailbox(mailboxName);
     auto filePath = joinToFullPath(joinToFullPath(mailboxPath, _typeFolderNames.find(type)->second), mailFilename);
-    if (access(filePath.c_str(), F_OK) != -1) {
-        // todo: file exists. check SHA256; if not, continue
-        std::cout << "file exists\n";
+    try {
+        saveFile(filePath, rawMailData);
+    }
+    catch (FileExistsException& e) {
+        // if file exists and has the exact same name then it's okay probably
+        std::cout << "File exists\n";
         return;
     }
-    int mailFD = open(filePath.c_str(), O_CREAT | O_RDWR, PERMISSIONS);
-    if (mailFD == -1) {
-        throw FileManagerException("Error creating file " + filePath);
-    }
-    // truncate file
-    size_t len = rawMailData.length();
-    int writeCode = Utils::writeLoop(mailFD, rawMailData.c_str(), len * sizeof(char));
-    close(mailFD);
 }
 
 std::string MailFileManager::getMail(const std::string& mailboxName, MailFileManager::MailType type, const std::string& mailFilename) {
@@ -135,4 +144,13 @@ std::string MailFileManager::getMail(const std::string& mailboxName, MailFileMan
     }
     while (readCode == BUFFER_SIZE); 
     return result;
+}
+
+void MailFileManager::saveAttachment(const std::string& filePath, const std::string& rawData, bool overwrite) {
+    try {
+        saveFile(filePath, rawData, overwrite);
+    }
+    catch(FileExistsException& e) {
+        throw FileManagerException("Another file already exists at the same location (overwriting was not permitted)");
+    }
 }

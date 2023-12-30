@@ -58,6 +58,8 @@ private:
 
     std::string mailbox(const std::string& mailboxName);
 
+    void saveFile(const std::string& filePath, const std::string& rawData, bool overwrite = false);
+
 public:
     MailFileManager();
     MailFileManager(const std::string& rootLocation);
@@ -65,9 +67,17 @@ public:
     std::string databasePath() const;
     void saveMail(const std::string& mailboxName, MailType type, const std::string& mailFilename, const std::string& rawMailData);
     std::string getMail(const std::string& mailboxName, MailType type, const std::string& mailFilename);
+
+    void saveAttachment(const std::string& filePath, const std::string& rawData, bool overwrite = false);
+
 };
 
 class FileManagerException : public Exception {
 public:
-    FileManagerException(const std::string& message) : Exception(message) {}
+    FileManagerException(const std::string& message = "") : Exception(message) {}
+};
+
+class FileExistsException : public FileManagerException {
+public:
+    FileExistsException(const std::string& message = "") : FileManagerException(message) {}
 };

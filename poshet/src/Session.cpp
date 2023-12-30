@@ -121,7 +121,7 @@ const std::vector<Mail>& Session::retrieveMail(bool force) {
     return _mails;
 }
 
-const Mail& Session::getMail(long idx) {
+const Mail& Session::getMailAt(size_t idx) {
     if (idx < 0 or idx >= _mails.size()) {
         throw Exception("Invalid mail index");
     }
@@ -129,10 +129,10 @@ const Mail& Session::getMail(long idx) {
     return _mails[idx];
 }
 
-void Session::deleteMail(long idx) {
+void Session::deleteMail(size_t idx) {
     // temporary, just to demonstrate DELE communication with the POP3 server
     if (idx < 0) {
         throw Exception("Invalid mail index to delete");
     }
-    _pop3.markMailForDeletion(idx + 1);
+    //_pop3.markMailForDeletion(idx + 1);
 }

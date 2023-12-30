@@ -2,8 +2,18 @@
 
 bool App::OnInit() {
     controller = new AppController(this);
+    Bind(wxEVT_CLOSE_WINDOW, &App::OnClose, this);
     ::wxInitAllImageHandlers();
     return true;
+}
+
+int App::OnExit() {
+    delete controller;
+    return 0;
+}
+
+void App::OnClose(wxCloseEvent& e) {
+    Exit();
 }
 
 void App::OnUnhandledException() {

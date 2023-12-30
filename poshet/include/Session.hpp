@@ -47,8 +47,8 @@ public:
     void resetConnections();
 
     const std::vector<Mail>& retrieveMail(bool force = false);
-    const Mail& getMail(long idx);
-    void deleteMail(long idx);
+    const Mail& getMailAt(size_t idx);
+    void deleteMail(size_t idx);
 
     void sendMail(const std::string& to, const std::string& subject, const std::string& rawBody);
 };

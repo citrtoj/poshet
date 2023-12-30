@@ -54,9 +54,9 @@ MailCreatorFrame::MailCreatorFrame() :
     Centre();
 }
 
-void MailCreatorFrame::subscribe(MailCreatorFrameSubscriber* sub) {
-    _subscriber = sub;
-}
+// void MailCreatorFrame::subscribe(MailCreatorFrameSubscriber* sub) {
+//     _subscriber = sub;
+// }
 
 bool MailCreatorFrame::closeGracefully() {
     return Close();
@@ -65,7 +65,7 @@ bool MailCreatorFrame::closeGracefully() {
 // wxWidgets handlers
 
 void MailCreatorFrame::OnSend(wxCommandEvent& event) {
-    _subscriber->onMailCreatorSend();
+    //_subscriber->onMailCreatorSend();
 }
 
 void MailCreatorFrame::OnClose(wxEvent& event) {
@@ -75,7 +75,7 @@ void MailCreatorFrame::OnClose(wxEvent& event) {
     // // mă simt de parcă trag cu dinții de output-ul ăsta
     // xmlHandler.ExportXML(*(wxOutputStream*)(&strm), *(wxRichTextObject*)(_contentsCtrl->GetFocusObject()), 0);
     // std::cout << strm.GetString();
-    _subscriber->onMailCreatorClose();  //notifies in case it needs to save input, or something...
+    //_subscriber->onMailCreatorClose();  //notifies in case it needs to save input, or something...
     event.Skip();
 }
 

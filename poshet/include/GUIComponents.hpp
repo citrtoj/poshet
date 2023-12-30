@@ -2,34 +2,33 @@
 
 #include <wx/wx.h>
 #include <wx/event.h>
+#include <wx/artprov.h>
 
 #include "Utils.hpp"
 
-enum {
-    ID_ATTACHMENT_BUTTON = wxID_HIGHEST + 1
-};
+wxDECLARE_EVENT(ATTACHMENT_BUTTON_CLICK_EVENT, wxCommandEvent);
 
-
-class AttachmentButton : public wxButton
-{
+class AttachmentPanel : public wxPanel {
 public:
-    AttachmentButton(wxWindow* parent, int index, const wxString& attachmentName, unsigned long long fileSize)
-        : wxButton(parent, ID_ATTACHMENT_BUTTON, getButtonLabel(attachmentName, fileSize))
-    {
-        Bind(wxEVT_BUTTON, &AttachmentButton::OnAttachmentButtonClick, this);
-        _attachmentName = attachmentName;
-        _index = index;
-        _fileSize = fileSize;
-    }
+    AttachmentPanel(wxWindow* parent, int index, const wxString& attachmentName, unsigned long long fileSize, int MARGIN = 5);
 
-private:
-    void OnAttachmentButtonClick(wxCommandEvent& event);
+protected:
+    wxString attachmentLabel(const wxString& attachmentName, unsigned long long fileSize);
 
-    wxString getButtonLabel(const wxString& attachmentName, unsigned long long fileSize) {
-        return wxString::Format("%-20s %20s", attachmentName, Utils::fileSizeToString(fileSize));
-    }
+    //void onAttachmentPanelClick(wxMouseEvent& event);
 
+    wxBoxSizer* _sizer;
+    wxStaticText* _text;
     wxString _attachmentName;
     unsigned long long _fileSize;
     int _index;
+};
+
+class AttachmentPanelWithButton : public AttachmentPanel {
+public:
+    AttachmentPanelWithButton(wxWindow* parent, int index, const wxString& attachmentName, unsigned long long fileSize, const wxString& buttonLabel, int MARGIN = 5);
+protected:
+    void onButtonClick(wxCommandEvent& e);
+
+    wxButton* _downloadButton;
 };

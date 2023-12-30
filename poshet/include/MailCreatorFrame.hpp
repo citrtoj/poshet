@@ -1,4 +1,5 @@
 #pragma once
+
 #include <wx/wx.h>
 #include <wx/strconv.h>
 #include <wx/richtext/richtextctrl.h>
@@ -6,11 +7,10 @@
 #include <wx/stream.h>
 #include <wx/sstream.h>
 #include <wx/richtext/richtextxml.h>
-#include "FrameSubscribers.hpp"
 
 class MailCreatorFrame : public wxFrame {
 protected:
-    MailCreatorFrameSubscriber* _subscriber;
+    //MailCreatorFrameSubscriber* _subscriber;
     
     wxButton* _sendBtn, * _attachBtn;
     wxTextCtrl* _toInput, * _subjectInput;
@@ -23,7 +23,7 @@ protected:
     void OnClose(wxEvent& event);
 public:
     MailCreatorFrame();
-    void subscribe(MailCreatorFrameSubscriber* sub);
+    //void subscribe(MailCreatorFrameSubscriber* sub);
 
     bool closeGracefully();
 

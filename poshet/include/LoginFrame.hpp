@@ -8,7 +8,8 @@
 
 #include "Session.hpp"
 #include "UserData.hpp"
-#include "FrameSubscribers.hpp"
+
+wxDECLARE_EVENT(LOGIN_SUBMIT, wxCommandEvent);
 
 class LoginFrame : public wxFrame {
 protected:
@@ -28,7 +29,7 @@ protected:
         CENSORED
     };
 
-    LoginFrameSubscriber* _subscriber;
+    //LoginFrameSubscriber* _subscriber;
 
     // std::vector<std::tuple<std::string, wxStaticText*, wxTextCtrl*, Censor>> _textInputs;
     wxTextCtrl *_fullName, *_emailAddress, *_password;
@@ -45,16 +46,15 @@ protected:
     static const int MARGIN = 5;
 
     void OnLogin(wxCommandEvent& event);
-    void OnClose(wxEvent& event);
 
 public:
     LoginFrame(const wxString& title);
     UserData userInput();
     wxButton* loginButton();
 
-    void subscribe(LoginFrameSubscriber* sub) {
-        _subscriber = sub;
-    }
+    // void subscribe(LoginFrameSubscriber* sub) {
+    //     _subscriber = sub;
+    // }
 
     void showError(const std::string& errorString);
 };

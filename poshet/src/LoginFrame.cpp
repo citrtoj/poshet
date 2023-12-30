@@ -1,5 +1,7 @@
 #include "LoginFrame.hpp"
 
+wxDEFINE_EVENT(LOGIN_SUBMIT, wxCommandEvent);
+
 wxTextCtrl* LoginFrame::addTextCtrlToSizer(wxWindow* parent, const std::string& labelText, wxBoxSizer* sizer,  long styleFlags, bool numbersOnly) {
     auto label = (new wxStaticText(parent, wxID_ANY, labelText + ":"));
     sizer->Add(label, 0, wxEXPAND | wxALL, MARGIN);
@@ -69,15 +71,12 @@ LoginFrame::LoginFrame(const wxString& title) :
     
     _loginButton->Bind(wxEVT_BUTTON, &LoginFrame::OnLogin, this);
     this->Bind(wxEVT_TEXT_ENTER, &LoginFrame::OnLogin, this);
-    this->Bind(wxEVT_CLOSE_WINDOW, &LoginFrame::OnClose, this);
 }
 
 void LoginFrame::OnLogin(wxCommandEvent& event) {
-    _subscriber->onLoginSubmit();
-}
-
-void LoginFrame::OnClose(wxEvent& event) {
-    _subscriber->onCloseApp();
+    wxCommandEvent newEvent(LOGIN_SUBMIT);
+    wxPostEvent(GetEventHandler(), newEvent);
+    //_subscriber->onLoginSubmit();
 }
 
 UserData LoginFrame::userInput() {

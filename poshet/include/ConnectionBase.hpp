@@ -29,6 +29,7 @@ protected:
     int _socket;
     bool _isSocketOpen = false;
     bool _isSocketConnected = false;
+    bool _isSSLConnected = false;
 
     bool _isSSLEnabled = false;
     SSL_CTX* _ctx;
@@ -56,7 +57,7 @@ protected:
         PROCESSED,
         RAW
     };
-    int _timeoutSecs = 5;
+    int _timeoutSecs = 60;
 
 public:
     static bool _isOpenSSLInit;

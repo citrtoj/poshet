@@ -21,11 +21,18 @@
 
 #include "Mail.hpp"
 #include "GUIComponents.hpp"
-#include "FrameSubscribers.hpp"
+
+wxDECLARE_EVENT(SELECT_MAIL, wxCommandEvent);
+wxDECLARE_EVENT(NEW_MAIL, wxCommandEvent);
+wxDECLARE_EVENT(REPLY_MAIL, wxCommandEvent);
+wxDECLARE_EVENT(FORWARD_MAIL, wxCommandEvent);
+wxDECLARE_EVENT(DELETE_MAIL, wxCommandEvent);
+wxDECLARE_EVENT(REFRESH_MAIL_LIST, wxCommandEvent);
+wxDECLARE_EVENT(ATTACHMENT_DOWNLOAD, wxCommandEvent);
 
 class DashboardFrame : public wxFrame {
 protected:
-    DashboardFrameSubscriber* _subscriber;
+    //DashboardFrameSubscriber* _subscriber;
 
     static const int MARGIN = 5;
 
@@ -62,11 +69,12 @@ protected:
     // wxWidgets-specific event handlers
     void OnListBoxEvent(wxCommandEvent& e);
     void OnViewMailResize(wxSplitterEvent& e);
-    void OnClose(wxEvent& e);
     void OnRefreshMailList(wxCommandEvent& e);
     void OnNewMail(wxCommandEvent& e);
+    void OnReplyMail(wxCommandEvent& e);
+    void OnForwardMail(wxCommandEvent& e);
     void OnDeleteMail(wxCommandEvent& e);
-    void OnAttachmentClick(wxCommandEvent& e);
+    void OnAttachmentDownload(wxCommandEvent& e);
 
     // internal getters
     wxPanel* viewMailPanel() const;
@@ -84,7 +92,6 @@ public:
     DashboardFrame(const wxString& title);
 
     // external setters to be used by outside controllers
-    void subscribe(DashboardFrameSubscriber* sub);
     void setMailList(const std::vector<Mail>& mail);
     void updateViewMailPanel(const Mail& mail);
 

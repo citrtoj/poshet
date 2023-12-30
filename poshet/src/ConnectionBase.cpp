@@ -66,8 +66,11 @@ void ConnectionBase::closeSocket() {
     if (!isSocketOpen()) {
         return;
     }
-    if (_isSSLEnabled) {
-        SSL_shutdown(_ssl);
+    if (_isSSLInit) {
+        if (_isSSLConnected) {
+            SSL_shutdown(_ssl);
+            _isSSLConnected = false;
+        }
         SSL_free(_ssl);
         SSL_CTX_free(_ctx);
         _isSSLInit = false;
@@ -118,6 +121,7 @@ void ConnectionBase::connectSocket() {
             auto sslError = SSL_get_error(_ssl, -1);
             throw ConnectException("Could not establish SSL handshake (error code: " + std::to_string(sslError) + ")");
         }
+        _isSSLConnected = true;
     }
     _isSocketConnected = true;
 }

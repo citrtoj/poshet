@@ -85,15 +85,29 @@ std::string Mail::getPlainTextPart() const {
     throw MailException("Mail does not have plaintext parts");
 }
 
+AttachmentMetadata Mail::attachmentMetadataAt(size_t index) const {
+    // todo: index sanity check
+    const vmime::attachment& attachment = *_messageParser->getAttachmentAt(index);
+    return {
+        attachment.getName().generate(),
+        attachment.getType().generate(),
+        attachment.getData()->getLength()
+    };
+}
+
 std::vector<AttachmentMetadata> Mail::attachmentMetadata() const {
     std::vector<AttachmentMetadata> data;
     for (size_t i = 0; i < _messageParser -> getAttachmentCount(); ++i) {
-        const vmime::attachment& attachment = *_messageParser->getAttachmentAt(i);
-        data.push_back({
-            attachment.getName().generate(),
-            attachment.getType().generate(),
-            attachment.getData()->getLength()
-        });
+        data.push_back(attachmentMetadataAt(i));
     }
+    return data;
+}
+
+AttachmentData Mail::attachmentDataAt(size_t index) const {
+    // todo: index sanity check
+    const vmime::attachment& attachment = *_messageParser->getAttachmentAt(index);
+    std::string data;
+    vmime::utility::outputStreamStringAdapter x(data);
+    attachment.getData()->extract(x);
     return data;
 }

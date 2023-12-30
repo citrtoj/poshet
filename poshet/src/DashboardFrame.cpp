@@ -1,10 +1,17 @@
 #include "DashboardFrame.hpp"
 
+wxDEFINE_EVENT(SELECT_MAIL, wxCommandEvent);
+wxDEFINE_EVENT(NEW_MAIL, wxCommandEvent);
+wxDEFINE_EVENT(REPLY_MAIL, wxCommandEvent);
+wxDEFINE_EVENT(FORWARD_MAIL, wxCommandEvent);
+wxDEFINE_EVENT(DELETE_MAIL, wxCommandEvent);
+wxDEFINE_EVENT(REFRESH_MAIL_LIST, wxCommandEvent);
+wxDEFINE_EVENT(ATTACHMENT_DOWNLOAD, wxCommandEvent);
+
 DashboardFrame::DashboardFrame(const wxString& title) :
     wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxDefaultSize)
 {
     SetDoubleBuffered(true);
-    this->Bind(wxEVT_CLOSE_WINDOW, &DashboardFrame::OnClose, this);
     this->Bind(wxEVT_SPLITTER_SASH_POS_CHANGED, &DashboardFrame::OnViewMailResize, this);
 
     //top menu... not sure if I'll truly need it but...
@@ -77,10 +84,12 @@ void DashboardFrame::initViewMailPanel() {
 
     auto mailButtonSizer = new wxBoxSizer(wxHORIZONTAL);
     _replyMailBtn = new wxButton(_viewMailPanel, wxID_ANY, "Reply");
+    _replyMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnReplyMail, this);
     _forwardMailBtn = new wxButton(_viewMailPanel, wxID_ANY, "Forward");
+    _forwardMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnForwardMail, this);
     _deleteMailBtn = new wxButton(_viewMailPanel, wxID_ANY, "Delete");
-    
     _deleteMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnDeleteMail, this);
+    
     mailButtonSizer->Add(_replyMailBtn, 1, wxALL, MARGIN);
     mailButtonSizer->Add(_forwardMailBtn, 1, wxALL, MARGIN);
     mailButtonSizer->Add(_deleteMailBtn, 1, wxALL, MARGIN);
@@ -116,7 +125,7 @@ void DashboardFrame::initViewMailPanel() {
     mailContentsPanel->SetSizer(mailContentsSizer);
 
     _mailAttachmentsPanel = new wxScrolledWindow(viewMailPanel(), wxID_ANY, wxDefaultPosition, {-1, -1}, wxBORDER_SUNKEN);
-    _mailAttachmentsPanel->Bind(wxEVT_BUTTON, &DashboardFrame::OnAttachmentClick, this);
+    _mailAttachmentsPanel->Bind(ATTACHMENT_BUTTON_CLICK_EVENT, &DashboardFrame::OnAttachmentDownload, this);
 
     _mailAttachmentsSizer = new wxBoxSizer(wxHORIZONTAL);
     _mailAttachmentsPanel->SetSizer(_mailAttachmentsSizer);
@@ -154,30 +163,48 @@ void DashboardFrame::OnViewMailResize(wxSplitterEvent& e) {
 }
 
 void DashboardFrame::OnListBoxEvent(wxCommandEvent& e) {
-    _subscriber->onSelectMail();
-}
-
-void DashboardFrame::OnClose(wxEvent& e) {
-    _subscriber->onCloseApp();
+    wxCommandEvent newEvent(SELECT_MAIL);
+    wxPostEvent(GetEventHandler(), newEvent);
 }
 
 void DashboardFrame::OnRefreshMailList(wxCommandEvent& e) {
-    _subscriber->onRefreshMailList();
+    wxCommandEvent newEvent(REFRESH_MAIL_LIST);
+    wxPostEvent(GetEventHandler(), newEvent);
+    //_subscriber->onRefreshMailList();
     // hide sash
     _splitter->SetSashPosition(_splitter->GetSize().GetWidth());
 }
 
 void DashboardFrame::OnNewMail(wxCommandEvent& e) {
-    _subscriber->onNewMail();
+    //_subscriber->onNewMail();
+    wxCommandEvent newEvent(NEW_MAIL);
+    wxPostEvent(GetEventHandler(), newEvent);
+}
+void DashboardFrame::OnReplyMail(wxCommandEvent& e) {
+    //_subscriber->onNewMail();
+    wxCommandEvent newEvent(REPLY_MAIL);
+    wxPostEvent(GetEventHandler(), newEvent);
+}
+void DashboardFrame::OnForwardMail(wxCommandEvent& e) {
+    //_subscriber->onNewMail();
+    wxCommandEvent newEvent(FORWARD_MAIL);
+    wxPostEvent(GetEventHandler(), newEvent);
 }
 
 void DashboardFrame::OnDeleteMail(wxCommandEvent& e) {
     if (selected() < 0) {
         return;
     }
-    _subscriber->onDeleteMail();
+    //_subscriber->onDeleteMail();
+    wxCommandEvent newEvent(DELETE_MAIL);
+    wxPostEvent(GetEventHandler(), newEvent);
 }
 
+void DashboardFrame::OnAttachmentDownload(wxCommandEvent& e) {
+    wxCommandEvent newEvent(ATTACHMENT_DOWNLOAD);
+    newEvent.SetInt(e.GetInt());
+    wxPostEvent(GetEventHandler(), newEvent);
+}
 
 // ---- internal getters ---
 
@@ -187,10 +214,6 @@ wxPanel* DashboardFrame::viewMailPanel() const {
 
 
 // ---- external setters to be used by outside controllers
-
-void DashboardFrame::subscribe(DashboardFrameSubscriber* sub) {
-    _subscriber = sub;
-}
 
 void DashboardFrame::setMailList(const std::vector<Mail>& mails) {
     _mailList->DeleteAllItems();
@@ -228,12 +251,12 @@ void DashboardFrame::updateViewMailPanel(const Mail& mail) {
         wxWindowList& children = _mailAttachmentsPanel->GetChildren();
         for (wxWindowList::iterator it = children.begin(); it != children.end(); ++it) {
             wxWindow* child = *it;
-            if (child->IsKindOf(wxCLASSINFO(AttachmentButton))) {
+            if (child->IsKindOf(wxCLASSINFO(AttachmentPanel))) {
                 child->Destroy();
             }
         }
         for (size_t i = 0; i < attachmentMetadata.size(); ++i) {
-            auto x = new AttachmentButton(_mailAttachmentsPanel, i, attachmentMetadata[i]._filename, attachmentMetadata[i]._size);
+            auto x = new AttachmentPanelWithButton(_mailAttachmentsPanel, i, attachmentMetadata[i]._filename, attachmentMetadata[i]._size, "Download", MARGIN);
             _mailAttachmentsSizer->Add(x, 0, wxALL, MARGIN);
         }
         _mailAttachmentsPanel->Show();
@@ -269,8 +292,4 @@ void DashboardFrame::updateViewMailPanel(const Mail& mail) {
 
 long DashboardFrame::selected() const {
     return _mailList->GetFirstSelected();
-}
-
-void DashboardFrame::OnAttachmentClick(wxCommandEvent& e) {
-    _subscriber->onAttachmentClick(e.GetInt());
 }
