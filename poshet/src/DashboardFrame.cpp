@@ -32,7 +32,7 @@ DashboardFrame::DashboardFrame(const wxString& title) :
     _newMailBtn = new wxButton(_sidebarPanel, wxID_ANY, "Show all mail");
     _newMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnRefreshMailList, this);
 
-    _tagList = new wxListBox(_sidebarPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    _tagList = new wxListBox(_sidebarPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, wxLB_SINGLE);
     _tagList->Bind(wxEVT_LISTBOX, &DashboardFrame::OnViewTag, this);
 
     sidebarPanelBoxSizer->Add(_newMailBtn, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, MARGIN);
@@ -170,7 +170,7 @@ void DashboardFrame::OnListBoxEvent(wxCommandEvent& e) {
 }
 
 void DashboardFrame::OnRefreshMailList(wxCommandEvent& e) {
-    _tagList->SetSelection(-1, false); //unselect tag
+    //_tagList->SetSelection(wxNOT_FOUND); //unselect tag
 
     wxCommandEvent newEvent(REFRESH_MAIL_LIST);
     wxPostEvent(GetEventHandler(), newEvent);
@@ -317,12 +317,13 @@ void DashboardFrame::resetTags() {
         }
         else {
             _tagList->Insert(_defaultTagName, i);
-            _tagList->SetSelection(i);
+            //_tagList->SetSelection(i);
         }
     }
 }
 
 void DashboardFrame::setTags(const std::vector<std::string>& tags) {
+    //_tagList->SetSelection(wxNOT_FOUND); //unselect tag
     _tags = tags;
     std::sort(_tags.begin(), _tags.end());
     resetTags();

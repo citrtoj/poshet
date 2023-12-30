@@ -136,6 +136,7 @@ std::vector<std::string> DatabaseConnection::getMailTags(const std::string& user
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         auto sqliteData = sqlite3_column_text(stmt, 0);
         if (sqliteData == nullptr) {
+            result.push_back(std::string());
             continue;
         }
         std::string tag((const char*)sqliteData);

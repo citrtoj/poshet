@@ -26,14 +26,14 @@ void App::OnUnhandledException() {
     }
     catch (ServerException& e) {
         std::cout << "Server Exception: " << e.what() << "\nQuitting...\n";
-        throw;
+        Exit();
     }
     catch (Exception& e) {
         std::cout << "Poshet Exception: " << e.what() << "\nQuitting...\n";
-        throw;
+        Exit();
     }
     catch (std::exception& e) {
         std::cout << "C++ Exception: " << e.what() << "\nQuitting...\n";
-        throw;
+        Exit();
     }
 }

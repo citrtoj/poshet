@@ -139,9 +139,12 @@ const std::vector<const Mail*>& Session::retrieveMail(const std::string& tag, bo
             throw;
         }
     }
-    if (tag == _currentTag and !_isMailCacheDirty) {
-        return _mailsFilterCache;
-    }
+    // todo: revisit
+    // default tag is an empty std::string
+    // either add some sort of bool or define a Tag class
+    // if (tag == _currentTag and !_isMailCacheDirty) {
+    //     return _mailsFilterCache;
+    // }
 
     _mailsFilterCache.clear();
     for (const auto& mail : _mails) {
