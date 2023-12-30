@@ -18,6 +18,7 @@ AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame*
     _loginFrame->Bind(LOGIN_SUBMIT, &AppController::onLoginSubmit, this);
 
     _dashboardFrame->Bind(SELECT_MAIL, &AppController::onSelectMail, this);
+    _dashboardFrame->Bind(TAG_MAIL, &AppController::onTagMail, this);
     _dashboardFrame->Bind(ATTACHMENT_DOWNLOAD, &AppController::onAttachmentDownload, this);
     _dashboardFrame->Bind(REPLY_MAIL, &AppController::onReplyMail, this);
     _dashboardFrame->Bind(FORWARD_MAIL, &AppController::onForwardMail, this);
@@ -90,7 +91,6 @@ void AppController::onSelectMail(wxCommandEvent& e) {
 void AppController::onNewMail(wxCommandEvent& e) {
     if (!_isMailCreatorOpen) {
         _mailCreatorFrame = new MailCreatorFrame();
-        //_mailCreatorFrame->subscribe(this);
         _mailCreatorFrame->Show();
         _isMailCreatorOpen = true;
     }
@@ -106,8 +106,6 @@ void AppController::onForwardMail(wxCommandEvent& e) {
 
 void AppController::onDeleteMail(wxCommandEvent& e) {
     // ask for confirmation
-
-    
 
     auto selected = _dashboardFrame->selected();
     _session->deleteMail(selected);
@@ -161,6 +159,20 @@ void AppController::onAttachmentDownload(wxCommandEvent& e) {
     catch(FileManagerException& e) {
         showException(e.what());
     }
+}
+
+void AppController::onTagMail(wxCommandEvent& e) {
+    AlphaTextDialog dialog("Enter a tag");
+    if (dialog.ShowModal() != wxID_OK) {
+        return;
+    }
+    // no need to worry about encoding, this will always be a-zA-Z
+    std::string userInput = dialog.getInputString().ToStdString();
+    // get selected mail
+
+    _selectedMail = _dashboardFrame->selected();
+    _session->tagMail(_selectedMail, userInput);
+    getSetMail(true);
 }
 
 AppController::~AppController() {

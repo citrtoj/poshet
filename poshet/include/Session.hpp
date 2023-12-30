@@ -52,8 +52,9 @@ public:
 
     const std::vector<const Mail*>& retrieveMail(const std::string& tag = "", bool forceReload = false);
     const std::vector<const Mail*>& retrieveAllMail(bool forceReload = false);
-    const Mail& getMailAt(size_t idx); // uses currently displayed mail
-    void deleteMail(size_t idx);
+    const Mail& getMailAt(ssize_t idx); // uses currently displayed mail
+    void deleteMail(ssize_t idx);
+    void tagMail(ssize_t idx, const std::string& userInput);
 
     void sendMail(const std::string& to, const std::string& subject, const std::string& rawBody);
 };

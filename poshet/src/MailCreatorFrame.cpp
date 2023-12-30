@@ -54,15 +54,10 @@ MailCreatorFrame::MailCreatorFrame() :
     Centre();
 }
 
-// void MailCreatorFrame::subscribe(MailCreatorFrameSubscriber* sub) {
-//     _subscriber = sub;
-// }
-
 bool MailCreatorFrame::closeGracefully() {
     return Close();
 }
 
-// wxWidgets handlers
 
 void MailCreatorFrame::OnSend(wxCommandEvent& event) {
     //_subscriber->onMailCreatorSend();

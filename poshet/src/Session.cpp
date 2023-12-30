@@ -134,7 +134,6 @@ const std::vector<const Mail*>& Session::retrieveMail(const std::string& tag, bo
         try {
             getAllPop3AndSaveLocally();
             loadMail();
-            // clearPop3Mailbox();
         }
         catch (Exception& e) {
             throw;
@@ -156,16 +155,48 @@ const std::vector<const Mail*>& Session::retrieveMail(const std::string& tag, bo
 }
 
 const std::vector<const Mail*>& Session::retrieveAllMail(bool forceReload) {
-    return retrieveMail("", forceReload);
+    if (forceReload) {
+        try {
+            getAllPop3AndSaveLocally();
+            loadMail();
+        }
+        catch (Exception& e) {
+            throw;
+        }
+    }
+
+    _mailsFilterCache.clear();
+    for (const auto& mail : _mails) {
+        _mailsFilterCache.push_back(&mail);
+    }
+    _currentTag = "";
+    _isMailCacheDirty = false;
+    return _mailsFilterCache;
 }
 
-const Mail& Session::getMailAt(size_t idx) {
+const Mail& Session::getMailAt(ssize_t idx) {
+    if (idx < 0) {
+        throw Exception("No mail at given index");
+    }
     return *(_mailsFilterCache[idx]);
 }
 
-void Session::deleteMail(size_t idx) {
+void Session::deleteMail(ssize_t idx) {
+    if (idx < 0) {
+        throw Exception("No mail at given index");
+    }
     _db.deleteMail(_mailsFilterCache[idx]->mailId());
 
+    getAllPop3AndSaveLocally();
+    loadMail();
+    _isMailCacheDirty = true;
+}
+
+void Session::tagMail(ssize_t idx, const std::string& userInput) {
+    if (idx < 0) {
+        throw Exception("No mail at given index");
+    }
+    _db.tagReceivedMail(_mailsFilterCache[idx]->mailId(), userInput);
     getAllPop3AndSaveLocally();
     loadMail();
     _isMailCacheDirty = true;

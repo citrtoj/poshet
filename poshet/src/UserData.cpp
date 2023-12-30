@@ -33,7 +33,6 @@ UserData::UserData(
     _password = password;
 
     _pop3SSL = pop3SSL;
-    std::cout << _pop3SSL << "\n";
     _pop3Domain = pop3Domain.empty() ? splitAddress[1] : pop3Domain;
     _pop3Port = pop3Port.empty() ? std::to_string(POP3Connection::DefaultPort(pop3SSL)) : pop3Port;
     _pop3Username = pop3Username.empty() ? _emailAddress : pop3Username;

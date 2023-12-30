@@ -48,6 +48,7 @@ public:
     void onSelectMail(wxCommandEvent& e);
     void onRefreshMailList(wxCommandEvent& e);
     void onNewMail(wxCommandEvent& e);
+    void onTagMail(wxCommandEvent& e);
     void onReplyMail(wxCommandEvent& e);
     void onForwardMail(wxCommandEvent& e);
     void onDeleteMail(wxCommandEvent& e);

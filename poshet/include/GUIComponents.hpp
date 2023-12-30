@@ -14,9 +14,6 @@ public:
 
 protected:
     wxString attachmentLabel(const wxString& attachmentName, unsigned long long fileSize);
-
-    //void onAttachmentPanelClick(wxMouseEvent& event);
-
     wxBoxSizer* _sizer;
     wxStaticText* _text;
     wxString _attachmentName;
@@ -31,4 +28,14 @@ protected:
     void onButtonClick(wxCommandEvent& e);
 
     wxButton* _downloadButton;
+};
+
+
+class AlphaTextDialog : public wxDialog {
+public:
+    AlphaTextDialog(const wxString& title);
+    wxString getInputString() const;
+
+private:
+    wxTextCtrl* _inputTextCtrl;
 };

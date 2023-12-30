@@ -2,6 +2,7 @@
 
 wxDEFINE_EVENT(SELECT_MAIL, wxCommandEvent);
 wxDEFINE_EVENT(NEW_MAIL, wxCommandEvent);
+wxDEFINE_EVENT(TAG_MAIL, wxCommandEvent);
 wxDEFINE_EVENT(REPLY_MAIL, wxCommandEvent);
 wxDEFINE_EVENT(FORWARD_MAIL, wxCommandEvent);
 wxDEFINE_EVENT(DELETE_MAIL, wxCommandEvent);
@@ -29,19 +30,12 @@ DashboardFrame::DashboardFrame(const wxString& title) :
     _newMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnRefreshMailList, this);
     _refreshMailBtn = new wxButton(_sidebarPanel, wxID_ANY, "New message");
     _refreshMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnNewMail, this);
-    _folderList = new wxListBox(_sidebarPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
+    _tagList = new wxListBox(_sidebarPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
-    // temporary, to demonstrate how it would look
-    std::vector<std::string> dummyFolders = {
-        "Inbox",
-    };
-    for (int i = 0; i < dummyFolders.size(); ++i) {
-        _folderList->Insert(dummyFolders[i], i);
-    }
 
     sidebarPanelBoxSizer->Add(_newMailBtn, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, MARGIN);
     sidebarPanelBoxSizer->Add(_refreshMailBtn, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, MARGIN);
-    sidebarPanelBoxSizer->Add(_folderList, 1, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, MARGIN);
+    sidebarPanelBoxSizer->Add(_tagList, 1, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, MARGIN);
     _sidebarPanel->SetSizerAndFit(sidebarPanelBoxSizer);
 
     _splitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition, wxSize(1200, 800));
@@ -51,6 +45,8 @@ DashboardFrame::DashboardFrame(const wxString& title) :
     for (int i = 0; i < _fields.size(); ++i) {
         _mailList->InsertColumn(i, _fields[i]);
     }
+    _mailList->InsertColumn(_fields.size(), "Tag");
+
     _mailList->SetDoubleBuffered(true);
     this->Bind(wxEVT_LIST_ITEM_SELECTED, &DashboardFrame::OnListBoxEvent, this);
 
@@ -82,15 +78,20 @@ void DashboardFrame::initViewMailPanel() {
     mailHeadersSizer->Add(_selectedMailTo, 0, wxEXPAND | wxBOTTOM | wxLEFT | wxRIGHT, MARGIN);
 
     auto mailButtonSizer = new wxBoxSizer(wxHORIZONTAL);
+    _tagMailBtn = new wxButton(_viewMailPanel, wxID_ANY, "Change tag");
+    _tagMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnTagMail, this);
+    mailButtonSizer->Add(_tagMailBtn, 1, wxALL, MARGIN);
+
     _replyMailBtn = new wxButton(_viewMailPanel, wxID_ANY, "Reply");
     _replyMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnReplyMail, this);
+    mailButtonSizer->Add(_replyMailBtn, 1, wxALL, MARGIN);
+
     _forwardMailBtn = new wxButton(_viewMailPanel, wxID_ANY, "Forward");
     _forwardMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnForwardMail, this);
+    mailButtonSizer->Add(_forwardMailBtn, 1, wxALL, MARGIN);
+
     _deleteMailBtn = new wxButton(_viewMailPanel, wxID_ANY, "Delete");
     _deleteMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnDeleteMail, this);
-    
-    mailButtonSizer->Add(_replyMailBtn, 1, wxALL, MARGIN);
-    mailButtonSizer->Add(_forwardMailBtn, 1, wxALL, MARGIN);
     mailButtonSizer->Add(_deleteMailBtn, 1, wxALL, MARGIN);
 
     headerSizer->Add(mailHeadersSizer, 1, wxEXPAND | wxALL, MARGIN);
@@ -169,23 +170,18 @@ void DashboardFrame::OnListBoxEvent(wxCommandEvent& e) {
 void DashboardFrame::OnRefreshMailList(wxCommandEvent& e) {
     wxCommandEvent newEvent(REFRESH_MAIL_LIST);
     wxPostEvent(GetEventHandler(), newEvent);
-    //_subscriber->onRefreshMailList();
-    // hide sash
     _splitter->SetSashPosition(_splitter->GetSize().GetWidth());
 }
 
 void DashboardFrame::OnNewMail(wxCommandEvent& e) {
-    //_subscriber->onNewMail();
     wxCommandEvent newEvent(NEW_MAIL);
     wxPostEvent(GetEventHandler(), newEvent);
 }
 void DashboardFrame::OnReplyMail(wxCommandEvent& e) {
-    //_subscriber->onNewMail();
     wxCommandEvent newEvent(REPLY_MAIL);
     wxPostEvent(GetEventHandler(), newEvent);
 }
 void DashboardFrame::OnForwardMail(wxCommandEvent& e) {
-    //_subscriber->onNewMail();
     wxCommandEvent newEvent(FORWARD_MAIL);
     wxPostEvent(GetEventHandler(), newEvent);
 }
@@ -194,7 +190,6 @@ void DashboardFrame::OnDeleteMail(wxCommandEvent& e) {
     if (selected() < 0) {
         return;
     }
-    //_subscriber->onDeleteMail();
     wxCommandEvent newEvent(DELETE_MAIL);
     wxPostEvent(GetEventHandler(), newEvent);
 }
@@ -202,6 +197,12 @@ void DashboardFrame::OnDeleteMail(wxCommandEvent& e) {
 void DashboardFrame::OnAttachmentDownload(wxCommandEvent& e) {
     wxCommandEvent newEvent(ATTACHMENT_DOWNLOAD);
     newEvent.SetInt(e.GetInt());
+    wxPostEvent(GetEventHandler(), newEvent);
+}
+
+
+void DashboardFrame::OnTagMail(wxCommandEvent& e) {
+    wxCommandEvent newEvent(TAG_MAIL);
     wxPostEvent(GetEventHandler(), newEvent);
 }
 
@@ -226,6 +227,8 @@ void DashboardFrame::setMailList(const std::vector<const Mail*>& mails) {
             auto fieldValue = mail->getHeaderField(_fields[i], true);
             _mailList->SetItem(index, i, wxString::FromUTF8(fieldValue.c_str()));
         }
+        // tags will be ascii, a-zA-Z
+        _mailList->SetItem(index, _fields.size(), wxString::FromAscii(mail->tag().c_str()));
     }
     for (int i = 0; i < _fields.size(); ++i) {
         _mailList->SetColumnWidth(i, wxLIST_AUTOSIZE);
@@ -290,4 +293,27 @@ void DashboardFrame::updateViewMailPanel(const Mail& mail) {
 
 long DashboardFrame::selected() const {
     return _mailList->GetFirstSelected();
+}
+
+void DashboardFrame::resetTags() {
+    _tagList->Clear();
+    for (int i = 0; i < _tags.size(); ++i) {
+        if (!_tags[i].empty()) {
+            _tagList->Insert(_tags[i], i);
+        }
+        else {
+            _tagList->Insert(_defaultTagName, i);
+            _tagList->SetSelection(i);
+        }
+    }
+}
+
+void DashboardFrame::setTags(const std::vector<std::string>& tags) {
+    _tags = tags;
+    std::sort(_tags.begin(), _tags.end());
+    resetTags();
+}
+
+std::string DashboardFrame::tagAt(size_t idx) {
+    return _tags[idx];
 }

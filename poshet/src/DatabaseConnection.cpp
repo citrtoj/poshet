@@ -91,7 +91,7 @@ void DatabaseConnection::addReceivedMail(const std::string& mailId, const std::s
 
 std::vector<DBMailData> DatabaseConnection::getReceivedMailOfUser(const std::string& id, const std::string& tag) {
     std::vector<DBMailData> result;
-    std::string query = "SELECT mail_id FROM received_mail m join users u on m.user_id = u.user_id WHERE m.user_id = '" + id + "' ";
+    std::string query = "SELECT mail_id, tag FROM received_mail m join users u on m.user_id = u.user_id WHERE m.user_id = '" + id + "' ";
 
     if (!tag.empty()) {
         query += " AND m.tag like '" + tag + "'";
@@ -105,7 +105,8 @@ std::vector<DBMailData> DatabaseConnection::getReceivedMailOfUser(const std::str
     }
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         auto mailId = sqlite3_column_text(stmt, 0);
-        auto mailTag = sqlite3_column_text(stmt, 2);
+        auto mailTag = sqlite3_column_text(stmt, 1);
+        
         result.push_back({
             (const char*)(mailId),
             mailTag != nullptr ? (const char*) mailTag : ""
