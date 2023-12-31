@@ -4,7 +4,7 @@ AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame*
     _loginFrame(loginFrame),
     _dashboardFrame(dashboardFrame)
 {
-    try {
+    try {   
         _fileManager = new MailFileManager();
         _session = new Session(_fileManager);
     }
@@ -12,6 +12,9 @@ AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame*
         showException(e.what());
     }
 
+    _session->subscribe(this);
+
+    // close-window binds
     _loginFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onCloseApp, this);
     _dashboardFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onCloseApp, this);
 
@@ -19,6 +22,7 @@ AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame*
 
     _dashboardFrame->Bind(REFRESH_MAIL_LIST, &AppController::onRefreshMailList, this);
     _dashboardFrame->Bind(VIEW_MAIL_WITH_TAG, &AppController::onViewMailWithTag, this);
+    _dashboardFrame->Bind(VIEW_ALL_MAIL, &AppController::onViewAllMail, this);
     
     _dashboardFrame->Bind(SELECT_MAIL, &AppController::onSelectMail, this);
     _dashboardFrame->Bind(TAG_MAIL, &AppController::onTagMail, this);
@@ -47,21 +51,12 @@ void AppController::closeApp() {
     wxPostEvent(_mainApp, close);
 }
 
-void AppController::onCloseApp(wxCloseEvent& e) {
-    closeApp();
-}
-
-void AppController::onLoginSubmit(wxCommandEvent& e) {
-    login();
-}
-
 void AppController::login() {
     try {
         _session->setLoginData(_loginFrame->userInput());
         _session->connectAndLoginToServers();
+        getMailAndShow(true);
         _loginFrame->Hide();
-        _dashboardFrame->Show();
-        getSetMail(true);
     }
     catch (Exception& e) {
         showException(e.what());
@@ -70,12 +65,9 @@ void AppController::login() {
     }
 }
 
-void AppController::onRefreshMailList(wxCommandEvent& e) {
-    getSetMail(true);
-}
-
-void AppController::getSetMail(bool force) {
+void AppController::getMailAndShow(bool force) {
     try {
+        _dashboardFrame->Show();
         _currentMail = _session->retrieveAllMail(force);
         auto tags = _session->mailTags();
         _dashboardFrame->setMailList(_currentMail);
@@ -85,6 +77,20 @@ void AppController::getSetMail(bool force) {
         showException(e.what());
         closeApp();
     }
+}
+
+// --- wxWidgets UI listeners ---
+
+void AppController::onCloseApp(wxCloseEvent& e) {
+    closeApp();
+}
+
+void AppController::onLoginSubmit(wxCommandEvent& e) {
+    login();
+}
+
+void AppController::onRefreshMailList(wxCommandEvent& e) {
+    getMailAndShow(true);
 }
 
 void AppController::onSelectMail(wxCommandEvent& e) {
@@ -114,7 +120,7 @@ void AppController::onDeleteMail(wxCommandEvent& e) {
 
     auto selected = _dashboardFrame->selected();
     _session->deleteMail(selected);
-    getSetMail(true);
+    getMailAndShow();
 }
 
 void AppController::onMailCreatorSend(wxCommandEvent& e) {
@@ -128,7 +134,7 @@ void AppController::onMailCreatorSend(wxCommandEvent& e) {
     catch (Exception& e) {
         // show error
     }
-    getSetMail(true);
+    getMailAndShow(true);
 }
 
 void AppController::onMailCreatorClose(wxCommandEvent& e) {
@@ -157,13 +163,10 @@ void AppController::onAttachmentDownload(wxCommandEvent& e) {
             filename += "_";
         }
     }
-
     saveFileDialog.SetFilename(filename);
-
     if (saveFileDialog.ShowModal() == wxID_CANCEL) {
         return;
     }
-
     auto attachment = mail.attachmentDataAt(e.GetInt());
     try {
         _fileManager->saveAttachment(saveFileDialog.GetPath().ToStdString(), attachment, true);
@@ -185,7 +188,7 @@ void AppController::onTagMail(wxCommandEvent& e) {
 
     _selectedMail = _dashboardFrame->selected();
     _session->tagMail(_selectedMail, userInput);
-    getSetMail(true);
+    getMailAndShow();
 }
 
 void AppController::onViewMailWithTag(wxCommandEvent& e) {
@@ -200,9 +203,27 @@ void AppController::onViewMailWithTag(wxCommandEvent& e) {
     }
 }
 
+void AppController::onViewAllMail(wxCommandEvent& e) {
+    try {
+        _currentMail = _session->retrieveAllMail();
+        _dashboardFrame->setMailList(_currentMail);
+    }
+    catch (Exception& e) {
+        showException(e.what());
+        closeApp();
+    }
+}
+
+
 AppController::~AppController() {
     // destroy business-logic
-    // don't delete UIs
     delete _fileManager;
     delete _session;
+}
+
+void AppController::handleDataUpdate() {
+    // makes sure that the data in the views is accurate
+    // fetches data from the session
+
+    getMailAndShow();
 }

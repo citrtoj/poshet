@@ -12,7 +12,7 @@
 #include "Exceptions.hpp"
 
 struct DBMailData {
-    std::string _mailId, _mailTag;
+    std::string _mailId, _mailTag, _mailFilename;
 };
 
 class DatabaseConnection {
@@ -38,6 +38,8 @@ public:
 
     void addReceivedMail(const std::string& mailId, const std::string& userId, const std::string& uidl, unsigned long long date, const std::string tag = "");
     std::vector<DBMailData> getReceivedMailOfUser(const std::string& id, const std::string& tag = "");
+
+    std::string getFileNameOf(const std::string mailId);
 
     void tagReceivedMail(const std::string& mailId, const std::string& tag);
 

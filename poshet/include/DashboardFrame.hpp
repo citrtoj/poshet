@@ -6,6 +6,7 @@
 #include <array>
 #include <unordered_map>
 #include <algorithm>
+#include <regex>
 
 #include <wx/wx.h>
 #include <wx/wxhtml.h>
@@ -18,7 +19,6 @@
 #include <wx/wfstream.h>
 #include <wx/base64.h>
 #include <wx/fs_mem.h>
-#include <mimetic/mimetic.h>
 
 #include "Mail.hpp"
 #include "GUIComponents.hpp"
@@ -26,6 +26,7 @@
 wxDECLARE_EVENT(SELECT_MAIL, wxCommandEvent);
 wxDECLARE_EVENT(NEW_MAIL, wxCommandEvent);
 wxDECLARE_EVENT(TAG_MAIL, wxCommandEvent);
+wxDECLARE_EVENT(VIEW_ALL_MAIL, wxCommandEvent);
 wxDECLARE_EVENT(VIEW_MAIL_WITH_TAG, wxCommandEvent);
 wxDECLARE_EVENT(REPLY_MAIL, wxCommandEvent);
 wxDECLARE_EVENT(FORWARD_MAIL, wxCommandEvent);
@@ -37,7 +38,6 @@ class DashboardFrame : public wxFrame {
 protected:
     static const int MARGIN = 5;
 
-
     const std::vector<std::string> _fields = {
         // they have to be actual fields that would be found in a mail header
         "From", "Subject", "Date"
@@ -47,9 +47,10 @@ protected:
     wxPanel* _sidebarPanel;
     wxButton* _refreshMailBtn;
     wxButton* _newMailBtn;
+    wxButton* _showAllMailBtn;
 
     wxListBox* _tagList;
-    std::string _defaultTagName = "Untagged";
+    std::string _displayUntaggedAs = "[Untagged]";
 
     std::vector<std::string> _tags;
 
@@ -77,7 +78,10 @@ protected:
     void OnListBoxEvent(wxCommandEvent& e);
     void OnViewMailResize(wxSplitterEvent& e);
     void OnRefreshMailList(wxCommandEvent& e);
+
     void OnViewTag(wxCommandEvent& e);
+    void OnViewAllMail(wxCommandEvent& e);
+
     void OnNewMail(wxCommandEvent& e);
     void OnTagMail(wxCommandEvent& e);
     void OnReplyMail(wxCommandEvent& e);
@@ -91,15 +95,18 @@ protected:
     void refreshViewMailPanel();
     void resetSash();
 
-    std::string memoryPrefix() const {
-        // for wxMemoryFSHandler??
-        return "___DASHBOARD_FRAME_";
-    }
+    std::vector<std::string> _savedToFSHandler;
+    std::string newInlineAttachmentFilename() const;
 
     void resetTags();
 
 public:
     DashboardFrame(const wxString& title);
+
+    static bool _isFSHandlerInit;
+    static void initFSHandler();
+
+
 
     // external setters to be used by outside controllers
     void setTags(const std::vector<std::string>& tags);

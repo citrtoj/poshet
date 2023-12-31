@@ -55,7 +55,7 @@ protected:
     void keepAlive();
 
     std::string execCommand(const std::string& command, bool expectsMultiline = false, SingleLineMessage processing = SingleLineMessage::PROCESSED); // THREAD SAFE
-
+    
     // std::string retrieveOneMailHeader(size_t currentMailIndex);
 
 public:

@@ -31,7 +31,7 @@ void AttachmentPanelWithButton::onButtonClick(wxCommandEvent& e) {
 AlphaTextDialog::AlphaTextDialog(const wxString& title) : wxDialog(nullptr, wxID_ANY, title) {
     wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     auto validator = wxTextValidator(wxFILTER_INCLUDE_CHAR_LIST | wxFILTER_ASCII);
-    wxString validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    wxString validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_ ";
     validator.SetCharIncludes(validChars);
     _inputTextCtrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, validator);
     sizer->Add(_inputTextCtrl, 0, wxALL | wxEXPAND, 5);

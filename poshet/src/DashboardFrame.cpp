@@ -4,39 +4,43 @@ wxDEFINE_EVENT(SELECT_MAIL, wxCommandEvent);
 wxDEFINE_EVENT(NEW_MAIL, wxCommandEvent);
 wxDEFINE_EVENT(TAG_MAIL, wxCommandEvent);
 wxDEFINE_EVENT(VIEW_MAIL_WITH_TAG, wxCommandEvent);
+wxDEFINE_EVENT(VIEW_ALL_MAIL, wxCommandEvent);
 wxDEFINE_EVENT(REPLY_MAIL, wxCommandEvent);
 wxDEFINE_EVENT(FORWARD_MAIL, wxCommandEvent);
 wxDEFINE_EVENT(DELETE_MAIL, wxCommandEvent);
 wxDEFINE_EVENT(REFRESH_MAIL_LIST, wxCommandEvent);
 wxDEFINE_EVENT(ATTACHMENT_DOWNLOAD, wxCommandEvent);
 
+bool DashboardFrame::_isFSHandlerInit = false;
+
+void DashboardFrame::initFSHandler() {
+    if (_isFSHandlerInit) {
+        return;
+    }
+    wxFileSystem::AddHandler(new wxMemoryFSHandler);
+}
+
 DashboardFrame::DashboardFrame(const wxString& title) :
     wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxDefaultSize)
 {
+    initFSHandler();
     Bind(wxEVT_SPLITTER_SASH_POS_CHANGED, &DashboardFrame::OnViewMailResize, this);
-
-    //top menu... not sure if I'll truly need it but...
-    auto *menuFile = new wxMenu;
-    menuFile->Append(wxID_ANY, "&Quit\tCtrl-Q", "Quit Poshet");
-    auto *menuHelp = new wxMenu;
-    menuHelp->Append(wxID_ANY, "&About\tF1", "Show about dialog");
-    auto *menuBar = new wxMenuBar;
-    menuBar->Append(menuFile, "&File");
-    menuBar->Append(menuHelp, "&Help");
-    SetMenuBar(menuBar);
 
     _sidebarPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(200, 600), wxBORDER_SUNKEN);
     auto sidebarPanelBoxSizer = new wxBoxSizer(wxVERTICAL);
-    _refreshMailBtn = new wxButton(_sidebarPanel, wxID_ANY, "New message");
-    _refreshMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnNewMail, this);
-    _newMailBtn = new wxButton(_sidebarPanel, wxID_ANY, "Show all mail");
-    _newMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnRefreshMailList, this);
+    _newMailBtn = new wxButton(_sidebarPanel, wxID_ANY, "New Mail");
+    _newMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnNewMail, this);
+    _refreshMailBtn = new wxButton(_sidebarPanel, wxID_ANY, "Refresh mail");
+    _refreshMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnRefreshMailList, this);
+    _showAllMailBtn = new wxButton(_sidebarPanel, wxID_ANY, "View all mail");
+    _showAllMailBtn->Bind(wxEVT_BUTTON, &DashboardFrame::OnViewAllMail, this);
 
     _tagList = new wxListBox(_sidebarPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, wxLB_SINGLE);
     _tagList->Bind(wxEVT_LISTBOX, &DashboardFrame::OnViewTag, this);
 
     sidebarPanelBoxSizer->Add(_newMailBtn, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, MARGIN);
     sidebarPanelBoxSizer->Add(_refreshMailBtn, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, MARGIN);
+    sidebarPanelBoxSizer->Add(_showAllMailBtn, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, MARGIN);
     sidebarPanelBoxSizer->Add(_tagList, 1, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, MARGIN);
     _sidebarPanel->SetSizerAndFit(sidebarPanelBoxSizer);
 
@@ -151,12 +155,20 @@ void DashboardFrame::refreshViewMailPanel() {
         _splitter->SplitVertically(_mailList, _viewMailPanel);
         _mailAttachmentsPanel->SetSizerAndFit(_mailAttachmentsSizer);
         _viewMailPanel->Layout();
+        _splitter->Layout();
     }
 }
 
 void DashboardFrame::resetSash() {
     _splitter->SetSashPosition(_splitter->GetSize().GetWidth() - _viewMailPanel->GetMinSize().GetWidth());
 }
+
+// --- for memoryFSHandler ---
+
+std::string DashboardFrame::newInlineAttachmentFilename() const {
+    return "att_" + std::to_string(_savedToFSHandler.size());
+}
+
 
 // ---- wxWidgets-specific event handlers
 
@@ -182,8 +194,13 @@ void DashboardFrame::OnViewTag(wxCommandEvent& e) {
     const auto& tag = _tags[i];
     
     wxCommandEvent newEvent(VIEW_MAIL_WITH_TAG);
-    newEvent.SetInt(i);
+    //newEvent.SetInt(i);
     newEvent.SetString(tag);
+    wxPostEvent(GetEventHandler(), newEvent);
+}
+
+void DashboardFrame::OnViewAllMail(wxCommandEvent& e) {
+    wxCommandEvent newEvent(VIEW_ALL_MAIL);
     wxPostEvent(GetEventHandler(), newEvent);
 }
 
@@ -249,7 +266,6 @@ void DashboardFrame::setMailList(const std::vector<const Mail*>& mails) {
         _mailList->Update();
     }
     _splitter->Unsplit(_viewMailPanel);
-
 }
 
 void DashboardFrame::updateViewMailPanel(const Mail& mail) {
@@ -277,13 +293,33 @@ void DashboardFrame::updateViewMailPanel(const Mail& mail) {
         }
         _mailAttachmentsPanel->Show();
     }
+
+    _savedToFSHandler.clear();
     
     try {
-        auto htmlText = mail.getHTMLPart();
-        wxString x = wxString::FromUTF8(htmlText.c_str());
-        _htmlDisplayer->SetPage(x);
-        _plainTextDisplayer->Hide();
+        auto htmlText = mail.getHTMLText();
+        auto data = mail.getInlineHTMLAttachments();
+        for (auto x : data) {
+            size_t pos = 0;
+            auto filename = newInlineAttachmentFilename();
+            auto memoryPrefixedFilename = "memory:" + filename;
+            while ((pos = htmlText.find(x._referenceId, pos)) != std::string::npos) {
+                htmlText.replace(pos, x._referenceId.length(), memoryPrefixedFilename);
+                pos += memoryPrefixedFilename.length();
+            }
+            wxMemoryFSHandler::AddFile(filename, x._data.c_str(), x._data.length());
+            _savedToFSHandler.push_back(filename);
+        }
+        std::string htmlName = "file.htm";
+        wxMemoryFSHandler::AddFile(htmlName, htmlText.c_str(), htmlText.length());
         _htmlDisplayer->Show();
+        _htmlDisplayer->LoadPage("memory:" + htmlName);
+        _plainTextDisplayer->Hide();
+        wxMemoryFSHandler::RemoveFile(htmlName);
+        for (auto file : _savedToFSHandler) {
+            wxMemoryFSHandler::RemoveFile(file);
+        }
+
     }
     catch (MailException& e) {
         try {
@@ -316,7 +352,7 @@ void DashboardFrame::resetTags() {
             _tagList->Insert(_tags[i], i);
         }
         else {
-            _tagList->Insert(_defaultTagName, i);
+            _tagList->Insert(_displayUntaggedAs, i);
             //_tagList->SetSelection(i);
         }
     }

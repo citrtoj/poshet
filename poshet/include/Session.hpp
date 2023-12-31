@@ -15,7 +15,20 @@
 #include "Mail.hpp"
 #include "Utils.hpp"
 
+
+class SessionObserver {
+public:
+    virtual void handleDataUpdate() = 0;
+};
+
 class Session {
+
+protected:
+    SessionObserver* _observer;
+    void notifyObserver();
+public:
+    void subscribe(SessionObserver* observer);
+
 protected:
     POP3Connection _pop3;
     SMTPConnection _smtp;
@@ -27,22 +40,22 @@ protected:
     std::vector<Mail> _mails;
     std::vector<const Mail*> _mailsFilterCache;
     bool _isMailCacheDirty = true;
-    //int _currentMail;
     std::string _currentTag;
     
     bool _shouldRefreshConnection = false;
     bool _shouldRepopulateMail = true;
 
-    void loadMail(int count = -1);
 
     void saveOnePop3MailLocally(size_t index, size_t byteSize);
-    void getAllPop3AndSaveLocally();
+    void getAllPop3AndSaveLocally(bool deleteOnSave = true);
 
     std::vector<DBMailData> getAllMailFromDatabase();
+    
+    void reloadMailFromDatabase();
 
 public:
     Session(MailFileManager* manager);
-    ~Session();
+
     void setLoginData(const UserData& data);
     void connectAndLoginToServers();
 

@@ -26,6 +26,10 @@ struct Attachment {
     AttachmentData _data;
 };
 
+struct InlineAttachmentData {
+    std::string _id, _referenceId, _data;
+};
+
 class Mail {
 protected:
     std::string _plainText;
@@ -36,6 +40,8 @@ protected:
     vmime::messageParser* _messageParser;
     
     void parsePlainText();
+
+    const vmime::htmlTextPart& getHTMLPart() const;
 
 public:
     bool _isMimeMessageInit;
@@ -50,7 +56,8 @@ public:
     
     std::string getHeaderField(const std::string& key, bool unicode = false) const;
 
-    std::string getHTMLPart() const;
+    std::string getHTMLText() const;
+    std::vector<InlineAttachmentData> getInlineHTMLAttachments() const;
     std::string getPlainTextPart() const;
 
     AttachmentMetadata attachmentMetadataAt(size_t index) const;

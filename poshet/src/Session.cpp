@@ -1,12 +1,81 @@
 #include "Session.hpp"
 
+// --- subscriber-specific ---
+
+void Session::subscribe(SessionObserver* observer) {
+    _observer = observer;
+}
+
+void Session::notifyObserver() {
+    _observer->handleDataUpdate();
+}
+
+// --- ctor ---
+
 Session::Session(MailFileManager* manager) : _fileManager(manager) {
     _db.setPath(_fileManager->databasePath());
 }
 
-Session::~Session() {
-    // not its business to delete the file manager :)
+// --- internal methods ---
+
+void Session::saveOnePop3MailLocally(size_t index, size_t byteSize) {
+    std::string uidl = "";
+    try {
+        uidl = _pop3.retrieveOneMailUIDL(index);
+    }
+    catch(ServerResponseException& e) {
+        // UIDL not supported by server
+    }
+
+    auto plainData = _pop3.retrieveOneMail(index, byteSize);
+    Mail mail(plainData, ""); // this should be temporary shouldn't it 
+    auto id = mail.getHeaderField("Message-Id");
+    auto date = mail.getHeaderField("Date");
+    auto hash = Utils::encodeToSHA256(plainData);
+    auto fullMailId = id + "_" + hash;
+
+    // save to fileManager, then to db
+    // if this didn't fail, save all related info to db
+    _db.addReceivedMail(fullMailId, _userData.dbId(), uidl, static_cast<unsigned long long>(Utils::mailDateToUnixTimestamp(date)));
+    auto filename = _db.getFileNameOf(fullMailId);
+    _fileManager->saveMail(_userData.pop3Domain(), MailFileManager::MailType::RECEIVED, filename, mail.plainText());
+
 }
+
+void Session::getAllPop3AndSaveLocally(bool deleteOnSave) {
+    if (_shouldRefreshConnection) {
+        _pop3.resetConnection();
+    }
+    
+    auto rawMail = _pop3.retrieveAllMailMetadata();
+    for (const auto& rawMailData : rawMail) {
+        try {
+            saveOnePop3MailLocally(rawMailData.index, rawMailData.byteSize);
+            if (deleteOnSave) {
+                _pop3.markMailForDeletion(rawMailData.index);
+            }
+        }
+        catch (ServerException& e) {
+            std::cout << "[Session] SERVER WARNING: " << e.what() << "\n";
+        }
+        catch(FileManagerException& e) {
+            std::cout << "[Session] FILE MANAGER WARNING: " << e.what() << "\n";
+        }
+        catch (ConnectException& e) {
+            throw;
+        }
+    }
+    if (deleteOnSave) {
+        _pop3.resetConnection();
+    }
+    _shouldRefreshConnection = true;
+}
+
+std::vector<DBMailData> Session::getAllMailFromDatabase() {
+    return _db.getReceivedMailOfUser(_userData.dbId());
+}
+
+// --- public methods ---
 
 void Session::setLoginData(const UserData& data) {
     _userData = data;
@@ -59,68 +128,14 @@ void Session::sendMail(const std::string& to, const std::string& subject, const 
     // _shouldRefresh = true;
 }
 
-void Session::saveOnePop3MailLocally(size_t index, size_t byteSize) {
-    std::string uidl = "";
-    try {
-        uidl = _pop3.retrieveOneMailUIDL(index);
-    }
-    catch(ServerResponseException& e) {
-        // UIDL not supported by server
-    }
-
-    auto plainData = _pop3.retrieveOneMail(index, byteSize);
-
-    Mail mail(plainData, ""); // this should be temporary shouldn't it 
-    auto id = mail.getHeaderField("Message-Id");
-    auto date = mail.getHeaderField("Date");
-    auto hash = Utils::encodeToSHA256(plainData);
-    auto fullMailId = id + "_" + hash;
-
-    // save to fileManager, then to db
-    _fileManager->saveMail(_userData.pop3Domain(), MailFileManager::MailType::RECEIVED, fullMailId, mail.plainText());
-    // if this didn't fail, save all related info to db
-
-    _db.addReceivedMail(fullMailId, _userData.dbId(), uidl, static_cast<unsigned long long>(Utils::mailDateToUnixTimestamp(date)));
-}
-
-void Session::getAllPop3AndSaveLocally() {
-    if (_shouldRefreshConnection) {
-        _pop3.resetConnection();
-    }
-    auto rawMail = _pop3.retrieveAllMailMetadata();
-    for (const auto& rawMailData : rawMail) {
-        try {
-            saveOnePop3MailLocally(rawMailData.index, rawMailData.byteSize);
-            // mark mail for deletion
-            _pop3.markMailForDeletion(rawMailData.index);
-        }
-        catch (ServerException& e) {
-            std::cout << "[Session] SERVER WARNING: " << e.what() << "\n";
-        }
-        catch(FileManagerException& e) {
-            std::cout << "[Session] FILE MANAGER WARNING: " << e.what() << "\n";
-        }
-        catch (ConnectException& e) {
-            throw;
-        }
-    }
-    _pop3.resetConnection(); // to commit changes
-    // todo: figure out how to use this bool properly
-    _shouldRefreshConnection = true;
-}
-
-std::vector<DBMailData> Session::getAllMailFromDatabase() {
-    return _db.getReceivedMailOfUser(_userData.dbId());
-}
-
-void Session::loadMail(int count) {
+void Session::reloadMailFromDatabase() {
     _isMailCacheDirty = true;
     _mails.clear();
     
     auto mail = getAllMailFromDatabase();
     _mails.reserve(mail.size());
     for (auto mailData : mail) {
-        auto x = _fileManager->getMail(_userData.pop3Domain(), MailFileManager::MailType::RECEIVED, mailData._mailId);
+        auto x = _fileManager->getMail(_userData.pop3Domain(), MailFileManager::MailType::RECEIVED, mailData._mailFilename);
         _mails.push_back(Mail(x, mailData._mailId, mailData._mailTag));
     }
 }
@@ -133,18 +148,12 @@ const std::vector<const Mail*>& Session::retrieveMail(const std::string& tag, bo
     if (forceReload) {
         try {
             getAllPop3AndSaveLocally();
-            loadMail();
+            reloadMailFromDatabase();
         }
         catch (Exception& e) {
             throw;
         }
     }
-    // todo: revisit
-    // default tag is an empty std::string
-    // either add some sort of bool or define a Tag class
-    // if (tag == _currentTag and !_isMailCacheDirty) {
-    //     return _mailsFilterCache;
-    // }
 
     _mailsFilterCache.clear();
     for (const auto& mail : _mails) {
@@ -161,7 +170,7 @@ const std::vector<const Mail*>& Session::retrieveAllMail(bool forceReload) {
     if (forceReload) {
         try {
             getAllPop3AndSaveLocally();
-            loadMail();
+            reloadMailFromDatabase();
         }
         catch (Exception& e) {
             throw;
@@ -188,11 +197,11 @@ void Session::deleteMail(ssize_t idx) {
     if (idx < 0) {
         throw Exception("No mail at given index");
     }
-    _db.deleteMail(_mailsFilterCache[idx]->mailId());
 
-    getAllPop3AndSaveLocally();
-    loadMail();
-    _isMailCacheDirty = true;
+    
+    _db.deleteMail(_mailsFilterCache[idx]->mailId());
+    reloadMailFromDatabase();
+    _observer->handleDataUpdate();
 }
 
 void Session::tagMail(ssize_t idx, const std::string& userInput) {
@@ -200,7 +209,6 @@ void Session::tagMail(ssize_t idx, const std::string& userInput) {
         throw Exception("No mail at given index");
     }
     _db.tagReceivedMail(_mailsFilterCache[idx]->mailId(), userInput);
-    getAllPop3AndSaveLocally();
-    loadMail();
-    _isMailCacheDirty = true;
+    reloadMailFromDatabase();
+    _observer->handleDataUpdate();
 }

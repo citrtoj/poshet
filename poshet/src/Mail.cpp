@@ -58,18 +58,77 @@ const std::string& Mail::plainText() const {
     return _plainText;
 }
 
-std::string Mail::getHTMLPart() const {
+const vmime::htmlTextPart& Mail::getHTMLPart() const {
     for (size_t i = 0 ; i < _messageParser->getTextPartCount() ; ++i) {
         const vmime::textPart& part = *_messageParser->getTextPartAt(i);
         if (part.getType().getSubType() == vmime::mediaTypes::TEXT_HTML) {
             const vmime::htmlTextPart& hp = dynamic_cast<const vmime::htmlTextPart&>(part);
-            std::string htmlText;
-            vmime::utility::outputStreamStringAdapter x(htmlText);
-            hp.getText()->extract(x);
-            return htmlText;
+            return hp;
+            // std::string htmlText;
+            // vmime::utility::outputStreamStringAdapter x(htmlText);
+            // hp.getText()->extract(x);
+            // for (size_t j = 0 ; j < hp.getObjectCount() ; ++j) {
+                
+            //     const vmime::htmlTextPart::embeddedObject& obj = *hp.getObjectAt(j);
+                
+            //     std::cout << obj.getId() << " " << obj.getReferenceId() << " " <<  obj.getType().generate() << "\n";
+
+            //     // Identifier (content-id or content-location) is in "obj.getId()"
+            //     // Object data is in "obj.getData()"
+            // }
+            //return htmlText;
         }
     }
     throw MailException("Mail does not have HTML parts");
+}
+
+std::string Mail::getHTMLText() const {
+    const vmime::htmlTextPart& hp = getHTMLPart();
+    std::string htmlText;
+    vmime::utility::outputStreamStringAdapter x(htmlText);
+    hp.getText()->extract(x);
+    return htmlText;
+    // for (size_t i = 0 ; i < _messageParser->getTextPartCount() ; ++i) {
+    //     const vmime::textPart& part = *_messageParser->getTextPartAt(i);
+    //     if (part.getType().getSubType() == vmime::mediaTypes::TEXT_HTML) {
+    //         const vmime::htmlTextPart& hp = dynamic_cast<const vmime::htmlTextPart&>(part);
+    //         std::string htmlText;
+    //         vmime::utility::outputStreamStringAdapter x(htmlText);
+    //         hp.getText()->extract(x);
+    //         for (size_t j = 0 ; j < hp.getObjectCount() ; ++j) {
+                
+    //             const vmime::htmlTextPart::embeddedObject& obj = *hp.getObjectAt(j);
+                
+    //             std::cout << obj.getId() << " " << obj.getReferenceId() << " " <<  obj.getType().generate() << "\n";
+
+    //             // Identifier (content-id or content-location) is in "obj.getId()"
+    //             // Object data is in "obj.getData()"
+    //         }
+    //         return htmlText;
+    //     }
+    // }
+    // throw MailException("Mail does not have HTML parts");
+}
+
+std::vector<InlineAttachmentData> Mail::getInlineHTMLAttachments() const {
+    std::vector<InlineAttachmentData> result;
+    const vmime::htmlTextPart& hp = getHTMLPart();
+    for (size_t j = 0 ; j < hp.getObjectCount() ; ++j) {
+        const vmime::htmlTextPart::embeddedObject& obj = *hp.getObjectAt(j);
+        //std::cout << obj.getId() << " " << obj.getReferenceId() << " " <<  obj.getType().generate() << "\n";
+        std::string data;
+        vmime::utility::outputStreamStringAdapter x(data);
+        obj.getData()->extract(x);
+        result.push_back({
+            obj.getId(),
+            obj.getReferenceId(),
+            data
+        });
+        
+        // Identifier (content-id or content-location) is in "obj.getId()"
+        // Object data is in "obj.getData()"
+    }
+    return result;
 }
 
 std::string Mail::getPlainTextPart() const {
@@ -118,6 +177,5 @@ const std::string& Mail::tag() const {
 }
 
 const std::string& Mail::mailId() const {
-    std::cout << "mail id in ctor: " << _mailId << "\n";
     return _mailId;
 }

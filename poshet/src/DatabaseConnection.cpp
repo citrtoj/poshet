@@ -109,11 +109,17 @@ std::vector<DBMailData> DatabaseConnection::getReceivedMailOfUser(const std::str
         
         result.push_back({
             (const char*)(mailId),
-            mailTag != nullptr ? (const char*) mailTag : ""
+            mailTag != nullptr ? (const char*) mailTag : "",
+            (const char*)(mailId)
         });
     }
     sqlite3_finalize(stmt);
     return result;
+}
+
+std::string DatabaseConnection::getFileNameOf(const std::string mailId) {
+    // in my implementation the mailId itself is the filename but in case I want to change it at some point...
+    return mailId;
 }
 
 void DatabaseConnection::tagReceivedMail(const std::string& mailId, const std::string& tag) {
