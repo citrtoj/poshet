@@ -18,7 +18,7 @@
 
 class SessionObserver {
 public:
-    virtual void handleDataUpdate() = 0;
+    virtual void handleSessionDataUpdate() = 0;
 };
 
 class Session {
@@ -70,5 +70,5 @@ public:
     void deleteMail(ssize_t idx);
     void tagMail(ssize_t idx, const std::string& userInput);
 
-    void sendMail(const std::string& to, const std::string& subject, const std::string& rawBody);
+    void sendMail(const std::string& to, const std::string& rawBody);
 };

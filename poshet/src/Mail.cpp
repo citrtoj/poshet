@@ -64,19 +64,6 @@ const vmime::htmlTextPart& Mail::getHTMLPart() const {
         if (part.getType().getSubType() == vmime::mediaTypes::TEXT_HTML) {
             const vmime::htmlTextPart& hp = dynamic_cast<const vmime::htmlTextPart&>(part);
             return hp;
-            // std::string htmlText;
-            // vmime::utility::outputStreamStringAdapter x(htmlText);
-            // hp.getText()->extract(x);
-            // for (size_t j = 0 ; j < hp.getObjectCount() ; ++j) {
-                
-            //     const vmime::htmlTextPart::embeddedObject& obj = *hp.getObjectAt(j);
-                
-            //     std::cout << obj.getId() << " " << obj.getReferenceId() << " " <<  obj.getType().generate() << "\n";
-
-            //     // Identifier (content-id or content-location) is in "obj.getId()"
-            //     // Object data is in "obj.getData()"
-            // }
-            //return htmlText;
         }
     }
     throw MailException("Mail does not have HTML parts");
@@ -88,26 +75,6 @@ std::string Mail::getHTMLText() const {
     vmime::utility::outputStreamStringAdapter x(htmlText);
     hp.getText()->extract(x);
     return htmlText;
-    // for (size_t i = 0 ; i < _messageParser->getTextPartCount() ; ++i) {
-    //     const vmime::textPart& part = *_messageParser->getTextPartAt(i);
-    //     if (part.getType().getSubType() == vmime::mediaTypes::TEXT_HTML) {
-    //         const vmime::htmlTextPart& hp = dynamic_cast<const vmime::htmlTextPart&>(part);
-    //         std::string htmlText;
-    //         vmime::utility::outputStreamStringAdapter x(htmlText);
-    //         hp.getText()->extract(x);
-    //         for (size_t j = 0 ; j < hp.getObjectCount() ; ++j) {
-                
-    //             const vmime::htmlTextPart::embeddedObject& obj = *hp.getObjectAt(j);
-                
-    //             std::cout << obj.getId() << " " << obj.getReferenceId() << " " <<  obj.getType().generate() << "\n";
-
-    //             // Identifier (content-id or content-location) is in "obj.getId()"
-    //             // Object data is in "obj.getData()"
-    //         }
-    //         return htmlText;
-    //     }
-    // }
-    // throw MailException("Mail does not have HTML parts");
 }
 
 std::vector<InlineAttachmentData> Mail::getInlineHTMLAttachments() const {
@@ -115,7 +82,6 @@ std::vector<InlineAttachmentData> Mail::getInlineHTMLAttachments() const {
     const vmime::htmlTextPart& hp = getHTMLPart();
     for (size_t j = 0 ; j < hp.getObjectCount() ; ++j) {
         const vmime::htmlTextPart::embeddedObject& obj = *hp.getObjectAt(j);
-        //std::cout << obj.getId() << " " << obj.getReferenceId() << " " <<  obj.getType().generate() << "\n";
         std::string data;
         vmime::utility::outputStreamStringAdapter x(data);
         obj.getData()->extract(x);
@@ -124,9 +90,6 @@ std::vector<InlineAttachmentData> Mail::getInlineHTMLAttachments() const {
             obj.getReferenceId(),
             data
         });
-        
-        // Identifier (content-id or content-location) is in "obj.getId()"
-        // Object data is in "obj.getData()"
     }
     return result;
 }
@@ -163,7 +126,7 @@ std::vector<AttachmentMetadata> Mail::attachmentMetadata() const {
     return data;
 }
 
-AttachmentData Mail::attachmentDataAt(size_t index) const {
+std::string Mail::attachmentDataAt(size_t index) const {
     // todo: index sanity check
     const vmime::attachment& attachment = *_messageParser->getAttachmentAt(index);
     std::string data;
@@ -179,3 +142,64 @@ const std::string& Mail::tag() const {
 const std::string& Mail::mailId() const {
     return _mailId;
 }
+
+// MailBuilder::MailBuilder() {
+//     // try {
+// 	// 	std::locale::global(std::locale(""));
+// 	// } catch (std::exception &) {
+// 	// 	std::setlocale(LC_ALL, "");
+// 	// }
+
+//     // _messageBuilder = new vmime::messageBuilder();
+//     addMIMEAttachment();
+// }
+
+
+
+// void MailBuilder::addMIMEAttachment(/*const Attachment& attachment*/) {
+//     // vmime::shared_ptr<vmime::stringContentHandler> x = vmime::make_shared<vmime::stringContentHandler>(attachment._data);
+
+
+//     // vmime::shared_ptr<vmime::contentHandler> y = std::dynamic_pointer_cast<vmime::stringContentHandler>(x);
+
+
+//     // vmime::shared_ptr <vmime::fileAttachment> a = vmime::make_shared <vmime::fileAttachment>(y, vmime::word("filename.txt"), vmime::mediaType("application/octet-stream"));
+//     try {
+// 		std::locale::global(std::locale(""));
+// 	} catch (std::exception &) {
+// 		std::setlocale(LC_ALL, "");
+// 	}
+
+//     vmime::messageBuilder builder;
+//     vmime::addressList list;
+//     list.appendAddress(vmime::make_shared<vmime::mailbox>(vmime::text("john"), "john@localhost"));
+//     builder.setRecipients(list);
+//     builder.getTextPart()->setCharset(vmime::charset("utf-8"));
+
+//     builder.getTextPart()->setText(
+//         vmime::make_shared <vmime::stringContentHandler>(
+//             "I'm writing this ăăăăââîîî short text to test message construction " \
+//             "using the vmime::messageBuilder component."
+//         )
+//     );
+
+
+//     // builder.appendAttachment(a);
+//     vmime::shared_ptr <vmime::message> msg = builder.construct();
+
+//     msg->getHeader()->ContentTransferEncoding()->setValue(vmime::encoding("7-bit"));
+//     // construct message id
+//     auto msgId = "<cd5ef9c2-bee7-400e-819f-470665b05a5d@localhost>";
+
+//     auto msgIdVmime = vmime::make_shared<vmime::messageId>(msgId);
+
+//     auto msgidseq = vmime::make_shared<vmime::messageIdSequence>();
+//     msgidseq->appendMessageId(msgIdVmime);
+
+//     msg->getHeader()->InReplyTo()->setValue(msgidseq);
+
+//     std::string text;
+//     vmime::utility::outputStreamStringAdapter x(text);
+//     msg->generate(x);
+//     std::cout << text <<" \n";
+// }

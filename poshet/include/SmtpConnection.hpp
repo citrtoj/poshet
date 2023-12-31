@@ -11,7 +11,6 @@
 #include <atomic>
 #include <functional>
 
-#include "Mail.hpp"
 #include "Utils.hpp"
 #include "ConnectionBase.hpp"
 
@@ -66,5 +65,5 @@ public:
 
     std::string readResponse();
 
-    void sendMail(const Mail& mail);
+    void sendMail(const std::string& from, const std::string& to, const std::string& rawBody);
 };

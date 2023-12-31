@@ -39,3 +39,10 @@ public:
 private:
     wxTextCtrl* _inputTextCtrl;
 };
+
+
+// class WarningPanel : public wxPanel {
+// public:
+//     WarningPanel(wxWindow* parent, const wxString& text) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_RAISED) {}
+    
+// };

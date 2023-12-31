@@ -27,6 +27,7 @@ AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame*
     _dashboardFrame->Bind(SELECT_MAIL, &AppController::onSelectMail, this);
     _dashboardFrame->Bind(TAG_MAIL, &AppController::onTagMail, this);
     _dashboardFrame->Bind(ATTACHMENT_DOWNLOAD, &AppController::onAttachmentDownload, this);
+    _dashboardFrame->Bind(NEW_MAIL, &AppController::onNewMail, this);
     _dashboardFrame->Bind(REPLY_MAIL, &AppController::onReplyMail, this);
     _dashboardFrame->Bind(FORWARD_MAIL, &AppController::onForwardMail, this);
     _dashboardFrame->Bind(DELETE_MAIL, &AppController::onDeleteMail, this);
@@ -102,8 +103,17 @@ void AppController::onSelectMail(wxCommandEvent& e) {
 void AppController::onNewMail(wxCommandEvent& e) {
     if (!_isMailCreatorOpen) {
         _mailCreatorFrame = new MailCreatorFrame();
+
+        _mailCreatorFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onMailCreatorClose, this);
+        _mailCreatorFrame->Bind(SEND_MAIL, &AppController::onMailCreatorSend, this);
+
         _mailCreatorFrame->Show();
+
+        _mailBuilder = new MailBodyBuilder;
         _isMailCreatorOpen = true;
+    }
+    else {
+        showInfo("Could not open mail creator window (one is already open)");
     }
 }
 
@@ -128,24 +138,23 @@ void AppController::onMailCreatorSend(wxCommandEvent& e) {
     auto subject = _mailCreatorFrame->subject();
     auto body = _mailCreatorFrame->body();
     try {
-        _session->sendMail(to, subject, body);
+        // create body with mailBuilder, send it to here, close the thing gracefully
+
+        //_session->sendMail(to, subject, body);
         _mailCreatorFrame->closeGracefully();
     }
     catch (Exception& e) {
-        // show error
+        showException(e.what());
     }
+    showInfo("Mail sent successfully");
     getMailAndShow(true);
 }
 
-void AppController::onMailCreatorClose(wxCommandEvent& e) {
-    // todo: recheck this
-    // shouldn't lead to bugs, despite it seemingly being a "i'm pretending it's done before it's actually done" situation
-    // the GUI is singlethreaded, so immediately after this is set to false, the window of the mail creator frame receives the close event, and then that starts closing itself, more safely than I would have closed it manually using Destroy();
-    // and only then would the user theoretically be even able to press the "new message" button again
-    // perhaps in the future I might allow more than one window
-    // but that would mean a more complicated subscriber system, I think
-    // or the creator would have to send a pointer/index to itself... or something
+void AppController::onMailCreatorClose(wxCloseEvent& e) {
+    _mailCreatorFrame->Destroy();
+    _mailCreatorFrame = nullptr;
     _isMailCreatorOpen = false;
+    delete _mailBuilder;
 }
 
 void AppController::onAttachmentDownload(wxCommandEvent& e) {
@@ -221,9 +230,16 @@ AppController::~AppController() {
     delete _session;
 }
 
-void AppController::handleDataUpdate() {
+void AppController::handleSessionDataUpdate() {
     // makes sure that the data in the views is accurate
     // fetches data from the session
 
     getMailAndShow();
+}
+
+void AppController::handleMailBuilderDataUpdate() {
+    // show info on mail creator frame
+    if (_mailCreatorFrame == nullptr) {
+        throw Exception("Mail creator frame uninitialized");
+    }
 }

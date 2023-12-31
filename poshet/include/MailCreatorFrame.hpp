@@ -8,6 +8,8 @@
 #include <wx/sstream.h>
 #include <wx/richtext/richtextxml.h>
 
+wxDECLARE_EVENT(SEND_MAIL, wxCommandEvent);
+
 class MailCreatorFrame : public wxFrame {
 protected:
     //MailCreatorFrameSubscriber* _subscriber;
@@ -20,10 +22,8 @@ protected:
 
     // wxWidgets event handlers
     void OnSend(wxCommandEvent& event);
-    void OnClose(wxEvent& event);
 public:
     MailCreatorFrame();
-    //void subscribe(MailCreatorFrameSubscriber* sub);
 
     bool closeGracefully();
 

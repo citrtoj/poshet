@@ -319,6 +319,7 @@ void DashboardFrame::updateViewMailPanel(const Mail& mail) {
         for (auto file : _savedToFSHandler) {
             wxMemoryFSHandler::RemoveFile(file);
         }
+        _savedToFSHandler.clear();
 
     }
     catch (MailException& e) {

@@ -7,7 +7,7 @@ void Session::subscribe(SessionObserver* observer) {
 }
 
 void Session::notifyObserver() {
-    _observer->handleDataUpdate();
+    _observer->handleSessionDataUpdate();
 }
 
 // --- ctor ---
@@ -120,12 +120,12 @@ void Session::resetConnections() {
     connectAndLoginToServers();
 }
 
-void Session::sendMail(const std::string& to, const std::string& subject, const std::string& rawBody) {
+void Session::sendMail(const std::string& to, const std::string& rawBody) {
     //TODO: SEND MAIL OH MY GOD...
-    // Mail mail(to, _loginData.emailAddress(), subject, rawBody);
-    // _smtp.sendMail(mail);
+    _smtp.sendMail(_userData.emailAddress(), to, rawBody);
 
-    // _shouldRefresh = true;
+    _isMailCacheDirty = true;
+    _observer->handleSessionDataUpdate();
 }
 
 void Session::reloadMailFromDatabase() {
@@ -201,7 +201,7 @@ void Session::deleteMail(ssize_t idx) {
     
     _db.deleteMail(_mailsFilterCache[idx]->mailId());
     reloadMailFromDatabase();
-    _observer->handleDataUpdate();
+    _observer->handleSessionDataUpdate();
 }
 
 void Session::tagMail(ssize_t idx, const std::string& userInput) {
@@ -210,5 +210,5 @@ void Session::tagMail(ssize_t idx, const std::string& userInput) {
     }
     _db.tagReceivedMail(_mailsFilterCache[idx]->mailId(), userInput);
     reloadMailFromDatabase();
-    _observer->handleDataUpdate();
+    _observer->handleSessionDataUpdate();
 }

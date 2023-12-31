@@ -13,7 +13,8 @@
 #include "MailFileManager.hpp"
 #include "Exceptions.hpp"
 
-class AppController : public wxEvtHandler, public SessionObserver {
+class AppController : public wxEvtHandler, public SessionObserver, public MailBuilderObserver {
+
 protected:
     wxApp* _mainApp;
     Session* _session;
@@ -21,7 +22,9 @@ protected:
     // GUIs
     LoginFrame* _loginFrame;
     DashboardFrame* _dashboardFrame;
+
     bool _isMailCreatorOpen = false;
+    MailBodyBuilder* _mailBuilder;
     MailCreatorFrame* _mailCreatorFrame;
 
     MailFileManager* _fileManager;
@@ -56,14 +59,16 @@ protected:
     void onForwardMail(wxCommandEvent& e);
     void onDeleteMail(wxCommandEvent& e);
     void onAttachmentDownload(wxCommandEvent& e);
+
     void onMailCreatorSend(wxCommandEvent& e);
-    void onMailCreatorClose(wxCommandEvent& e);
+    void onMailCreatorClose(wxCloseEvent& e);
 
 public:
     AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame* dashboardFrame);
     ~AppController();
 
 public:
-    // SessionObserver method
-    void handleDataUpdate() override;  
+    // model observer methods
+    void handleSessionDataUpdate() override;  
+    void handleMailBuilderDataUpdate() override;
 };

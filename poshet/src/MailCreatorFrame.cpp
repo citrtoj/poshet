@@ -1,9 +1,11 @@
 #include "MailCreatorFrame.hpp"
 
+wxDEFINE_EVENT(SEND_MAIL, wxCommandEvent);
+
 MailCreatorFrame::MailCreatorFrame() :
     wxFrame(nullptr, wxID_ANY, "New mail")
 {
-    this->Bind(wxEVT_CLOSE_WINDOW, &MailCreatorFrame::OnClose, this);
+    // this->Bind(wxEVT_CLOSE_WINDOW, &MailCreatorFrame::OnClose, this);
 
     auto mainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     mainPanel->SetBackgroundColour(wxColour(255, 255, 255, 255));
@@ -60,19 +62,19 @@ bool MailCreatorFrame::closeGracefully() {
 
 
 void MailCreatorFrame::OnSend(wxCommandEvent& event) {
-    //_subscriber->onMailCreatorSend();
+    wxPostEvent(GetEventHandler(), wxCommandEvent(SEND_MAIL));
 }
 
-void MailCreatorFrame::OnClose(wxEvent& event) {
-    // wxStringOutputStream strm;
-    // wxRichTextBuffer buffer(_contentsCtrl->GetBuffer());
-    // wxRichTextXMLHandler xmlHandler;
-    // // mă simt de parcă trag cu dinții de output-ul ăsta
-    // xmlHandler.ExportXML(*(wxOutputStream*)(&strm), *(wxRichTextObject*)(_contentsCtrl->GetFocusObject()), 0);
-    // std::cout << strm.GetString();
-    //_subscriber->onMailCreatorClose();  //notifies in case it needs to save input, or something...
-    event.Skip();
-}
+// void MailCreatorFrame::OnClose(wxEvent& event) {
+//     // wxStringOutputStream strm;
+//     // wxRichTextBuffer buffer(_contentsCtrl->GetBuffer());
+//     // wxRichTextXMLHandler xmlHandler;
+//     // // mă simt de parcă trag cu dinții de output-ul ăsta
+//     // xmlHandler.ExportXML(*(wxOutputStream*)(&strm), *(wxRichTextObject*)(_contentsCtrl->GetFocusObject()), 0);
+//     // std::cout << strm.GetString();
+//     //_subscriber->onMailCreatorClose();  //notifies in case it needs to save input, or something...
+//     event.Skip();
+// }
 
 // getters. temporary
 
