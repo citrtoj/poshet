@@ -123,8 +123,8 @@ void Session::resetConnections() {
 }
 
 void Session::sendMail(const std::string& to, const std::string& rawBody) {
-    //TODO: SEND MAIL OH MY GOD...
-    _smtp.sendMail(_userData.emailAddress(), to, rawBody);
+    //TODO: do the vmime mailbox thing...
+    //_smtp.sendMail(_userData.emailAddress(), to, rawBody);
 
     _isMailCacheDirty = true;
     _observer->handleSessionDataUpdate();

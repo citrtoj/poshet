@@ -44,7 +44,7 @@ private:
     static void createFolderOrCheckIfExists(const std::string& path);
     static constexpr int PERMISSIONS = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
     
-    std::string _root = "$HOME";
+    std::string _root = ".";
     std::string _location = ".poshet";
     std::string _dbName = "mail.db";
     std::string _mailFolderName = "mail";

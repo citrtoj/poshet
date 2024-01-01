@@ -28,18 +28,7 @@ void MailFileManager::createFolderOrCheckIfExists(const std::string& path) {
 }
 
 void MailFileManager::initRootPath() {
-    if (_root == "$HOME") {
-        const char* homeDir = getenv("HOME");
-        if (homeDir != nullptr) {
-            _rootPath = joinToFullPath(std::string(homeDir), _location);
-        }
-        else {
-            throw FileManagerException("Could not get home directory location");
-        }
-    }
-    else {
-        _rootPath = joinToFullPath(_root, _location);
-    }
+    _rootPath = joinToFullPath(_root, _location);
 }
 
 void MailFileManager::initFolder() {

@@ -81,9 +81,9 @@ void LoginFrame::OnLogin(wxCommandEvent& event) {
 
 UserData LoginFrame::userInput() {
     return UserData(
-        _emailAddress->GetValue().ToStdString(),
-        _fullName->GetValue().ToStdString(),
-        _password->GetValue().ToStdString(),
+        _emailAddress->GetValue().ToUTF8().data(),
+        _fullName->GetValue().ToUTF8().data(),
+        _password->GetValue().ToUTF8().data(),
 
         _pop3SSL->GetValue(),
         _pop3Domain->GetValue().ToStdString(),

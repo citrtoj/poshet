@@ -1,9 +1,12 @@
+# cmake build folder
 poshet/build/*
-./Poshet
-*/CMakeFiles/*
-tmp/*
+
+# folder where data is stored
+.poshet/*
+# default executable location after `make`
 Poshet
-*.code-workspace
+
+# latex report files
 docs/*.aux
 docs/*.fdb_latexmk
 docs/*.fls

@@ -136,7 +136,7 @@ void AppController::onReplyMail(wxCommandEvent& e) {
     try {
         // get selected
         const auto& mail = _session->getMailAt(_selectedMail);
-        _mailBuilder = new ReplyMailBodyBuilder(mail, _session->fullName(), _session->emailAddress());
+        _mailBuilder = new ReplyMailBodyBuilder(mail, _session->emailAddress(), _session->fullName());
         // set mailCreatorFrame controls to stuff returned by _mailBuilder
         _mailCreatorFrame->setTo(_mailBuilder->to());
         _mailCreatorFrame->setSubject(_mailBuilder->subject());
@@ -155,7 +155,7 @@ void AppController::onForwardMail(wxCommandEvent& e) {
 }
 
 void AppController::onDeleteMail(wxCommandEvent& e) {
-    // ask for confirmation
+    // todo: ask for confirmation
 
     auto selected = _dashboardFrame->selected();
     _session->deleteMail(selected);
@@ -167,7 +167,7 @@ void AppController::onMailCreatorSend(wxCommandEvent& e) {
     auto subject = _mailCreatorFrame->subject();
     auto body = _mailCreatorFrame->body();
     try {
-        // create body with mailBuilder, send it to here, close the thing gracefully
+        // todo: create body with mailBuilder, send it to here, close the thing gracefully
         
         //_session->sendMail(to, subject, body);
         _mailCreatorFrame->closeGracefully();
@@ -220,9 +220,7 @@ void AppController::onTagMail(wxCommandEvent& e) {
     if (dialog.ShowModal() != wxID_OK) {
         return;
     }
-    // no need to worry about encoding, this will always be a-zA-Z
     std::string userInput = dialog.getInputString().ToStdString();
-    // get selected mail
 
     _selectedMail = _dashboardFrame->selected();
     _session->tagMail(_selectedMail, userInput);

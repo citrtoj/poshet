@@ -79,10 +79,9 @@ public:
 class MailBodyBuilder {
 protected:
     virtual void setFrom(const std::string& emailAddress, const std::string& name = "") {
-        _from = vmime::make_shared<vmime::mailbox>(vmime::text(name), vmime::emailAddress(emailAddress));
+        _from = vmime::make_shared<vmime::mailbox>(vmime::text(name, vmime::charset("utf-8")), vmime::emailAddress(emailAddress));
     }
 public:
-    // implicit constructor
     MailBodyBuilder(const std::string& fromEmailAddress, const std::string& name = "") {
         setFrom(fromEmailAddress, name);
         std::cout << "[MailBodyBuilder] ctor\n";
