@@ -156,7 +156,6 @@ std::vector<std::string> DatabaseConnection::getMailTags(const std::string& user
 
 
 void DatabaseConnection::deleteMail(const std::string& mailId) {
-    std::cout << mailId << "\n";
     std::string query = "DELETE FROM received_mail where mail_id = '" + mailId + "';";
     int code = sqlite3_exec(_db, query.c_str(), nullptr, nullptr, nullptr);
     if (code) {

@@ -83,7 +83,6 @@ void SMTPConnection::connectToServer() {
     readResponse();
     _ehloResponse = execCommand("EHLO " + _clientDomain);
 
-    // pot de pe acum sa trimit NOOP in thread
     _noopThread = std::thread(&SMTPConnection::keepAlive, this);
     _threadStarted = true;
     _state = State::TRANSACTION;
@@ -143,7 +142,6 @@ void SMTPConnection::sendMail(const std::string& from, const std::string& to, co
     catch (ServerException& exc) {
         throw Exception("Server was unable to send mail");
     }
-    
 }
 
 

@@ -79,17 +79,19 @@ std::vector<DBMailData> Session::getAllMailFromDatabase() {
 
 void Session::setLoginData(const UserData& data) {
     _userData = data;
-    _pop3.setHost(_userData.pop3Domain());
-    _pop3.setSSL(_userData.pop3SSL());
-    _smtp.setSSL(_userData.smtpSSL());
-    _pop3.setPort(_userData.pop3Port());
-    _smtp.setHost(_userData.smtpDomain());
-    _smtp.setPort(_userData.smtpPort());
     std::cout << "[Session] Set data\n";
 }
 
 void Session::connectAndLoginToServers() {
     try {
+        _pop3.setHost(_userData.pop3Domain());
+        _pop3.setSSL(_userData.pop3SSL());
+        _pop3.setPort(_userData.pop3Port());
+
+        _smtp.setSSL(_userData.smtpSSL());
+        _smtp.setHost(_userData.smtpDomain());
+        _smtp.setPort(_userData.smtpPort());
+
         _pop3.connectToServer();
         _smtp.connectToServer();
         _pop3.login(_userData.pop3Username(), _userData.password());

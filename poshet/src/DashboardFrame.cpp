@@ -182,7 +182,7 @@ void DashboardFrame::OnListBoxEvent(wxCommandEvent& e) {
 }
 
 void DashboardFrame::OnRefreshMailList(wxCommandEvent& e) {
-    //_tagList->SetSelection(wxNOT_FOUND); //unselect tag
+    _tagList->SetSelection(wxNOT_FOUND);
 
     wxCommandEvent newEvent(REFRESH_MAIL_LIST);
     wxPostEvent(GetEventHandler(), newEvent);
@@ -202,6 +202,7 @@ void DashboardFrame::OnViewTag(wxCommandEvent& e) {
 void DashboardFrame::OnViewAllMail(wxCommandEvent& e) {
     wxCommandEvent newEvent(VIEW_ALL_MAIL);
     wxPostEvent(GetEventHandler(), newEvent);
+    _tagList->SetSelection(wxNOT_FOUND);
 }
 
 void DashboardFrame::OnNewMail(wxCommandEvent& e) {

@@ -13,7 +13,7 @@
 #include "MailFileManager.hpp"
 #include "Exceptions.hpp"
 
-class AppController : public wxEvtHandler, public SessionObserver, public MailBuilderObserver {
+class AppController : public wxEvtHandler, public SessionObserver, public MailBodyBuilderObserver {
 
 protected:
     wxApp* _mainApp;
@@ -26,6 +26,7 @@ protected:
     bool _isMailCreatorOpen = false;
     MailBodyBuilder* _mailBuilder;
     MailCreatorFrame* _mailCreatorFrame;
+    bool createMailCreatorFrame();
 
     MailFileManager* _fileManager;
     
@@ -70,5 +71,8 @@ public:
 public:
     // model observer methods
     void handleSessionDataUpdate() override;  
+
+    // the only time that the underlying data would change would be when attaching attachments, so it's fine that it's a single fxn
+    // the reply/forward-specific data is added to the user input when creating the actual frame
     void handleMailBuilderDataUpdate() override;
 };

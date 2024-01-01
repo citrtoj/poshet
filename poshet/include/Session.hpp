@@ -30,8 +30,8 @@ public:
     void subscribe(SessionObserver* observer);
 
 protected:
-    POP3Connection _pop3;
     SMTPConnection _smtp;
+    POP3Connection _pop3;
     DatabaseConnection _db;
 
     MailFileManager* _fileManager;
@@ -55,6 +55,14 @@ protected:
 
 public:
     Session(MailFileManager* manager);
+
+    const std::string& fullName() const {
+        return _userData.fullName();
+    }
+
+    const std::string& emailAddress() const {
+        return _userData.emailAddress();
+    }
 
     void setLoginData(const UserData& data);
     void connectAndLoginToServers();

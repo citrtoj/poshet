@@ -12,8 +12,6 @@ wxDECLARE_EVENT(SEND_MAIL, wxCommandEvent);
 
 class MailCreatorFrame : public wxFrame {
 protected:
-    //MailCreatorFrameSubscriber* _subscriber;
-    
     wxButton* _sendBtn, * _attachBtn;
     wxTextCtrl* _toInput, * _subjectInput;
     wxRichTextCtrl* _contentsCtrl;
@@ -31,4 +29,9 @@ public:
     std::string subject() const;
     std::string body() const;
 
+    void setTo(const std::string& text);
+    void setSubject(const std::string& text);
+    void setBody(const std::string& text);
+
+    void setBodyCursorToBeginning();
 };

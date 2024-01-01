@@ -100,25 +100,54 @@ void AppController::onSelectMail(wxCommandEvent& e) {
     _dashboardFrame->updateViewMailPanel(mail);
 }
 
-void AppController::onNewMail(wxCommandEvent& e) {
-    if (!_isMailCreatorOpen) {
-        _mailCreatorFrame = new MailCreatorFrame();
-
-        _mailCreatorFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onMailCreatorClose, this);
-        _mailCreatorFrame->Bind(SEND_MAIL, &AppController::onMailCreatorSend, this);
-
-        _mailCreatorFrame->Show();
-
-        _mailBuilder = new MailBodyBuilder;
-        _isMailCreatorOpen = true;
+bool AppController::createMailCreatorFrame() {
+    if (_isMailCreatorOpen) {
+        showInfo("A Mail Creator window is already open. Close the currently open one before proceeding.");
+        return false;
     }
-    else {
-        showInfo("Could not open mail creator window (one is already open)");
+    _mailCreatorFrame = new MailCreatorFrame();
+
+    _mailCreatorFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onMailCreatorClose, this);
+    _mailCreatorFrame->Bind(SEND_MAIL, &AppController::onMailCreatorSend, this);
+
+    _mailCreatorFrame->Show();
+    _isMailCreatorOpen = true;
+    return true;
+}
+
+void AppController::onNewMail(wxCommandEvent& e) {
+    if (!createMailCreatorFrame()) {
+        return;
+    }
+    try {
+        _mailBuilder = new MailBodyBuilder(_session->fullName(), _session->emailAddress());
+    }
+    catch (Exception& e) {
+        showException(std::string("Could not initialize Mail Creator (") + e.what() + ").");
+        delete _mailBuilder;
+        _mailCreatorFrame->closeGracefully();
     }
 }
 
 void AppController::onReplyMail(wxCommandEvent& e) {
-    warnUnimplemented();
+        if (!createMailCreatorFrame()) {
+        return;
+    }
+    try {
+        // get selected
+        const auto& mail = _session->getMailAt(_selectedMail);
+        _mailBuilder = new ReplyMailBodyBuilder(mail, _session->fullName(), _session->emailAddress());
+        // set mailCreatorFrame controls to stuff returned by _mailBuilder
+        _mailCreatorFrame->setTo(_mailBuilder->to());
+        _mailCreatorFrame->setSubject(_mailBuilder->subject());
+        _mailCreatorFrame->setBody(_mailBuilder->generateStarterBody());
+        _mailCreatorFrame->setBodyCursorToBeginning();
+    }
+    catch (Exception& e) {
+        showException(std::string("Could not initialize Mail Creator (") + e.what() + ").");
+        delete _mailBuilder;
+        _mailCreatorFrame->closeGracefully();
+    }
 }
 
 void AppController::onForwardMail(wxCommandEvent& e) {
@@ -139,7 +168,7 @@ void AppController::onMailCreatorSend(wxCommandEvent& e) {
     auto body = _mailCreatorFrame->body();
     try {
         // create body with mailBuilder, send it to here, close the thing gracefully
-
+        
         //_session->sendMail(to, subject, body);
         _mailCreatorFrame->closeGracefully();
     }

@@ -5,13 +5,9 @@ wxDEFINE_EVENT(SEND_MAIL, wxCommandEvent);
 MailCreatorFrame::MailCreatorFrame() :
     wxFrame(nullptr, wxID_ANY, "New mail")
 {
-    // this->Bind(wxEVT_CLOSE_WINDOW, &MailCreatorFrame::OnClose, this);
-
     auto mainPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     mainPanel->SetBackgroundColour(wxColour(255, 255, 255, 255));
     auto verticalSizer = new wxBoxSizer(wxVERTICAL);
-
-    // BUTTONS SIZER: _sendBtn, _attachBtn
 
     auto buttonsSizer = new wxBoxSizer(wxHORIZONTAL);
     _sendBtn = new wxButton(mainPanel, wxID_ANY, "Send");
@@ -21,8 +17,6 @@ MailCreatorFrame::MailCreatorFrame() :
     buttonsSizer->Add(_attachBtn, wxSizerFlags().Border(wxALL, MARGIN));
 
     verticalSizer->Add(buttonsSizer);
-
-    //HEADER SIZER: To, Subject
 
     auto headerSizer = new wxFlexGridSizer(2, 2, MARGIN, MARGIN);
     headerSizer->AddGrowableCol(1);
@@ -38,10 +32,6 @@ MailCreatorFrame::MailCreatorFrame() :
     verticalSizer->Add(headerSizer, 0, wxEXPAND | wxALL, MARGIN);
 
     _contentsCtrl = new wxRichTextCtrl(mainPanel, wxID_ANY, "", wxDefaultPosition, wxSize(400, 600), wxBORDER_SUNKEN);
-    // wxImage img("dashboardframesubscriber.png", wxBITMAP_TYPE_ANY);
-    // _contentsCtrl->AddImage(img);
-    // auto x = new wxRichTextHTMLHandler();
-    // x->SaveFile(&(_contentsCtrl->GetBuffer()), wxString("encoded.txt"));
 
     verticalSizer->Add(_contentsCtrl, wxSizerFlags().Border(wxALL, MARGIN).Expand());
 
@@ -76,7 +66,7 @@ void MailCreatorFrame::OnSend(wxCommandEvent& event) {
 //     event.Skip();
 // }
 
-// getters. temporary
+// --- getters ---
 
 std::string MailCreatorFrame::to() const {
     return _toInput->GetValue().ToStdString();
@@ -88,4 +78,21 @@ std::string MailCreatorFrame::subject() const {
 
 std::string MailCreatorFrame::body() const {
     return _contentsCtrl->GetValue().ToStdString();
+}
+
+void MailCreatorFrame::setTo(const std::string& text) {
+    _toInput->SetValue(wxString::FromUTF8(text.c_str(), text.length()));
+}
+
+void MailCreatorFrame::setSubject(const std::string& text) {
+    _subjectInput->SetValue(wxString::FromUTF8(text.c_str(), text.length()));
+}
+
+void MailCreatorFrame::setBody(const std::string& text) {
+    _contentsCtrl->SetValue(wxString::FromUTF8(text.c_str(), text.length()));
+}
+
+void MailCreatorFrame::setBodyCursorToBeginning() {
+    _contentsCtrl->SetFocus();
+    _contentsCtrl->SetInsertionPoint(-1);
 }

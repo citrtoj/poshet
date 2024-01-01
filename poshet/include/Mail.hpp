@@ -1,11 +1,11 @@
 #pragma once
 
 #include <string>
+#include <sstream>
+#include <iostream>
 #include <vector>
 #include <utility>
 #include <unordered_map>
-#include <sstream>
-#include <iostream>
 #include <utility>
 #include <fstream>
 #include <memory>
@@ -33,7 +33,6 @@ protected:
     std::string _plainText;
     std::string _mailId;
     std::string _tag;
-
     vmime::shared_ptr<vmime::message> _message;
     vmime::messageParser* _messageParser;
     
@@ -51,17 +50,20 @@ public:
     const std::string& plainText() const;
     const std::string& mailId() const;
     const std::string& tag() const;
-    
-    std::string getHeaderField(const std::string& key, bool unicode = false) const;
+
+    // only use this if you're not happy with the pre-processing done by getHeaderField and if you know how vmime works
+    vmime::shared_ptr<vmime::headerFieldValue> getHeaderValue(const std::string& key) const; 
+
+    std::string getHeaderField(const std::string& key, bool unicode = true) const;
 
     std::string getHTMLText() const;
     std::vector<InlineAttachmentData> getInlineHTMLAttachments() const;
     std::string getPlainTextPart() const;
 
-    AttachmentMetadata attachmentMetadataAt(size_t index) const;
+    AttachmentMetadata attachmentMetadataAt(size_t idx) const;
     std::vector<AttachmentMetadata> attachmentMetadata() const;
 
-    std::string attachmentDataAt(size_t index) const;
+    std::string attachmentDataAt(size_t idx) const;
     //std::vector<AttachmentData> attachmentData() const;
 
     // Attachment attachmentAt(size_t index) const;
@@ -69,79 +71,89 @@ public:
 };
 
 
-// mail builders
+
+// --- mail body builders ---
+
 
 
 class MailBodyBuilder {
+protected:
+    virtual void setFrom(const std::string& emailAddress, const std::string& name = "") {
+        _from = vmime::make_shared<vmime::mailbox>(vmime::text(name), vmime::emailAddress(emailAddress));
+    }
 public:
-    const std::string& to() const {
+    // implicit constructor
+    MailBodyBuilder(const std::string& fromEmailAddress, const std::string& name = "") {
+        setFrom(fromEmailAddress, name);
+        std::cout << "[MailBodyBuilder] ctor\n";
+    }
+
+    ~MailBodyBuilder() {
+        std::cout << "[MailBodyBuilder] dtor\n";
+    }
+
+    virtual const std::string& to() const {
         return _to;
     }
-    void setTo(const std::string& to) {
+    virtual void setTo(const std::string& to) {
         _to = to;
     }
 
-    const std::string& from() const {
-        return _from;
+    virtual const std::string& subject() const {
+        return _subject;
     }
-    void setFrom(const std::string& from) {
-        _from = from;
+    virtual void setSubject(const std::string& subject) {
+        _subject = subject;
     }
 
-    const std::string& plainText() const {
+    virtual const std::string& plainText() const {
         return _plainText;
     }
-    void setPlainText(const std::string plainText) {
+    virtual void setPlainText(const std::string plainText) {
         _plainText = plainText;
     }
 
-    void addAttachment(const std::string& attachmentName, const std::string& fileData, const std::string& contentType = "application/octet-stream") {
-        _attachments.push_back({{
-                attachmentName, contentType, fileData.length() * sizeof(char)
-            }, fileData
-        });
-    }
-    void removeAttachment(size_t idx) {
-        // find, pop
-    }
-    // const std::vector<AttachmentMetadata>& attachments() const;
+    // attachment utils
+    void addAttachment(const std::string& attachmentName, const std::string& fileData, const std::string& contentType = "application/octet-stream");
+    void removeAttachment(size_t idx);
+    std::vector<AttachmentMetadata> attachments() const;
     
-    // virtual std::string generateMIMEMessage();
+    // virtuals
+    virtual std::string generateStarterBody(); // generates starting point for user input... basically what'll be put in the html
+    // virtual std::string generateMIMEMessage(); 
 
 protected:
     std::string _to;
-    std::string _from;
 
+    std::string _fromRaw;
+    vmime::shared_ptr<vmime::mailbox> _from;
+    std::string _subject;
     std::string _plainText;
+
     std::vector<Attachment> _attachments;
 };
 
-class ReplyMailBuilder : public MailBodyBuilder {
+class ReplyMailBodyBuilder : public MailBodyBuilder {
 public:
-    ReplyMailBuilder(const Mail& mail) {
-        // get plainText from it, get attachments, add them to builder
-    }
+    ReplyMailBodyBuilder(const Mail& mail, const std::string& fromEmailAddress, const std::string& name = "");
 
-    void setReferenceId(const std::string& referenceId) {
-        _referenceId = referenceId;
-    } 
-    const std::string& referenceId() const {
-        return _referenceId;
-    }
-
+    // virtual std::string generateMIMEMessage() override; 
+    virtual std::string generateStarterBody() override;
 protected:
-    std::string _referenceId;
-    
+    std::string _referenceText;
+    vmime::shared_ptr<vmime::headerFieldValue> _referenceId = nullptr;
+    std::string _referenceSubject;
+    std::string _referenceDate;
 };
 
-class ForwardMailBuilder : public MailBodyBuilder {
-public:
-    ForwardMailBuilder(const Mail& mail); // init plaintext, attachments
-protected:
-    std::string _referenceId;
-};
+// class ForwardMailBodyBuilder : public MailBodyBuilder {
+// public:
+//     ForwardMailBodyBuilder(const Mail& mail); // init plaintext, attachments
+// protected:
+//     std::string _referenceId;
+// };
 
-class MailBuilderObserver {
+class MailBodyBuilderObserver {
     virtual void handleMailBuilderDataUpdate() = 0;
 };
 
