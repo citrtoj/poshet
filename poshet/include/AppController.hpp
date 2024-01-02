@@ -10,7 +10,7 @@
 #include "DashboardFrame.hpp"
 #include "MailCreatorFrame.hpp"
 #include "Session.hpp"
-#include "MailFileManager.hpp"
+#include "FileManager.hpp"
 #include "Exceptions.hpp"
 
 class AppController : public wxEvtHandler, public SessionObserver, public MailBodyBuilderObserver {
@@ -28,7 +28,7 @@ protected:
     MailCreatorFrame* _mailCreatorFrame;
     bool createMailCreatorFrame();
 
-    MailFileManager* _fileManager;
+    FileManager* _fileManager;
     
     std::vector<const Mail*> _currentMail;
     ssize_t _selectedMail = -1;

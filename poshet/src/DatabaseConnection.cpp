@@ -72,7 +72,6 @@ std::string DatabaseConnection::getUser(const std::string& mailAddress, const st
 }
 
 void DatabaseConnection::addReceivedMail(const std::string& mailId, const std::string& userId, const std::string& uidl, unsigned long long date, const std::string tag) {
-    // momentan presupunem ca toate serverele au UIDL
     auto currentTime = std::chrono::system_clock::now();
     std::time_t currentTime_t = std::chrono::system_clock::to_time_t(currentTime);
     unsigned long long receivedTimestamp = static_cast<unsigned long long>(currentTime_t);

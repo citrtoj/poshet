@@ -155,66 +155,41 @@ const std::string& Mail::mailId() const {
     return _mailId;
 }
 
-// MailBuilder::MailBuilder() {
-//     // try {
-// 	// 	std::locale::global(std::locale(""));
-// 	// } catch (std::exception &) {
-// 	// 	std::setlocale(LC_ALL, "");
-// 	// }
+void MailBodyBuilder::addMIMEAttachment(vmime::messageBuilder& builder, const Attachment& attachment) {
+    // vmime::addressList list;
+    // list.appendAddress(vmime::make_shared<vmime::mailbox>(vmime::text("john"), "john@localhost"));
+    // builder.setRecipients(list);
+    // builder.getTextPart()->setCharset(vmime::charset("utf-8"));
 
-//     // _messageBuilder = new vmime::messageBuilder();
-//     addMIMEAttachment();
-// }
+    // builder.getTextPart()->setText(
+    //     vmime::make_shared <vmime::stringContentHandler>(
+    //         "I'm writing this ăăăăââîîî short text to test message construction " \
+    //         "using the vmime::messageBuilder component."
+    //     )
+    // );
 
+    vmime::shared_ptr<vmime::stringContentHandler> x = vmime::make_shared<vmime::stringContentHandler>(attachment._data);
+    vmime::shared_ptr<vmime::contentHandler> y = std::dynamic_pointer_cast<vmime::stringContentHandler>(x);
+    vmime::shared_ptr <vmime::fileAttachment> a = vmime::make_shared <vmime::fileAttachment>(y, vmime::word(attachment._filename), vmime::mediaType("application/octet-stream"));
+    builder.appendAttachment(a);
+    // vmime::shared_ptr <vmime::message> msg = builder.construct();
 
+    // msg->getHeader()->ContentTransferEncoding()->setValue(vmime::encoding("7-bit"));
+    // // construct message id
+    // auto msgId = "<cd5ef9c2-bee7-400e-819f-470665b05a5d@localhost>";
 
-// void MailBuilder::addMIMEAttachment(/*const Attachment& attachment*/) {
-//     // vmime::shared_ptr<vmime::stringContentHandler> x = vmime::make_shared<vmime::stringContentHandler>(attachment._data);
+    // auto msgIdVmime = vmime::make_shared<vmime::messageId>(msgId);
 
+    // auto msgidseq = vmime::make_shared<vmime::messageIdSequence>();
+    // msgidseq->appendMessageId(msgIdVmime);
 
-//     // vmime::shared_ptr<vmime::contentHandler> y = std::dynamic_pointer_cast<vmime::stringContentHandler>(x);
+    // msg->getHeader()->InReplyTo()->setValue(msgidseq);
 
-
-//     // vmime::shared_ptr <vmime::fileAttachment> a = vmime::make_shared <vmime::fileAttachment>(y, vmime::word("filename.txt"), vmime::mediaType("application/octet-stream"));
-//     try {
-// 		std::locale::global(std::locale(""));
-// 	} catch (std::exception &) {
-// 		std::setlocale(LC_ALL, "");
-// 	}
-
-//     vmime::messageBuilder builder;
-//     vmime::addressList list;
-//     list.appendAddress(vmime::make_shared<vmime::mailbox>(vmime::text("john"), "john@localhost"));
-//     builder.setRecipients(list);
-//     builder.getTextPart()->setCharset(vmime::charset("utf-8"));
-
-//     builder.getTextPart()->setText(
-//         vmime::make_shared <vmime::stringContentHandler>(
-//             "I'm writing this ăăăăââîîî short text to test message construction " \
-//             "using the vmime::messageBuilder component."
-//         )
-//     );
-
-
-//     // builder.appendAttachment(a);
-//     vmime::shared_ptr <vmime::message> msg = builder.construct();
-
-//     msg->getHeader()->ContentTransferEncoding()->setValue(vmime::encoding("7-bit"));
-//     // construct message id
-//     auto msgId = "<cd5ef9c2-bee7-400e-819f-470665b05a5d@localhost>";
-
-//     auto msgIdVmime = vmime::make_shared<vmime::messageId>(msgId);
-
-//     auto msgidseq = vmime::make_shared<vmime::messageIdSequence>();
-//     msgidseq->appendMessageId(msgIdVmime);
-
-//     msg->getHeader()->InReplyTo()->setValue(msgidseq);
-
-//     std::string text;
-//     vmime::utility::outputStreamStringAdapter x(text);
-//     msg->generate(x);
-//     std::cout << text <<" \n";
-// }
+    // std::string text;
+    // vmime::utility::outputStreamStringAdapter x(text);
+    // msg->generate(x);
+    // std::cout << text <<" \n";
+}
 
 
 // --- MailBodyBuilder ---
@@ -241,9 +216,35 @@ std::vector<AttachmentMetadata> MailBodyBuilder::attachments() const {
     return result;
 }
 
-// std::string MailBodyBuilder::generateMIMEMessage() {
-//     return "MailBodyBuilder -- in progress";
-// }
+std::string MailBodyBuilder::generateMIMEMessage() {
+    vmime::messageBuilder builder;
+
+    for (auto& att : _attachments) {
+        addMIMEAttachment(builder, att);
+    }
+    vmime::addressList list;
+    list.appendAddress(vmime::make_shared<vmime::mailbox>(_to));
+
+    builder.setRecipients(list);
+
+    builder.setExpeditor(*_from);
+
+    builder.setSubject(vmime::text(_subject, _defaultCharset));
+    
+    builder.getTextPart()->setText(
+        vmime::make_shared <vmime::stringContentHandler>(
+            _plainText
+        )
+    );
+    builder.getTextPart()->setCharset(_defaultCharset);
+
+    vmime::shared_ptr<vmime::message> msg = builder.construct();
+
+    std::string text;
+    vmime::utility::outputStreamStringAdapter x(text);
+    msg->generate(x);
+    return text;
+}
 
 std::string MailBodyBuilder::generateStarterBody() {
     return "MailBodyBuilder -- in progress";
@@ -254,29 +255,6 @@ std::string MailBodyBuilder::generateStarterBody() {
 
 ReplyMailBodyBuilder::ReplyMailBodyBuilder(const Mail& mail, const std::string& fromEmailAddress, const std::string& name) : MailBodyBuilder(fromEmailAddress, name) {
     try {
-
-        /*
-        
-             The "In-Reply-To:" field will contain the contents of the
-            "Message-ID:" field of the message to which this one is a reply (the
-            "parent message").  If there is more than one parent message, then
-            the "In-Reply-To:" field will contain the contents of all of the
-            parents' "Message-ID:" fields.  If there is no "Message-ID:" field in
-            any of the parent messages, then the new message will have no "In-
-            Reply-To:" field.
-
-            The "References:" field will contain the contents of the parent's
-            "References:" field (if any) followed by the contents of the parent's
-            "Message-ID:" field (if any).  If the parent message does not contain
-            a "References:" field but does have an "In-Reply-To:" field
-            containing a single message identifier, then the "References:" field
-            will contain the contents of the parent's "In-Reply-To:" field
-            followed by the contents of the parent's "Message-ID:" field (if
-            any).  If the parent has none of the "References:", "In-Reply-To:",
-            or "Message-ID:" fields, then the new message will have no
-            "References:" field.
-
-        */
         _referenceText = mail.getPlainTextPart();
         _referenceId = mail.getHeaderValue("Message-Id");
         _referenceSubject = mail.getHeaderField("Subject");

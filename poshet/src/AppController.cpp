@@ -5,7 +5,7 @@ AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame*
     _dashboardFrame(dashboardFrame)
 {
     try {   
-        _fileManager = new MailFileManager();
+        _fileManager = new FileManager();
         _session = new Session(_fileManager);
     }
     catch (Exception& e) {
@@ -120,7 +120,7 @@ void AppController::onNewMail(wxCommandEvent& e) {
         return;
     }
     try {
-        _mailBuilder = new MailBodyBuilder(_session->fullName(), _session->emailAddress());
+        _mailBuilder = new MailBodyBuilder(_session->emailAddress(), _session->fullName());
     }
     catch (Exception& e) {
         showException(std::string("Could not initialize Mail Creator (") + e.what() + ").");
@@ -163,13 +163,25 @@ void AppController::onDeleteMail(wxCommandEvent& e) {
 }
 
 void AppController::onMailCreatorSend(wxCommandEvent& e) {
-    auto to = _mailCreatorFrame->to();
-    auto subject = _mailCreatorFrame->subject();
-    auto body = _mailCreatorFrame->body();
+    auto toInput = _mailCreatorFrame->to();
+    auto subjectInput = _mailCreatorFrame->subject();
+    auto bodyInput = _mailCreatorFrame->body();
     try {
+
+        // add the info to the mail builder because that's what it'll truly use in the end
+        // and send
+        _mailBuilder->setTo(toInput);
+        _mailBuilder->setSubject(subjectInput);
+        _mailBuilder->setPlainText(bodyInput);
+
         // todo: create body with mailBuilder, send it to here, close the thing gracefully
+        auto mailBody = _mailBuilder->generateMIMEMessage();
+        auto from = _mailBuilder->fromEmailAddress();
+        auto to = _mailBuilder->to();
+
+        std::cout << mailBody <<"\n";
         
-        //_session->sendMail(to, subject, body);
+        _session->sendMail(from, to, mailBody);
         _mailCreatorFrame->closeGracefully();
     }
     catch (Exception& e) {

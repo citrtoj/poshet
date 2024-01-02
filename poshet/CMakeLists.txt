@@ -18,7 +18,7 @@ set(SOURCES
     src/Mail.cpp
     src/Session.cpp
     src/UserData.cpp
-    src/MailFileManager.cpp
+    src/FileManager.cpp
     src/ConnectionBase.cpp
     src/SmtpConnection.cpp
     src/Pop3Connection.cpp

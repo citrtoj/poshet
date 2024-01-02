@@ -12,7 +12,7 @@ void Session::notifyObserver() {
 
 // --- ctor ---
 
-Session::Session(MailFileManager* manager) : _fileManager(manager) {
+Session::Session(FileManager* manager) : _fileManager(manager) {
     _db.setPath(_fileManager->databasePath());
 }
 
@@ -38,7 +38,7 @@ void Session::saveOnePop3MailLocally(size_t index, size_t byteSize) {
     // if this didn't fail, save all related info to db
     _db.addReceivedMail(fullMailId, _userData.dbId(), uidl, static_cast<unsigned long long>(Utils::mailDateToUnixTimestamp(date)));
     auto filename = _db.getFileNameOf(fullMailId);
-    _fileManager->saveMail(_userData.pop3Domain(), MailFileManager::MailType::RECEIVED, filename, mail.plainText());
+    _fileManager->saveMail(_userData.pop3Domain(), FileManager::MailType::RECEIVED, filename, mail.plainText());
 
 }
 
@@ -122,9 +122,8 @@ void Session::resetConnections() {
     connectAndLoginToServers();
 }
 
-void Session::sendMail(const std::string& to, const std::string& rawBody) {
-    //TODO: do the vmime mailbox thing...
-    //_smtp.sendMail(_userData.emailAddress(), to, rawBody);
+void Session::sendMail(const std::string& from, const std::string& to, const std::string& rawBody) {
+    _smtp.sendMail(from, to, rawBody);
 
     _isMailCacheDirty = true;
     _observer->handleSessionDataUpdate();
@@ -137,7 +136,7 @@ void Session::reloadMailFromDatabase() {
     auto mail = getAllMailFromDatabase();
     _mails.reserve(mail.size());
     for (auto mailData : mail) {
-        auto x = _fileManager->getMail(_userData.pop3Domain(), MailFileManager::MailType::RECEIVED, mailData._mailFilename);
+        auto x = _fileManager->getMail(_userData.pop3Domain(), FileManager::MailType::RECEIVED, mailData._mailFilename);
         _mails.push_back(Mail(x, mailData._mailId, mailData._mailTag));
     }
 }

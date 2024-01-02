@@ -83,12 +83,26 @@ protected:
     }
 public:
     MailBodyBuilder(const std::string& fromEmailAddress, const std::string& name = "") {
+        try {
+		    std::locale::global(std::locale(""));
+        } catch (std::exception &) {
+            std::setlocale(LC_ALL, "");
+        }
         setFrom(fromEmailAddress, name);
         std::cout << "[MailBodyBuilder] ctor\n";
     }
 
     ~MailBodyBuilder() {
         std::cout << "[MailBodyBuilder] dtor\n";
+    }
+
+    virtual std::string from() const {
+        // generate from From
+        // return _from->g
+        return _from->generate();
+    }
+    virtual std::string fromEmailAddress() const {
+        return _from->getEmail().generate();
     }
 
     virtual const std::string& to() const {
@@ -117,11 +131,15 @@ public:
     void removeAttachment(size_t idx);
     std::vector<AttachmentMetadata> attachments() const;
     
-    // virtuals
     virtual std::string generateStarterBody(); // generates starting point for user input... basically what'll be put in the html
-    // virtual std::string generateMIMEMessage(); 
+    
+    void addMIMEAttachment(vmime::messageBuilder& builder, const Attachment& attachment);
+
+    virtual std::string generateMIMEMessage(); 
 
 protected:
+    vmime::charset _defaultCharset = "utf-8";
+
     std::string _to;
 
     std::string _fromRaw;

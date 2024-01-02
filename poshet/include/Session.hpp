@@ -10,7 +10,7 @@
 #include "SmtpConnection.hpp"
 #include "DatabaseConnection.hpp"
 #include "Config.hpp"
-#include "MailFileManager.hpp"
+#include "FileManager.hpp"
 #include "UserData.hpp"
 #include "Mail.hpp"
 #include "Utils.hpp"
@@ -34,7 +34,7 @@ protected:
     POP3Connection _pop3;
     DatabaseConnection _db;
 
-    MailFileManager* _fileManager;
+    FileManager* _fileManager;
     UserData _userData;
 
     std::vector<Mail> _mails;
@@ -54,7 +54,7 @@ protected:
     void reloadMailFromDatabase();
 
 public:
-    Session(MailFileManager* manager);
+    Session(FileManager* manager);
 
     const std::string& fullName() const {
         return _userData.fullName();
@@ -78,5 +78,5 @@ public:
     void deleteMail(ssize_t idx);
     void tagMail(ssize_t idx, const std::string& userInput);
 
-    void sendMail(const std::string& to, const std::string& rawBody);
+    void sendMail(const std::string& from, const std::string& to, const std::string& rawBody);
 };

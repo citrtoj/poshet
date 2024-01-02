@@ -23,7 +23,7 @@
 #include "Exceptions.hpp"
 #include "Utils.hpp"
 
-class MailFileManager {
+class FileManager {
 public:
     enum MailType {
         RECEIVED,
@@ -61,8 +61,8 @@ private:
     void saveFile(const std::string& filePath, const std::string& rawData, bool overwrite = false);
 
 public:
-    MailFileManager();
-    MailFileManager(const std::string& rootLocation);
+    FileManager();
+    FileManager(const std::string& rootLocation);
     void setRootLocation(const std::string& rootLocation);
     std::string databasePath() const;
     void saveMail(const std::string& mailboxName, MailType type, const std::string& mailFilename, const std::string& rawMailData);
