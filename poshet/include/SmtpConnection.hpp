@@ -64,6 +64,7 @@ public:
     void login(const std::string& user, const std::string& pass);
 
     std::string readResponse();
+    void assertResponse(const std::string& response);
 
     void sendMail(const std::string& from, const std::string& to, const std::string& rawBody);
 };

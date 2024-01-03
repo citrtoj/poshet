@@ -132,8 +132,8 @@ void AppController::onNewMail(wxCommandEvent& e) {
 }
 
 void AppController::onReplyMail(wxCommandEvent& e) {
-        if (!createMailCreatorFrame()) {
-        return;
+    if (!createMailCreatorFrame()) {
+    return;
     }
     try {
         const auto& mail = _session->getMailAt(_selectedMail);
@@ -152,7 +152,22 @@ void AppController::onReplyMail(wxCommandEvent& e) {
 }
 
 void AppController::onForwardMail(wxCommandEvent& e) {
-    warnUnimplemented();
+    if (!createMailCreatorFrame()) {
+        return;
+    }
+    try {
+        const auto& mail = _session->getMailAt(_selectedMail);
+        _mailBuilder = new ForwardMailBodyBuilder(mail, _session->emailAddress(), _session->fullName());
+        _mailCreatorFrame->updateAttachments(_mailBuilder->attachments());
+        _mailCreatorFrame->setSubject(_mailBuilder->subject());
+        _mailCreatorFrame->setBody(_mailBuilder->generateStarterBody());
+        _mailCreatorFrame->setBodyCursorToBeginning();
+    }
+    catch (Exception& e) {
+        showException(std::string("Could not initialize Mail Creator (") + e.what() + ").");
+        delete _mailBuilder;
+        _mailCreatorFrame->closeGracefully();
+    }
 }
 
 void AppController::onDeleteMail(wxCommandEvent& e) {
@@ -269,13 +284,29 @@ void AppController::onViewAllMail(wxCommandEvent& e) {
 }
 
 void AppController::onMailCreatorAddAttachment(wxCommandEvent& e) {
-    // open file dialog, open file, add to mail builder
-    handleMailBuilderDataUpdate();
+    try {
+        wxFileDialog openFileDialog(_mailCreatorFrame, _("Open File"), wxEmptyString, wxEmptyString,
+            _("All files (*.*)|*.*"), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+
+        if (openFileDialog.ShowModal() == wxID_CANCEL) {
+            // User canceled the dialog
+            wxMessageBox(_("Operation canceled."), _("Info"), wxOK | wxICON_INFORMATION);
+            return;
+        }
+        std::string filePath = openFileDialog.GetPath().ToUTF8().data();
+        std::string filename = openFileDialog.GetFilename().ToUTF8().data();
+
+        std::string data = _fileManager->readFile(filePath);
+        _mailBuilder->addAttachment(filename, data);
+        handleMailBuilderDataUpdate();
+    }
+    catch(Exception& e) {
+        showException(e.what());
+    }
 }
 
 void AppController::onMailCreatorRemoveAttachment(wxCommandEvent& e) {
-    // tell mailBuilder to remove attachment
-    std::cout << e.GetInt() << "\n";
+    _mailBuilder->removeAttachment(e.GetInt());
     handleMailBuilderDataUpdate();
 }
 

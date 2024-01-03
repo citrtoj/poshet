@@ -89,16 +89,11 @@ public:
             std::setlocale(LC_ALL, "");
         }
         setFrom(fromEmailAddress, name);
-        std::cout << "[MailBodyBuilder] ctor\n";
     }
 
-    ~MailBodyBuilder() {
-        std::cout << "[MailBodyBuilder] dtor\n";
-    }
+    ~MailBodyBuilder() {}
 
     virtual std::string from() const {
-        // generate from From
-        // return _from->g
         return _from->generate();
     }
     virtual std::string fromEmailAddress() const {
@@ -150,25 +145,34 @@ protected:
     std::vector<Attachment> _attachments;
 };
 
+
+
+
 class ReplyMailBodyBuilder : public MailBodyBuilder {
 public:
     ReplyMailBodyBuilder(const Mail& mail, const std::string& fromEmailAddress, const std::string& name = "");
 
-    // virtual std::string generateMIMEMessage() override; 
+    virtual std::string generateMIMEMessage() override; 
     virtual std::string generateStarterBody() override;
 protected:
     std::string _referenceText;
     vmime::shared_ptr<vmime::headerFieldValue> _referenceId = nullptr;
+    vmime::shared_ptr<vmime::headerFieldValue> _referenceReplyTo = nullptr;
+    vmime::shared_ptr<vmime::headerFieldValue> _referenceReferences = nullptr;
     std::string _referenceSubject;
     std::string _referenceDate;
 };
 
-// class ForwardMailBodyBuilder : public MailBodyBuilder {
-// public:
-//     ForwardMailBodyBuilder(const Mail& mail); // init plaintext, attachments
-// protected:
-//     std::string _referenceId;
-// };
+class ForwardMailBodyBuilder : public ReplyMailBodyBuilder {
+public:
+    ForwardMailBodyBuilder(const Mail& mail, const std::string& fromEmailAddress, const std::string& name = "");
+
+    virtual std::string generateStarterBody() override;
+protected:
+};
+
+
+
 
 class MailBodyBuilderObserver {
     virtual void handleMailBuilderDataUpdate() = 0;

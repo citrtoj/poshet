@@ -135,16 +135,13 @@ void SMTPConnection::sendMail(const std::string& from, const std::string& to, co
     try {
         auto content = rawBody + "\r\n.";
         log(execCommand("MAIL FROM:" + from));
-        std::cout << "mailfrom\n";
         log(execCommand("RCPT TO:" + to));
-        std::cout << "rcpt to\n";
         log(execCommand("DATA"));
-        std::cout << "data\n";
         log(execCommand(content));
-        std::cout << "sent\n";
     }
     catch (ServerException& exc) {
         throw Exception("Server was unable to send mail");
+        return;
     }
 }
 
@@ -166,3 +163,7 @@ void SMTPConnection::login() {
     // todo: actually implement this
     _loginMethods.find(LOGIN)->second();
 }
+
+// void SMTPConnection::assertResponse(const std::string& response) {
+    
+// }

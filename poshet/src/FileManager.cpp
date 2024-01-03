@@ -113,6 +113,19 @@ std::string FileManager::getMail(const std::string& mailboxName, FileManager::Ma
         throw FileManagerException("File " + filePath + " is not valid");
     }
 
+    return readFile(filePath);
+}
+
+void FileManager::saveAttachment(const std::string& filePath, const std::string& rawData, bool overwrite) {
+    try {
+        saveFile(filePath, rawData, overwrite);
+    }
+    catch(FileExistsException& e) {
+        throw FileManagerException("Another file already exists at the same location (overwriting was not permitted)");
+    }
+}
+
+std::string FileManager::readFile(const std::string& filePath) {
     int mailFD = open(filePath.c_str(), O_RDWR);
     if (mailFD == -1) {
         throw FileManagerException("Error opening file " + filePath);
@@ -134,13 +147,4 @@ std::string FileManager::getMail(const std::string& mailboxName, FileManager::Ma
     }
     while (readCode == BUFFER_SIZE); 
     return result;
-}
-
-void FileManager::saveAttachment(const std::string& filePath, const std::string& rawData, bool overwrite) {
-    try {
-        saveFile(filePath, rawData, overwrite);
-    }
-    catch(FileExistsException& e) {
-        throw FileManagerException("Another file already exists at the same location (overwriting was not permitted)");
-    }
 }

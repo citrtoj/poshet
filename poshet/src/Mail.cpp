@@ -156,39 +156,10 @@ const std::string& Mail::mailId() const {
 }
 
 void MailBodyBuilder::addMIMEAttachment(vmime::messageBuilder& builder, const Attachment& attachment) {
-    // vmime::addressList list;
-    // list.appendAddress(vmime::make_shared<vmime::mailbox>(vmime::text("john"), "john@localhost"));
-    // builder.setRecipients(list);
-    // builder.getTextPart()->setCharset(vmime::charset("utf-8"));
-
-    // builder.getTextPart()->setText(
-    //     vmime::make_shared <vmime::stringContentHandler>(
-    //         "I'm writing this ăăăăââîîî short text to test message construction " \
-    //         "using the vmime::messageBuilder component."
-    //     )
-    // );
-
     vmime::shared_ptr<vmime::stringContentHandler> x = vmime::make_shared<vmime::stringContentHandler>(attachment._data);
     vmime::shared_ptr<vmime::contentHandler> y = std::dynamic_pointer_cast<vmime::stringContentHandler>(x);
     vmime::shared_ptr <vmime::fileAttachment> a = vmime::make_shared <vmime::fileAttachment>(y, vmime::word(attachment._filename), vmime::mediaType("application/octet-stream"));
     builder.appendAttachment(a);
-    // vmime::shared_ptr <vmime::message> msg = builder.construct();
-
-    // msg->getHeader()->ContentTransferEncoding()->setValue(vmime::encoding("7-bit"));
-    // // construct message id
-    // auto msgId = "<cd5ef9c2-bee7-400e-819f-470665b05a5d@localhost>";
-
-    // auto msgIdVmime = vmime::make_shared<vmime::messageId>(msgId);
-
-    // auto msgidseq = vmime::make_shared<vmime::messageIdSequence>();
-    // msgidseq->appendMessageId(msgIdVmime);
-
-    // msg->getHeader()->InReplyTo()->setValue(msgidseq);
-
-    // std::string text;
-    // vmime::utility::outputStreamStringAdapter x(text);
-    // msg->generate(x);
-    // std::cout << text <<" \n";
 }
 
 
@@ -218,28 +189,21 @@ std::vector<AttachmentMetadata> MailBodyBuilder::attachments() const {
 
 std::string MailBodyBuilder::generateMIMEMessage() {
     vmime::messageBuilder builder;
-
     for (auto& att : _attachments) {
         addMIMEAttachment(builder, att);
     }
     vmime::addressList list;
     list.appendAddress(vmime::make_shared<vmime::mailbox>(_to));
-
     builder.setRecipients(list);
-
     builder.setExpeditor(*_from);
-
     builder.setSubject(vmime::text(_subject, _defaultCharset));
-    
     builder.getTextPart()->setText(
         vmime::make_shared <vmime::stringContentHandler>(
             _plainText
         )
     );
     builder.getTextPart()->setCharset(_defaultCharset);
-
     vmime::shared_ptr<vmime::message> msg = builder.construct();
-
     std::string text;
     vmime::utility::outputStreamStringAdapter x(text);
     msg->generate(x);
@@ -247,7 +211,7 @@ std::string MailBodyBuilder::generateMIMEMessage() {
 }
 
 std::string MailBodyBuilder::generateStarterBody() {
-    return "MailBodyBuilder -- in progress";
+    return ""; // no starter here
 }
 
 
@@ -255,9 +219,10 @@ std::string MailBodyBuilder::generateStarterBody() {
 
 ReplyMailBodyBuilder::ReplyMailBodyBuilder(const Mail& mail, const std::string& fromEmailAddress, const std::string& name) : MailBodyBuilder(fromEmailAddress, name) {
     try {
-        // todo:  get attachments from mail
         _referenceText = mail.getPlainTextPart();
         _referenceId = mail.getHeaderValue("Message-Id");
+        _referenceReplyTo = mail.getHeaderValue("In-Reply-To");
+        _referenceReferences = mail.getHeaderValue("References");
         _referenceSubject = mail.getHeaderField("Subject");
         _referenceDate = mail.getHeaderField("Date");
 
@@ -288,5 +253,64 @@ std::string ReplyMailBodyBuilder::generateStarterBody() {
     while (std::getline(stream, line)) {
         starter += ">" + line + "\n"; // assuming "\n" is the default delimiter
     }
+    return starter;
+}
+
+
+std::string ReplyMailBodyBuilder::generateMIMEMessage() {
+    vmime::messageBuilder builder;
+    for (auto& att : _attachments) {
+        addMIMEAttachment(builder, att);
+    }
+    vmime::addressList list;
+    list.appendAddress(vmime::make_shared<vmime::mailbox>(_to));
+    builder.setRecipients(list);
+    builder.setExpeditor(*_from);
+    builder.setSubject(vmime::text(_subject, _defaultCharset));
+    builder.getTextPart()->setText(
+        vmime::make_shared <vmime::stringContentHandler>(
+            _plainText
+        )
+    );
+    builder.getTextPart()->setCharset(_defaultCharset);
+    vmime::shared_ptr<vmime::message> msg = builder.construct();
+
+    auto replyTo = vmime::dynamic_pointer_cast<vmime::messageIdSequence>(_referenceReplyTo);    
+    auto references = vmime::dynamic_pointer_cast<vmime::messageIdSequence>(_referenceReferences);
+
+    auto msgId = vmime::dynamic_pointer_cast<vmime::messageId>(_referenceId);
+
+    replyTo->appendMessageId(msgId);
+    references->appendMessageId(msgId);
+
+    msg->getHeader()->InReplyTo()->setValue(replyTo);
+    msg->getHeader()->References()->setValue(references);
+
+    std::string text;
+    vmime::utility::outputStreamStringAdapter x(text);
+    msg->generate(x);
+    return text;
+}
+
+ForwardMailBodyBuilder::ForwardMailBodyBuilder(const Mail& mail, const std::string& fromEmailAddress, const std::string& name)  : ReplyMailBodyBuilder(mail, fromEmailAddress, name) {
+    try {
+        _subject = "Fwd: " + _referenceSubject;
+        _to = "";
+    }
+    catch(MailException& e) {
+        throw MailException(std::string("Could not construct ForwardMailBodyBuilder (") + e.what() + ")");
+    }
+}
+
+std::string ForwardMailBodyBuilder::generateStarterBody() {
+    std::string starter =
+        "\n\n"
+        "--- FORWARDED MESSAGE ---\n"
+        "Subject: " + _referenceSubject + "\n"
+        "Date: " + _referenceDate + "\n"
+        // "From: " + _referenceFrom + "\n"
+        // "To: " + _referenceTo + "\n\n\n" 
+        ;
+    starter += _referenceText;
     return starter;
 }

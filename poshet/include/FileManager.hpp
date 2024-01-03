@@ -63,6 +63,9 @@ private:
 public:
     FileManager();
     FileManager(const std::string& rootLocation);
+
+    std::string readFile(const std::string& filePath);
+
     void setRootLocation(const std::string& rootLocation);
     std::string databasePath() const;
     void saveMail(const std::string& mailboxName, MailType type, const std::string& mailFilename, const std::string& rawMailData);

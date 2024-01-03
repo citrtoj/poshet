@@ -106,7 +106,7 @@ void MailCreatorFrame::setBody(const std::string& text) {
 
 void MailCreatorFrame::setBodyCursorToBeginning() {
     _contentsCtrl->SetFocus();
-    _contentsCtrl->SetInsertionPoint(-1);
+    _contentsCtrl->SetInsertionPoint(0);
 }
 
 void MailCreatorFrame::updateAttachments(const std::vector<AttachmentMetadata>& attachments) {
