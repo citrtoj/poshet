@@ -72,8 +72,7 @@ protected:
     wxButton* _replyMailBtn;
     wxButton* _forwardMailBtn;
     wxButton* _deleteMailBtn;
-    wxScrolledWindow* _mailAttachmentsPanel;
-    wxBoxSizer* _mailAttachmentsSizer;
+    AttachmentsContainer* _attContainer;
 
     void OnListBoxEvent(wxCommandEvent& e);
     void OnViewMailResize(wxSplitterEvent& e);

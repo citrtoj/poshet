@@ -61,7 +61,7 @@ void AppController::login() {
     }
     catch (Exception& e) {
         showException(e.what());
-        // todo: perhaps handle it or something... reset session?
+        _session->closeConnections();
         return;
     }
 }
@@ -109,6 +109,8 @@ bool AppController::createMailCreatorFrame() {
 
     _mailCreatorFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onMailCreatorClose, this);
     _mailCreatorFrame->Bind(SEND_MAIL, &AppController::onMailCreatorSend, this);
+    _mailCreatorFrame->Bind(ADD_ATTACHMENT, &AppController::onMailCreatorAddAttachment, this);
+    _mailCreatorFrame->Bind(REMOVE_ATTACHMENT, &AppController::onMailCreatorRemoveAttachment, this);
 
     _mailCreatorFrame->Show();
     _isMailCreatorOpen = true;
@@ -134,10 +136,9 @@ void AppController::onReplyMail(wxCommandEvent& e) {
         return;
     }
     try {
-        // get selected
         const auto& mail = _session->getMailAt(_selectedMail);
         _mailBuilder = new ReplyMailBodyBuilder(mail, _session->emailAddress(), _session->fullName());
-        // set mailCreatorFrame controls to stuff returned by _mailBuilder
+        _mailCreatorFrame->updateAttachments(_mailBuilder->attachments());
         _mailCreatorFrame->setTo(_mailBuilder->to());
         _mailCreatorFrame->setSubject(_mailBuilder->subject());
         _mailCreatorFrame->setBody(_mailBuilder->generateStarterBody());
@@ -155,7 +156,12 @@ void AppController::onForwardMail(wxCommandEvent& e) {
 }
 
 void AppController::onDeleteMail(wxCommandEvent& e) {
-    // todo: ask for confirmation
+    wxMessageDialog dialog(nullptr, "Are you sure you want to delete this mail?", "Delete Confirmation", wxYES_NO | wxICON_QUESTION);
+
+    int result = dialog.ShowModal();
+    if (result != wxID_YES) {
+        return;
+    }
 
     auto selected = _dashboardFrame->selected();
     _session->deleteMail(selected);
@@ -262,6 +268,17 @@ void AppController::onViewAllMail(wxCommandEvent& e) {
     }
 }
 
+void AppController::onMailCreatorAddAttachment(wxCommandEvent& e) {
+    // open file dialog, open file, add to mail builder
+    handleMailBuilderDataUpdate();
+}
+
+void AppController::onMailCreatorRemoveAttachment(wxCommandEvent& e) {
+    // tell mailBuilder to remove attachment
+    std::cout << e.GetInt() << "\n";
+    handleMailBuilderDataUpdate();
+}
+
 
 AppController::~AppController() {
     // destroy business-logic
@@ -270,15 +287,13 @@ AppController::~AppController() {
 }
 
 void AppController::handleSessionDataUpdate() {
-    // makes sure that the data in the views is accurate
-    // fetches data from the session
-
     getMailAndShow();
 }
 
 void AppController::handleMailBuilderDataUpdate() {
     // show info on mail creator frame
-    if (_mailCreatorFrame == nullptr) {
-        throw Exception("Mail creator frame uninitialized");
+    if (_mailCreatorFrame == nullptr or _mailBuilder == nullptr) {
+        throw Exception("Mail creator uninitialized");
     }
+    _mailCreatorFrame->updateAttachments(_mailBuilder->attachments());
 }

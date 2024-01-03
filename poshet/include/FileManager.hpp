@@ -34,7 +34,7 @@ private:
     std::string _receivedFolder = "Received";
     std::string _sentFolder = "Sent";
 
-    const std::unordered_map<MailType, std::string&> _typeFolderNames = {
+    const std::unordered_map<MailType, const std::string&> _typeFolderNames = {
         {MailType::RECEIVED, _receivedFolder},
         {MailType::SENT, _sentFolder}
     };
@@ -69,7 +69,6 @@ public:
     std::string getMail(const std::string& mailboxName, MailType type, const std::string& mailFilename);
 
     void saveAttachment(const std::string& filePath, const std::string& rawData, bool overwrite = false);
-
 };
 
 class FileManagerException : public Exception {

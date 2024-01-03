@@ -130,20 +130,23 @@ void DashboardFrame::initViewMailPanel() {
     mailContentsSizer->Add(_displayer, 1, wxEXPAND);
     mailContentsPanel->SetSizer(mailContentsSizer);
 
-    _mailAttachmentsPanel = new wxScrolledWindow(viewMailPanel(), wxID_ANY, wxDefaultPosition, {-1, -1}, wxBORDER_SUNKEN);
-    _mailAttachmentsPanel->Bind(ATTACHMENT_BUTTON_CLICK_EVENT, &DashboardFrame::OnAttachmentDownload, this);
+    _attContainer = new AttachmentsContainer(viewMailPanel(), wxBORDER_SUNKEN, "Save", MARGIN);
+    _attContainer->Bind(ATTACHMENT_CONTAINER_CLICK_EVENT, &DashboardFrame::OnAttachmentDownload, this);
 
-    _mailAttachmentsSizer = new wxBoxSizer(wxHORIZONTAL);
-    _mailAttachmentsPanel->SetSizer(_mailAttachmentsSizer);
+    // _mailAttachmentsPanel = new wxScrolledWindow(viewMailPanel(), wxID_ANY, wxDefaultPosition, {-1, -1}, wxBORDER_SUNKEN);
+    // _mailAttachmentsPanel->Bind(ATTACHMENT_BUTTON_CLICK_EVENT, &DashboardFrame::OnAttachmentDownload, this);
 
-    _mailAttachmentsPanel->SetScrollRate(5, 0);
+    // _mailAttachmentsSizer = new wxBoxSizer(wxHORIZONTAL);
+    // _mailAttachmentsPanel->SetSizer(_mailAttachmentsSizer);
+
+    // _mailAttachmentsPanel->SetScrollRate(5, 0);
 
     _viewMailSizer = new wxBoxSizer(wxVERTICAL);
     _viewMailSizer->Add(headerSizer, 0, wxEXPAND);
     _viewMailSizer->Add(mailSubjectSizer, 0, wxEXPAND | wxALL, MARGIN);
     _viewMailSizer->Add(mailContentsPanel, 1, wxEXPAND | wxALL, MARGIN);
-    _viewMailSizer->Add(_mailAttachmentsPanel, 0, wxEXPAND | wxALL, MARGIN);
-    _mailAttachmentsPanel->Hide();
+    _viewMailSizer->Add(_attContainer, 0, wxEXPAND | wxALL, MARGIN);
+    _attContainer->Hide();
 
     _viewMailPanel->SetSizerAndFit(_viewMailSizer);
     _isViewMailPanelInit = true;
@@ -153,7 +156,7 @@ void DashboardFrame::initViewMailPanel() {
 void DashboardFrame::refreshViewMailPanel() {
     if (_isViewMailPanelInit) {
         _splitter->SplitVertically(_mailList, _viewMailPanel);
-        _mailAttachmentsPanel->SetSizerAndFit(_mailAttachmentsSizer);
+        _attContainer->refitSizer();
         _viewMailPanel->Layout();
         _splitter->Layout();
     }
@@ -277,24 +280,16 @@ void DashboardFrame::updateViewMailPanel(const Mail& mail) {
 
     auto attachmentMetadata = mail.attachmentMetadata();
     if (attachmentMetadata.size() == 0) {
-        _mailAttachmentsPanel->Hide();
+        _attContainer->Hide();
     }
     else {
         // clear attachments
-        wxWindowList& children = _mailAttachmentsPanel->GetChildren();
-        for (wxWindowList::iterator it = children.begin(); it != children.end(); ++it) {
-            wxWindow* child = *it;
-            if (child->IsKindOf(wxCLASSINFO(AttachmentPanel))) {
-                child->Destroy();
-            }
-        }
+        _attContainer->clear();
         for (size_t i = 0; i < attachmentMetadata.size(); ++i) {
-            auto x = new AttachmentPanelWithButton(_mailAttachmentsPanel, i, attachmentMetadata[i]._filename, attachmentMetadata[i]._size, "Save", MARGIN);
-            _mailAttachmentsSizer->Add(x, 0, wxALL, MARGIN);
+            _attContainer->addAttachment(attachmentMetadata[i]._filename, attachmentMetadata[i]._size);
         }
-        _mailAttachmentsPanel->Show();
+        _attContainer->Show();
     }
-
     _savedToFSHandler.clear();
     
     try {

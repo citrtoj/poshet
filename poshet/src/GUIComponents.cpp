@@ -1,8 +1,10 @@
 #include "GUIComponents.hpp"
 
 wxDEFINE_EVENT(ATTACHMENT_BUTTON_CLICK_EVENT, wxCommandEvent);
+wxDEFINE_EVENT(ATTACHMENT_CONTAINER_CLICK_EVENT, wxCommandEvent);
 
 AttachmentPanel::AttachmentPanel(wxWindow* parent, int index, const wxString& attachmentName, unsigned long long fileSize, int MARGIN) : wxPanel(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_RAISED) {
+    SetBackgroundColour({255, 255, 255});
     _sizer = new wxBoxSizer(wxHORIZONTAL);
     _text = new wxStaticText(this, wxID_ANY, attachmentLabel(attachmentName, fileSize));
     _sizer->Add(_text, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2 * MARGIN);
@@ -46,4 +48,47 @@ AlphaTextDialog::AlphaTextDialog(const wxString& title) : wxDialog(nullptr, wxID
 
 wxString AlphaTextDialog::getInputString() const{
     return _inputTextCtrl->GetValue();
+}
+
+AttachmentsContainer::AttachmentsContainer(wxWindow* parent, long parentStyle, const wxString& attButtonName, int margin) : wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, parentStyle), _attButtonName(attButtonName), _margin(margin) {
+
+    // add wxScrolledWindow
+    SetScrollRate(5, 0);
+    _sizer = new wxBoxSizer(wxHORIZONTAL);
+    SetSizer(_sizer);
+
+    Bind(ATTACHMENT_BUTTON_CLICK_EVENT, &AttachmentsContainer::OnAttachmentClick, this);
+}
+
+void AttachmentsContainer::addAttachment(const wxString& attachmentName, unsigned long long fileSize) {
+    auto attBtn = new AttachmentPanelWithButton(this, _attachments.size(), attachmentName, fileSize, _attButtonName, _margin);
+    _attachments.push_back(attBtn);
+    _sizer->Add(attBtn, 0, wxALL, _margin);
+}
+
+void AttachmentsContainer::removeAttachment(size_t idx) {
+    // todo: idx sanity check
+
+    if (_attachments.empty()) {
+        return;
+    }
+    auto attachmentIterator = _attachments.begin() + idx;
+    (*attachmentIterator)->Destroy();
+    _attachments.erase(_attachments.begin() + idx);
+    for (size_t i = idx; i < _attachments.size(); ++i) {
+        _attachments[i]->setIndex(i);
+    }
+}
+
+void AttachmentsContainer::clear() {
+    for (auto x : _attachments) {
+        x->Destroy();
+    }
+    _attachments.clear();
+}
+
+void AttachmentsContainer::OnAttachmentClick(wxCommandEvent& e) {
+    wxCommandEvent newEvent(ATTACHMENT_CONTAINER_CLICK_EVENT);
+    newEvent.SetInt(e.GetInt());
+    wxPostEvent(GetEventHandler(), newEvent);
 }

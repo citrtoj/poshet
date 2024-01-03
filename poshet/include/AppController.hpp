@@ -63,6 +63,9 @@ protected:
 
     void onMailCreatorSend(wxCommandEvent& e);
     void onMailCreatorClose(wxCloseEvent& e);
+    void onMailCreatorAddAttachment(wxCommandEvent& e);
+    void onMailCreatorRemoveAttachment(wxCommandEvent& e);
+
 
 public:
     AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame* dashboardFrame);

@@ -255,6 +255,7 @@ std::string MailBodyBuilder::generateStarterBody() {
 
 ReplyMailBodyBuilder::ReplyMailBodyBuilder(const Mail& mail, const std::string& fromEmailAddress, const std::string& name) : MailBodyBuilder(fromEmailAddress, name) {
     try {
+        // todo:  get attachments from mail
         _referenceText = mail.getPlainTextPart();
         _referenceId = mail.getHeaderValue("Message-Id");
         _referenceSubject = mail.getHeaderField("Subject");
@@ -264,6 +265,14 @@ ReplyMailBodyBuilder::ReplyMailBodyBuilder(const Mail& mail, const std::string& 
         _to = vmimeTo->getEmail().toString();
 
         _subject = "Re: " + _referenceSubject;
+
+        auto attachments = mail.attachmentMetadata();
+        for (int i = 0; i < attachments.size(); ++i) {
+            _attachments.push_back({
+                attachments[i]._filename, attachments[i]._contentType,
+                attachments[i]._size, mail.attachmentDataAt(i)
+            });
+        }
     }
     catch(MailException& e) {
         throw MailException(std::string("Could not construct ReplyMailBodyBuilder (") + e.what() + ")");
@@ -273,7 +282,7 @@ ReplyMailBodyBuilder::ReplyMailBodyBuilder(const Mail& mail, const std::string& 
 std::string ReplyMailBodyBuilder::generateStarterBody() {
     std::string starter =
         "\n\n"
-        "On [INSERT DATA HERE], " + _from->getEmail().toString() + " said: \n\n";
+        "On " + _referenceDate + ", " + _from->getEmail().toString() + " said: \n\n";
     std::istringstream stream(_referenceText);
     std::string line = "";
     while (std::getline(stream, line)) {

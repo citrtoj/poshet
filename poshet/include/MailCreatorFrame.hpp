@@ -8,18 +8,22 @@
 #include <wx/sstream.h>
 #include <wx/richtext/richtextxml.h>
 
+#include "Mail.hpp"
+#include "GUIComponents.hpp"
+
 wxDECLARE_EVENT(SEND_MAIL, wxCommandEvent);
+wxDECLARE_EVENT(ADD_ATTACHMENT, wxCommandEvent);
+wxDECLARE_EVENT(REMOVE_ATTACHMENT, wxCommandEvent);
 
 class MailCreatorFrame : public wxFrame {
 protected:
+    wxPanel* _mainPanel;
     wxButton* _sendBtn, * _attachBtn;
     wxTextCtrl* _toInput, * _subjectInput;
     wxRichTextCtrl* _contentsCtrl;
+    AttachmentsContainer* _attContainer;
 
     static const int MARGIN = 5;
-
-    // wxWidgets event handlers
-    void OnSend(wxCommandEvent& event);
 public:
     MailCreatorFrame();
 
@@ -34,4 +38,14 @@ public:
     void setBody(const std::string& text);
 
     void setBodyCursorToBeginning();
+
+    void updateAttachments(const std::vector<AttachmentMetadata>& metadata);
+
+    void toggleAttachments(wxCommandEvent& e);
+    bool _isAttContainerShowing = false;
+
+    // wxWidgets event handlers
+    void OnSend(wxCommandEvent& event);
+    void OnAttach(wxCommandEvent& event);
+    void OnRemove(wxCommandEvent& event);
 };
