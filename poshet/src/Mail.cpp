@@ -309,7 +309,8 @@ std::string ForwardMailBodyBuilder::generateStarterBody() {
         "Subject: " + _referenceSubject + "\n"
         "Date: " + _referenceDate + "\n"
         // "From: " + _referenceFrom + "\n"
-        // "To: " + _referenceTo + "\n\n\n" 
+        // "To: " + _referenceTo + "\n"
+        "\n\n" 
         ;
     starter += _referenceText;
     return starter;

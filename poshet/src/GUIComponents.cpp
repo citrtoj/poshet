@@ -67,7 +67,9 @@ void AttachmentsContainer::addAttachment(const wxString& attachmentName, unsigne
 }
 
 void AttachmentsContainer::removeAttachment(size_t idx) {
-    // todo: idx sanity check
+    if (idx >= _attachments.size()) {
+        throw Exception("No attachment at specified index");
+    }
 
     if (_attachments.empty()) {
         return;

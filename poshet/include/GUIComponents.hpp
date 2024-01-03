@@ -4,6 +4,7 @@
 #include <wx/event.h>
 #include <wx/artprov.h>
 
+#include "Exceptions.hpp"
 #include "Utils.hpp"
 
 wxDECLARE_EVENT(ATTACHMENT_BUTTON_CLICK_EVENT, wxCommandEvent);

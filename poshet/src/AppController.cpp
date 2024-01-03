@@ -188,19 +188,13 @@ void AppController::onMailCreatorSend(wxCommandEvent& e) {
     auto subjectInput = _mailCreatorFrame->subject();
     auto bodyInput = _mailCreatorFrame->body();
     try {
-
-        // add the info to the mail builder because that's what it'll truly use in the end
-        // and send
         _mailBuilder->setTo(toInput);
         _mailBuilder->setSubject(subjectInput);
         _mailBuilder->setPlainText(bodyInput);
 
-        // todo: create body with mailBuilder, send it to here, close the thing gracefully
         auto mailBody = _mailBuilder->generateMIMEMessage();
         auto from = _mailBuilder->fromEmailAddress();
         auto to = _mailBuilder->to();
-
-        std::cout << mailBody <<"\n";
         
         _session->sendMail(from, to, mailBody);
         _mailCreatorFrame->closeGracefully();

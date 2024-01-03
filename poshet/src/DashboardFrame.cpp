@@ -320,7 +320,6 @@ void DashboardFrame::updateViewMailPanel(const Mail& mail) {
     }
     catch (MailException& e) {
         try {
-            std::cout << "[DashboardFrame] Warning: " << e.what() << "\n";
             auto plainText = mail.getPlainTextPart();
             wxString x = wxString::FromUTF8(plainText.c_str());
             _plainTextDisplayer->SetValue(x);
