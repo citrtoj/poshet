@@ -27,21 +27,11 @@ protected:
     std::string _clientDomain = "localhost";
     
     State _state = DISCONNECTED;
-
-    std::thread _noopThread;
-    int _noopTimeoutSecs = 60;
-    bool _threadStarted = false;
-    std::mutex _commandMutex;
-    std::mutex _stateMutex;
-    std::condition_variable cv;
-
     std::string _ehloResponse;
 
     void sendCommand(const std::string& command, bool addCRLF = true); // NOT THREAD SAFE; only sends the command, without reading response
 
     std::string execCommand(const std::string& command, bool addCRLF = true); // THREAD SAFE; sends commands, returns response
-
-    void keepAlive();
     
     std::unordered_map<LoginType, std::function<void()>> _loginMethods;
     void initLoginMethods();

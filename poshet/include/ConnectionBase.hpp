@@ -80,9 +80,9 @@ public:
 
     virtual void connectToServer() = 0;
     virtual void closeConnection() = 0;
+    void checkIfConnectionAlive();
 
     void log(const std::string& logMessage);
-
     ~ConnectionBase();
 };
 

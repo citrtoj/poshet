@@ -80,52 +80,19 @@ void SMTPConnection::connectToServer() {
     readResponse();
     _ehloResponse = execCommand("EHLO " + _clientDomain);
 
-    _noopThread = std::thread(&SMTPConnection::keepAlive, this);
-    _threadStarted = true;
     _state = State::TRANSACTION;
 }
 
-void SMTPConnection::keepAlive() {
-    bool stop = true;
-    while(true) {
-        {
-            std::unique_lock<std::mutex> lock(_stateMutex);
-            auto result = cv.wait_for(lock, std::chrono::seconds(_noopTimeoutSecs), [this]() {return _state != State::TRANSACTION;});
-            if (result == true) {
-                break;
-            }
-        }
-        try {
-            execCommand("NOOP");
-        }
-        catch(Exception& e) {
-            std::cout << e.what() << "\n";
-            throw;
-        }
-        log("Sent NOOP");
-    }
-}
-
 std::string SMTPConnection::execCommand(const std::string& command, bool addCRLF) {
-    std::lock_guard<std::mutex> lock(_commandMutex);
-
     sendCommand(command, addCRLF);
     return readResponse();
 }
 
 void SMTPConnection::closeConnection() {
     log("Closing connection...");
-    {
-        std::unique_lock<std::mutex> lock(_stateMutex);
-        _state = State::DISCONNECTING;
-    }
-    cv.notify_all();
-    if (_threadStarted) {
-        _noopThread.join();
-        log("Joined noop thread");
-        _threadStarted = false;
-    }
+    _state = State::DISCONNECTING;
     closeSocket();
+    log("Closed connection");
 }
 
 void SMTPConnection::sendMail(const std::string& from, const std::string& to, const std::string& rawBody) {

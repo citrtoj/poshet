@@ -30,7 +30,6 @@ public:
     void subscribe(SessionObserver* observer);
 
 protected:
-    SMTPConnection _smtp;
     POP3Connection _pop3;
     DatabaseConnection _db;
 
@@ -45,13 +44,14 @@ protected:
     bool _shouldRefreshConnection = false;
     bool _shouldRepopulateMail = true;
 
-
     void saveOnePop3MailLocally(size_t index, size_t byteSize);
     void getAllPop3AndSaveLocally(bool deleteOnSave = true);
 
     std::vector<DBMailData> getAllMailFromDatabase();
     
     void reloadMailFromDatabase();
+
+    void initSMTP(SMTPConnection& smtp);
 
 public:
     Session(FileManager* manager);

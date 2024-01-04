@@ -37,7 +37,7 @@ protected:
     State _state = State::DISCONNECTED;
 
     std::thread _noopThread;
-    int _noopTimeoutSecs = 60;
+    int _noopTimeoutSecs = 30;
     std::atomic<bool> _threadStarted = false;
     std::atomic<bool> _hasNoopThreadErrored = false;
     std::mutex _commandMutex;
@@ -55,13 +55,12 @@ protected:
 
     void checkNoopThreadError() {
         if (_hasNoopThreadErrored.load()) {
-            throw ServerException("Socket threw error on NOOP operation (connection restart recommended)\n");
+            log("Threw SMTP NOOP error");
+            throw ServerException("Socket threw error on POP3 NOOP operation (connection restart recommended)");
         }
     }
 
     std::string execCommand(const std::string& command, bool expectsMultiline = false, SingleLineMessage processing = SingleLineMessage::PROCESSED); // THREAD SAFE
-
-
 
 public:
     POP3Connection();

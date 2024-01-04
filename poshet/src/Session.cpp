@@ -51,24 +51,28 @@ void Session::getAllPop3AndSaveLocally(bool deleteOnSave) {
     }
     
     auto rawMail = _pop3.retrieveAllMailMetadata();
+    bool hasAnyBeenDeleted = false;
     for (const auto& rawMailData : rawMail) {
         try {
             saveOnePop3MailLocally(rawMailData.index, rawMailData.byteSize);
             if (deleteOnSave) {
+                hasAnyBeenDeleted = true;
                 _pop3.markMailForDeletion(rawMailData.index);
             }
         }
         catch (ServerException& e) {
             std::cout << "[Session] SERVER WARNING: " << e.what() << "\n";
+            return;
         }
         catch(FileManagerException& e) {
             std::cout << "[Session] FILE MANAGER WARNING: " << e.what() << "\n";
+            return;
         }
         catch (ConnectException& e) {
             throw;
         }
     }
-    if (deleteOnSave) {
+    if (hasAnyBeenDeleted) {
         _pop3.resetConnection();
     }
     _shouldRefreshConnection = true;
@@ -91,22 +95,30 @@ void Session::connectAndLoginToServers() {
         _pop3.setSSL(_userData.pop3SSL());
         _pop3.setPort(_userData.pop3Port());
 
-        _smtp.setSSL(_userData.smtpSSL());
-        _smtp.setHost(_userData.smtpDomain());
-        _smtp.setPort(_userData.smtpPort());
-
         _pop3.connectToServer();
-        _smtp.connectToServer();
         _pop3.login(_userData.pop3Username(), _userData.password());
-        if (_userData.smtpAuth()) {
-            _smtp.login(_userData.pop3Username(), _userData.password());
-        }
+
+        auto smtp = SMTPConnection();
+        initSMTP(smtp);
+        // if it worked, then the login is valid; break
+        smtp.closeConnection();
+
         _db.addUser(_userData.emailAddress(), _userData.pop3Domain());
         _userData.setDbId(_db.getUser(_userData.emailAddress(), _userData.pop3Domain()));
     }
     catch (Exception& e) {
-        closeConnections();
         throw;
+    }
+}
+
+void Session::initSMTP(SMTPConnection& smtp) {
+    smtp.setSSL(_userData.smtpSSL());
+    smtp.setHost(_userData.smtpDomain());
+    smtp.setPort(_userData.smtpPort());
+
+    smtp.connectToServer();
+    if (_userData.smtpAuth()) {
+        smtp.login(_userData.pop3Username(), _userData.password());
     }
 }
 
@@ -117,7 +129,6 @@ void Session::closeConnections() {
     catch(Exception& e) {
         _pop3.closeConnection();
     }
-    _smtp.closeConnection();
 }
 
 void Session::resetConnections() {
@@ -126,7 +137,10 @@ void Session::resetConnections() {
 }
 
 void Session::sendMail(const std::string& from, const std::string& to, const std::string& rawBody) {
-    _smtp.sendMail(from, to, rawBody);
+    auto smtp = SMTPConnection();
+    initSMTP(smtp);
+    smtp.sendMail(from, to, rawBody);
+    smtp.closeConnection();
 
     _isMailCacheDirty = true;
     _observer->handleSessionDataUpdate();

@@ -72,18 +72,18 @@ void ConnectionBase::openSocket(int domain, int type, int protocol) {
 }
 
 void ConnectionBase::closeSocket() {
-    if (!isSocketOpen()) {
+    if (!_isSocketOpen) {
         return;
     }
     if (_isSSLInit) {
         if (_isSSLConnected) {
             SSL_shutdown(_ssl);
-            _isSSLConnected = false;
         }
         SSL_free(_ssl);
         SSL_CTX_free(_ctx);
-        _isSSLInit = false;
     }
+    _isSSLInit = false;
+    _isSSLConnected = false;
     close(_socket);
     _isSocketConnected = false;
     _isSocketOpen = false;
@@ -115,7 +115,7 @@ void ConnectionBase::connectSocket() {
         if (connect(_socket, resultIt->ai_addr, resultIt->ai_addrlen) != -1) {
             break;
         }
-        close(_socket);
+        closeSocket();
     }
 
     if (resultIt == NULL) {
@@ -140,6 +140,7 @@ ConnectionBase::~ConnectionBase() {
 }
 
 ssize_t ConnectionBase::readFromSocket(void* buffer, size_t nbytes) {
+    checkIfConnectionAlive();
     if (_isSSLEnabled) {
         return Utils::readLoopSSL(_ssl, buffer, nbytes);
     }
@@ -149,10 +150,25 @@ ssize_t ConnectionBase::readFromSocket(void* buffer, size_t nbytes) {
 }
 
 ssize_t ConnectionBase::writeToSocket(const void* buffer, size_t nbytes) {
+    checkIfConnectionAlive();
     if (_isSSLEnabled) {
         return Utils::writeLoopSSL(_ssl, buffer, nbytes);
     }
     else {
         return Utils::sendLoop(_socket, buffer, nbytes);
     }
+}
+
+void ConnectionBase::checkIfConnectionAlive() {
+    fd_set read_fds;
+    FD_ZERO(&read_fds);
+    FD_SET(_socket, &read_fds);
+    struct timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 1;
+    int result = select(_socket + 1, &read_fds, nullptr, nullptr, &timeout);
+    if (result == -1) {
+        throw ConnectException("Connection dead");
+    }
+    // else, connection is alive
 }

@@ -31,8 +31,8 @@ void POP3Connection::connectToServer() {
         return;
     }
     connectSocket();
-    readLineResponse();
     _state = AUTHORIZATION;
+    readLineResponse();
 
     log("Successfully connected to server");
 }
@@ -148,10 +148,12 @@ void POP3Connection::keepAlive() {
             }
         }
         try {
-            execCommand("NOOP");
+            assertResponse(execCommand("NOOP"));
+            log("Sent NOOP");
         }
         catch(...) {
             _hasNoopThreadErrored.store(true);
+            log("Error sending NOOP. Exiting NOOP thread");
             return;
         }
     }
