@@ -1,6 +1,12 @@
 #include "App.hpp"
 
 bool App::OnInit() {
+    try {
+		std::locale::global(std::locale(""));
+	} catch (std::exception &) {
+		std::setlocale(LC_ALL, "");
+	}
+
     loginFrame = new LoginFrame("Login");
     dashboardFrame = new DashboardFrame("Dashboard");
     controller = new AppController(this, loginFrame, dashboardFrame);

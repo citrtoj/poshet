@@ -22,7 +22,7 @@ public:
 };
 
 class Session {
-
+    //todo: see why pop3 resets so so so many times
 protected:
     SessionObserver* _observer;
     void notifyObserver();

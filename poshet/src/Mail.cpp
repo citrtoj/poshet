@@ -1,9 +1,6 @@
 #include "Mail.hpp"
 
 
-// --- class Mail ---
-
-
 Mail::Mail(const std::string& plainTextData, const std::string& mailId, const std::string& tag) : _plainText(plainTextData), _mailId(mailId), _tag(tag) {
     parsePlainText();
 }
@@ -16,13 +13,11 @@ void Mail::parsePlainText() {
 }
 
 Mail::Mail(const Mail& rhs) {
-    //std::cout << "[Mail] Copy ctor\n";
     _plainText = rhs._plainText;
     parsePlainText();
 }
 
 Mail::Mail(Mail&& rhs) {
-    //std::cout << "[Mail] Move ctor\n";
     _plainText = std::move(rhs._plainText);
     _mailId = std::move(rhs._mailId);
     _tag = std::move(rhs._tag);
@@ -51,14 +46,14 @@ std::string Mail::getHeaderField(const std::string& key, bool unicode) const {
         // possibly undecoded
         auto data = getHeaderValue(key)->generate();
         if (!unicode) {
-            return vmime::text::decodeAndUnfold(data)->getConvertedText(vmime::charset("ascii"));
+            return vmime::text::decodeAndUnfold(data)->getConvertedText(vmime::charset("us-ascii"));
         }
         else {
             return vmime::text::decodeAndUnfold(data)->getConvertedText(vmime::charset("utf-8"));
         }
     }
     else {
-        return ""; //temporary
+        return "";
     }
 }
 
@@ -124,7 +119,7 @@ AttachmentMetadata Mail::attachmentMetadataAt(size_t idx) const {
     return {
         attachment.getName().generate(),
         attachment.getType().generate(),
-        attachment.getData()->getLength()
+        attachment.getData()->getLength() * 3.0 / 4
     };
 }
 
@@ -167,7 +162,7 @@ void MailBodyBuilder::addMIMEAttachment(vmime::messageBuilder& builder, const At
 
 void MailBodyBuilder::addAttachment(const std::string& attachmentName, const std::string& fileData, const std::string& contentType) {
     _attachments.push_back({{
-            attachmentName, contentType, fileData.length() * sizeof(char)
+            attachmentName, contentType, static_cast<double>(fileData.length())
         }, fileData
     });
 }
@@ -211,7 +206,7 @@ std::string MailBodyBuilder::generateMIMEMessage() {
 }
 
 std::string MailBodyBuilder::generateStarterBody() {
-    return ""; // no starter here
+    return ""; // no starter here :)
 }
 
 
@@ -233,9 +228,10 @@ ReplyMailBodyBuilder::ReplyMailBodyBuilder(const Mail& mail, const std::string& 
 
         auto attachments = mail.attachmentMetadata();
         for (int i = 0; i < attachments.size(); ++i) {
+            auto data = mail.attachmentDataAt(i);
             _attachments.push_back({
-                attachments[i]._filename, attachments[i]._contentType,
-                attachments[i]._size, mail.attachmentDataAt(i)
+                attachments[i]._filename, attachments[i]._contentType, static_cast<double>(data.length()),
+                data
             });
         }
     }
@@ -251,7 +247,7 @@ std::string ReplyMailBodyBuilder::generateStarterBody() {
     std::istringstream stream(_referenceText);
     std::string line = "";
     while (std::getline(stream, line)) {
-        starter += ">" + line + "\n"; // assuming "\n" is the default delimiter
+        starter += ">" + line + "\n"; // "\n" is the default delimiter for getline
     }
     return starter;
 }
@@ -308,8 +304,6 @@ std::string ForwardMailBodyBuilder::generateStarterBody() {
         "--- FORWARDED MESSAGE ---\n"
         "Subject: " + _referenceSubject + "\n"
         "Date: " + _referenceDate + "\n"
-        // "From: " + _referenceFrom + "\n"
-        // "To: " + _referenceTo + "\n"
         "\n\n" 
         ;
     starter += _referenceText;

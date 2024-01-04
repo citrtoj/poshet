@@ -43,7 +43,7 @@ void POP3Connection::login() {
         return;
     }
     if (_state != AUTHORIZATION) {
-        throw Exception("Unable to log in -- not connected to server");
+        throw ConnectException("Unable to log in -- not connected to server");
     }
     execCommand("USER " + _user);
     execCommand("PASS " + _pass);
@@ -74,6 +74,7 @@ void POP3Connection::sendCommand(const std::string& command) {
 }
 
 std::string POP3Connection::execCommand(const std::string& command, bool expectsMultiline, SingleLineMessage processing) {
+    checkNoopThreadError();
     std::lock_guard<std::mutex> lock(_commandMutex);
     sendCommand(command);
     if (!expectsMultiline) {
@@ -121,7 +122,7 @@ std::string POP3Connection::readMultiLineResponse() {
     while (true) {
         auto buffer = readLineResponse(SingleLineMessage::RAW);
         if (isError(buffer)) {
-            // string is error and thus it'll be singleline. Return
+            // string is error and thus it'll be singleline. Def return
             return buffer;
         }
         if (buffer == "\r\n") {
@@ -141,13 +142,18 @@ void POP3Connection::keepAlive() {
     while(true) {
         {
             std::unique_lock<std::mutex> lock(_stateMutex);
-            auto result = cv.wait_for(lock, std::chrono::seconds(_timeoutSecs), [this]() {return _state != State::TRANSACTION;});
+            auto result = cv.wait_for(lock, std::chrono::seconds(_noopTimeoutSecs), [this]() {return _state != State::TRANSACTION;});
             if (result == true) {
                 break;
             }
         }
-        execCommand("NOOP");
-        log("Sent NOOP");
+        try {
+            execCommand("NOOP");
+        }
+        catch(...) {
+            _hasNoopThreadErrored.store(true);
+            return;
+        }
     }
 }
 
@@ -170,7 +176,8 @@ void POP3Connection::closeConnection() {
     closeSocket();
     _state = DISCONNECTED;
     log("Successfully closed connection");
-    _isUIDLValid = true;
+    _hasNoopThreadErrored.store(false);
+    _isUIDLAvailable = true;
 }
 
 void POP3Connection::quitConnection() {
@@ -201,11 +208,12 @@ void POP3Connection::quitConnection() {
     closeSocket();
     _state = DISCONNECTED;
     log("Successfully closed connection");
-    _isUIDLValid = true;
-    
+    _isUIDLAvailable = true;
 }
 
 std::string POP3Connection::retrieveOneMail(size_t currentMailIndex, size_t byteSize) {
+    checkNoopThreadError();
+
     std::lock_guard<std::mutex> lock(_commandMutex);
 
     sendCommand("RETR " + std::to_string(currentMailIndex));
@@ -214,7 +222,7 @@ std::string POP3Connection::retrieveOneMail(size_t currentMailIndex, size_t byte
 
     buffer[byteSize] = 0;
     int readCode = readFromSocket(buffer, byteSize);
-    if (readCode < 0) {
+    if (readCode <= 0) {
         throw ServerException("Could not read from POP3 socket\n");
     }
     readMultiLineResponse();
@@ -266,7 +274,7 @@ void POP3Connection::resetConnection() {
 
 void POP3Connection::markMailForDeletion(long idx) {
     if (idx < 0) {
-        throw Exception("Invalid mail index to delete");
+        throw ServerException("Invalid mail index to delete");
     }
     execCommand("DELE " + std::to_string(idx));
 }
@@ -277,6 +285,6 @@ bool POP3Connection::isError(const std::string& message) {
 
 void POP3Connection::assertResponse(const std::string& response) {
     if (isError(response)) {
-        throw ServerException(response.substr(5));
+        throw ServerResponseException(response.substr(5));
     }
 }

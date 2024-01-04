@@ -37,26 +37,31 @@ protected:
     State _state = State::DISCONNECTED;
 
     std::thread _noopThread;
-    bool _threadStarted = false;
-    
+    int _noopTimeoutSecs = 60;
+    std::atomic<bool> _threadStarted = false;
+    std::atomic<bool> _hasNoopThreadErrored = false;
     std::mutex _commandMutex;
     std::mutex _stateMutex;
     std::condition_variable cv;
 
-    bool _isUIDLValid = true;
+    bool _isUIDLAvailable = true;
 
     void sendCommand(const std::string& command); // NOT THREAD SAFE
-
-    std::string _ehloResponse;
 
     std::string readLineResponse(bool raw = SingleLineMessage::PROCESSED);
     std::string readMultiLineResponse();
 
     void keepAlive();
 
+    void checkNoopThreadError() {
+        if (_hasNoopThreadErrored.load()) {
+            throw ServerException("Socket threw error on NOOP operation (connection restart recommended)\n");
+        }
+    }
+
     std::string execCommand(const std::string& command, bool expectsMultiline = false, SingleLineMessage processing = SingleLineMessage::PROCESSED); // THREAD SAFE
-    
-    // std::string retrieveOneMailHeader(size_t currentMailIndex);
+
+
 
 public:
     POP3Connection();

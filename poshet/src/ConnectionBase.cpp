@@ -59,6 +59,15 @@ void ConnectionBase::openSocket(int domain, int type, int protocol) {
     if (_socket == -1) {
         throw ConnectException("Could not initialize socket");
     }
+    struct timeval timeout;
+    timeout.tv_sec = _timeoutSecs;
+    timeout.tv_usec = 0;
+    if (setsockopt(_socket, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout)) < 0) {
+        throw ConnectException("Could not set socket recv timeout");
+    }
+    if (setsockopt(_socket, SOL_SOCKET, SO_SNDTIMEO, (char*)&timeout, sizeof(timeout)) < 0) {
+        throw ConnectException("Could not set socket send timeout");
+    }
     _isSocketOpen = true;
 }
 
@@ -131,12 +140,11 @@ ConnectionBase::~ConnectionBase() {
 }
 
 ssize_t ConnectionBase::readFromSocket(void* buffer, size_t nbytes) {
-    // a direct violation of the open/closed principle but I'm probably not going to read data from this class in literally any other way
     if (_isSSLEnabled) {
         return Utils::readLoopSSL(_ssl, buffer, nbytes);
     }
     else {
-        return Utils::readLoop(_socket, buffer, nbytes);
+        return Utils::recvLoop(_socket, buffer, nbytes);
     }
 }
 
@@ -145,6 +153,6 @@ ssize_t ConnectionBase::writeToSocket(const void* buffer, size_t nbytes) {
         return Utils::writeLoopSSL(_ssl, buffer, nbytes);
     }
     else {
-        return Utils::writeLoop(_socket, buffer, nbytes);
+        return Utils::sendLoop(_socket, buffer, nbytes);
     }
 }

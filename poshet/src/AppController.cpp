@@ -43,10 +43,6 @@ void AppController::showException(const std::string& msg) {
     wxMessageBox(msg, "Error", wxOK | wxICON_ERROR);
 }
 
-void AppController::warnUnimplemented() {
-    showInfo("Feature unimplemented");
-}
-
 void AppController::closeApp() {
     wxCloseEvent close(wxEVT_CLOSE_WINDOW);
     wxPostEvent(_mainApp, close);
@@ -201,16 +197,22 @@ void AppController::onMailCreatorSend(wxCommandEvent& e) {
     }
     catch (Exception& e) {
         showException(e.what());
+        closeMailCreator();
+        return;
     }
     showInfo("Mail sent successfully");
     getMailAndShow(true);
 }
 
-void AppController::onMailCreatorClose(wxCloseEvent& e) {
+void AppController::closeMailCreator() {
     _mailCreatorFrame->Destroy();
     _mailCreatorFrame = nullptr;
     _isMailCreatorOpen = false;
     delete _mailBuilder;
+}
+
+void AppController::onMailCreatorClose(wxCloseEvent& e) {
+    closeMailCreator();
 }
 
 void AppController::onAttachmentDownload(wxCommandEvent& e) {
@@ -221,7 +223,7 @@ void AppController::onAttachmentDownload(wxCommandEvent& e) {
     wxFileDialog saveFileDialog(nullptr, "Save As", wxEmptyString, wxEmptyString, wxT("All files (*.*)|*.*"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
     std::string filename = "";
     for (char ch : attachmentData._filename) {
-        if (std::isalnum(ch)) {
+        if (std::isalnum(ch) or (ch == '.')) {
             filename += ch;
         }
         else {
@@ -291,6 +293,7 @@ void AppController::onMailCreatorAddAttachment(wxCommandEvent& e) {
         std::string filename = openFileDialog.GetFilename().ToUTF8().data();
 
         std::string data = _fileManager->readFile(filePath);
+
         _mailBuilder->addAttachment(filename, data);
         handleMailBuilderDataUpdate();
     }

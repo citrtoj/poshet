@@ -17,7 +17,7 @@
 
 struct AttachmentMetadata {
     std::string _filename = "", _contentType = "";
-    unsigned long long _size = 0;
+    long double _size = 0;
 };
 
 struct Attachment : public AttachmentMetadata {
@@ -83,11 +83,6 @@ protected:
     }
 public:
     MailBodyBuilder(const std::string& fromEmailAddress, const std::string& name = "") {
-        try {
-		    std::locale::global(std::locale(""));
-        } catch (std::exception &) {
-            std::setlocale(LC_ALL, "");
-        }
         setFrom(fromEmailAddress, name);
     }
 
@@ -168,11 +163,7 @@ public:
     ForwardMailBodyBuilder(const Mail& mail, const std::string& fromEmailAddress, const std::string& name = "");
 
     virtual std::string generateStarterBody() override;
-protected:
 };
-
-
-
 
 class MailBodyBuilderObserver {
     virtual void handleMailBuilderDataUpdate() = 0;

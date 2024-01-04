@@ -81,14 +81,8 @@ void FileManager::saveFile(const std::string& filePath, const std::string& rawDa
     if (access(filePath.c_str(), F_OK) != -1 and !overwrite) {
         throw FileExistsException();
     }
-    int fd = open(filePath.c_str(), O_CREAT | O_RDWR, PERMISSIONS);
-    if (fd == -1) {
-        throw FileManagerException("Error creating file " + filePath);
-    }
-    // truncate file
-    size_t len = rawData.length();
-    int writeCode = Utils::writeLoop(fd, rawData.c_str(), len * sizeof(char));
-    close(fd);
+    std::ofstream outputFile(filePath, std::ios::out | std::ios::binary);
+    outputFile << rawData;
 }
 
 void FileManager::saveMail(const std::string& mailboxName, FileManager::MailType type, const std::string& mailFilename, const std::string& rawMailData) {
@@ -99,20 +93,17 @@ void FileManager::saveMail(const std::string& mailboxName, FileManager::MailType
         saveFile(filePath, rawMailData);
     }
     catch (FileExistsException& e) {
-        // if file exists and has the exact same name then it's okay probably
-        std::cout << "File exists\n";
+        // if file exists and has the exact same name then it's okay... we hope nobody has messed with our data
         return;
     }
 }
 
 std::string FileManager::getMail(const std::string& mailboxName, FileManager::MailType type, const std::string& mailFilename) {
     auto mailboxPath = mailbox(mailboxName);
-
     auto filePath = joinToFullPath(joinToFullPath(mailboxPath, _typeFolderNames.find(type)->second), mailFilename);
     if (access(filePath.c_str(), F_OK) == -1) {
         throw FileManagerException("File " + filePath + " is not valid");
     }
-
     return readFile(filePath);
 }
 
@@ -126,25 +117,14 @@ void FileManager::saveAttachment(const std::string& filePath, const std::string&
 }
 
 std::string FileManager::readFile(const std::string& filePath) {
-    int mailFD = open(filePath.c_str(), O_RDWR);
-    if (mailFD == -1) {
+    try {
+        std::ifstream inputFile(filePath, std::ios::in | std::ios::binary);
+        std::stringstream buffer;
+        buffer << inputFile.rdbuf();
+        std::string result = buffer.str();
+        return result;
+    }
+    catch(...) {
         throw FileManagerException("Error opening file " + filePath);
     }
-    // citim in buffere de 512 at a time ca mna
-    constexpr int BUFFER_SIZE = 1024;
-    char buffer[BUFFER_SIZE + 1];
-    int readCode;
-    size_t readSoFar = 0;
-    std::string result;
-    do {
-        memset(buffer, 0, (BUFFER_SIZE + 1) * sizeof(char));
-        readCode = Utils::readLoop(mailFD , buffer, BUFFER_SIZE * sizeof(char));
-        if (readCode < 0) {
-            throw FileManagerException("Could not read file from disk");
-        }
-        readSoFar += readCode;
-        result += buffer;
-    }
-    while (readCode == BUFFER_SIZE); 
-    return result;
 }

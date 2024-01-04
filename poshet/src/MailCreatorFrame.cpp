@@ -48,7 +48,6 @@ MailCreatorFrame::MailCreatorFrame() :
     verticalSizer->Add(_attContainer, 0, wxEXPAND | wxALL, MARGIN);
 
     auto mainSizer = new wxBoxSizer(wxHORIZONTAL);
-    // max-width: 75%;
     mainSizer->AddStretchSpacer(1);
     mainSizer->Add(verticalSizer, 6, wxEXPAND);
     mainSizer->AddStretchSpacer(1);

@@ -37,15 +37,10 @@ protected:
     void showInfo(const std::string& msg);
     void showException(const std::string& msg);
 
-    // placeholder for things i haven't added yet
-    void warnUnimplemented();
-
-    // wxWidgets-style app closing
     void closeApp();
 
-    // internal login method
     void login();
-
+    void closeMailCreator();
     void getMailAndShow(bool force = false);
     
     void onCloseApp(wxCloseEvent& e);

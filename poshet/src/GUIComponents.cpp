@@ -14,7 +14,7 @@ AttachmentPanel::AttachmentPanel(wxWindow* parent, int index, const wxString& at
     _fileSize = fileSize;
 }
 wxString AttachmentPanel::attachmentLabel(const wxString& attachment, unsigned long long fileSize) {
-    return wxString::Format("%-20s %20s", attachment, Utils::fileSizeToString(fileSize));
+    return wxString::Format("%-20s ~%s", attachment, Utils::fileSizeToString(fileSize));
 }
 
 AttachmentPanelWithButton::AttachmentPanelWithButton(wxWindow* parent, int index, const wxString& attachmentName, unsigned long long fileSize, const wxString& buttonLabel, int MARGIN) : AttachmentPanel(parent, index, attachmentName, fileSize, MARGIN) {
@@ -50,13 +50,11 @@ wxString AlphaTextDialog::getInputString() const{
     return _inputTextCtrl->GetValue();
 }
 
-AttachmentsContainer::AttachmentsContainer(wxWindow* parent, long parentStyle, const wxString& attButtonName, int margin) : wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, parentStyle), _attButtonName(attButtonName), _margin(margin) {
-
-    // add wxScrolledWindow
+AttachmentsContainer::AttachmentsContainer(wxWindow* parent, long parentStyle, const wxString& attButtonName, int margin)
+: wxScrolledWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, parentStyle), _attButtonName(attButtonName), _margin(margin) {
     SetScrollRate(5, 0);
     _sizer = new wxBoxSizer(wxHORIZONTAL);
     SetSizer(_sizer);
-
     Bind(ATTACHMENT_BUTTON_CLICK_EVENT, &AttachmentsContainer::OnAttachmentClick, this);
 }
 
@@ -70,7 +68,6 @@ void AttachmentsContainer::removeAttachment(size_t idx) {
     if (idx >= _attachments.size()) {
         throw Exception("No attachment at specified index");
     }
-
     if (_attachments.empty()) {
         return;
     }

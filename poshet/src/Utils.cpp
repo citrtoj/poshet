@@ -22,6 +22,25 @@ namespace Utils {
         }
         return readSoFar;
     }
+    ssize_t recvLoop(int fd, void* buffer, size_t nbytes, int flags) {
+        if (nbytes < 0 || buffer == NULL) {
+            return -1;
+        }
+        int readSoFar = 0;
+        while (nbytes - readSoFar > 0) {
+            int readCode = recv(fd, (uint8_t*)buffer + readSoFar, nbytes - readSoFar, flags);
+            if (readCode < 1) {
+                if (readCode == 0) {
+                    return readSoFar;
+                }
+                else {
+                    return -readSoFar - 1;
+                }
+            }
+            readSoFar += readCode;
+        }
+        return readSoFar;
+    }
 
     ssize_t writeLoop(int fd, const void* buffer, size_t nbytes) {
         // same as readLoop
@@ -44,7 +63,26 @@ namespace Utils {
         return writtenSoFar;
     }
 
-    // it's the same logic from the above functions but really I didn't think it was worth it to DRY them
+    ssize_t sendLoop(int fd, const void* buffer, size_t nbytes, int flags) {
+        if (nbytes < 0 || buffer == NULL) {
+            return -1;
+        }
+        int writtenSoFar = 0;
+        while (nbytes - writtenSoFar > 0) {
+            int writeCode = send(fd, (uint8_t*)buffer + writtenSoFar, nbytes - writtenSoFar, flags);
+            if (writeCode < 1) {
+                if (writeCode == 0) {
+                    return writtenSoFar;
+                }
+                else {
+                    return -writtenSoFar - 1;
+                }
+            }
+            writtenSoFar += writeCode;
+        }
+        return writtenSoFar;
+    }
+    
     ssize_t readLoopSSL(SSL* ssl, void* buffer, size_t nbytes) {
         if (nbytes < 0 || buffer == NULL) {
             return -1;
@@ -122,16 +160,15 @@ namespace Utils {
 
         return hashedString;
     }
-    std::string fileSizeToString(unsigned long long fileSize) {
+    std::string fileSizeToString(long double fileSize) {
         std::ostringstream stream;
-        double doubleFileSize = fileSize;
         std::vector<std::string> sizes = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
         int i = 0;
-        while (doubleFileSize >= 1024 && i < sizes.size()) {
-            doubleFileSize /= 1024;
+        while (fileSize >= 1024 && i < sizes.size()) {
+            fileSize /= 1024;
             i++;
         }
-        stream << std::setprecision(3) <<  doubleFileSize;
+        stream << std::setprecision(3) <<  fileSize;
         std::string filesizeString = stream.str();
         return filesizeString + " " + sizes[i];
     }
@@ -139,14 +176,20 @@ namespace Utils {
     std::time_t mailDateToUnixTimestamp(const std::string& dateString) {
         std::tm timeStruct = {};
         std::istringstream ss(dateString);
+        ss.imbue(std::locale::classic());
         ss >> std::get_time(&timeStruct, "%a, %d %b %Y %H:%M:%S");
         if (ss.fail()) {
             return -1;
         }
+
+        char sign;
         int timezoneOffset;
-        ss >> timezoneOffset;
-        std::time_t timestamp = std::mktime(&timeStruct) - timezoneOffset * 3600;
+        ss >> sign >> timezoneOffset;
+        int offsetInSeconds = (sign == '+') ? timezoneOffset * 3600 : -timezoneOffset * 3600;
+
+        std::time_t timestamp = std::mktime(&timeStruct) - offsetInSeconds;
         return timestamp;
+
     }
 
     std::string encodeToBase64(const std::string& input) {

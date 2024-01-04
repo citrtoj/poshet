@@ -29,6 +29,7 @@ protected:
     State _state = DISCONNECTED;
 
     std::thread _noopThread;
+    int _noopTimeoutSecs = 60;
     bool _threadStarted = false;
     std::mutex _commandMutex;
     std::mutex _stateMutex;

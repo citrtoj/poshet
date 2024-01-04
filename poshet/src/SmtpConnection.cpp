@@ -26,14 +26,11 @@ void SMTPConnection::initLoginMethods() {
             }
         }, {
             LOGIN, [&]() {
-                log(execCommand("AUTH LOGIN"));
-
-                // todo: assert commands, check for errors in message
-
+                assertResponse(execCommand("AUTH LOGIN"));
                 auto base64User = Utils::encodeToBase64(_user + "\n");
-                log(execCommand(base64User, false));
+                assertResponse(execCommand(base64User, false));
                 auto base64Pass = Utils::encodeToBase64(_pass + "\n");
-                log(execCommand(base64Pass, false));
+                assertResponse(execCommand(base64Pass, false));
             }
         }
     };
@@ -93,7 +90,7 @@ void SMTPConnection::keepAlive() {
     while(true) {
         {
             std::unique_lock<std::mutex> lock(_stateMutex);
-            auto result = cv.wait_for(lock, std::chrono::seconds(_timeoutSecs), [this]() {return _state != State::TRANSACTION;});
+            auto result = cv.wait_for(lock, std::chrono::seconds(_noopTimeoutSecs), [this]() {return _state != State::TRANSACTION;});
             if (result == true) {
                 break;
             }
@@ -134,13 +131,13 @@ void SMTPConnection::closeConnection() {
 void SMTPConnection::sendMail(const std::string& from, const std::string& to, const std::string& rawBody) {
     try {
         auto content = rawBody + "\r\n.";
-        log(execCommand("MAIL FROM:" + from));
-        log(execCommand("RCPT TO:" + to));
-        log(execCommand("DATA"));
-        log(execCommand(content));
+        assertResponse(execCommand("MAIL FROM:" + from));
+        assertResponse(execCommand("RCPT TO:" + to));
+        assertResponse(execCommand("DATA"));
+        assertResponse(execCommand(content));
     }
-    catch (ServerException& exc) {
-        throw Exception("Server was unable to send mail");
+    catch (ServerException& e) {
+        throw Exception(std::string("Server was unable to send mail (") + e.what() + ")");
         return;
     }
 }
@@ -158,12 +155,31 @@ void SMTPConnection::login(const std::string& user, const std::string& pass) {
 }
 
 void SMTPConnection::login() {
-    // get login types from ehlo... see if any are supported by us
-    // for now, pretend that all the servers support this
-    // todo: actually implement this
+    // I could actually implement this... maybe...
     _loginMethods.find(LOGIN)->second();
 }
 
-// void SMTPConnection::assertResponse(const std::string& response) {
-    
-// }
+void SMTPConnection::assertResponse(const std::string& response) {
+    int buffer;
+    std::istringstream x(response);
+    x >> buffer;
+    std::string serverMessage;
+    std::getline(x, serverMessage);
+
+    switch (buffer / 100) {
+        case 2:
+            log("Note (server status code " + std::to_string(buffer) + "): " + serverMessage);
+            break;
+        case 3:
+            log("Note (server status code " + std::to_string(buffer) + "): " + serverMessage);
+            break;
+        case 4:
+            throw ServerResponseException(serverMessage);
+            break;
+        case 5:
+            throw ServerResponseException("Bad command/command sequence");
+            break;
+        default:
+            throw Exception("Invalid SMTP status code");
+    }
+}
