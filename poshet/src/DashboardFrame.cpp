@@ -306,8 +306,13 @@ void DashboardFrame::updateViewMailPanel(const Mail& mail) {
             wxMemoryFSHandler::AddFile(filename, x._data.c_str(), x._data.length());
             _savedToFSHandler.push_back(filename);
         }
+        // dirty fix but I don't have time for anything better
+        if (htmlText.find("<meta") == std::string::npos) {
+            htmlText = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>" + htmlText;
+        }
+
         std::string htmlName = "file.htm";
-        wxMemoryFSHandler::AddFile(htmlName, htmlText.c_str(), htmlText.length());
+        wxMemoryFSHandler::AddFile(htmlName, htmlText.c_str(), strlen(htmlText.c_str()));
         _htmlDisplayer->Show();
         _htmlDisplayer->LoadPage("memory:" + htmlName);
         _plainTextDisplayer->Hide();

@@ -2,7 +2,7 @@
 
 bool App::OnInit() {
     try {
-		std::locale::global(std::locale(""));
+		std::locale::global(std::locale(".UTF-8"));
 	} catch (std::exception &) {
 		std::setlocale(LC_ALL, "");
 	}

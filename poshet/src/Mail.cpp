@@ -102,10 +102,10 @@ std::string Mail::getPlainTextPart() const {
         const vmime::textPart& part = *_messageParser->getTextPartAt(i);
         if (part.getType().getSubType() == vmime::mediaTypes::TEXT_PLAIN) {
             const vmime::textPart& tp = dynamic_cast<const vmime::textPart&>(part);
-            std::string htmlText;
-            vmime::utility::outputStreamStringAdapter x(htmlText);
+            std::string plaintext;
+            vmime::utility::outputStreamStringAdapter x(plaintext);
             tp.getText()->extract(x);
-            return htmlText;
+            return plaintext;
         }
     }
     throw MailException("Mail does not have plaintext parts");
