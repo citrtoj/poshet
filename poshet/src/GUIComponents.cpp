@@ -13,6 +13,11 @@ AttachmentPanel::AttachmentPanel(wxWindow* parent, int index, const wxString& at
     _index = index;
     _fileSize = fileSize;
 }
+
+void AttachmentPanel::setIndex(int index) {
+    _index = index;
+}
+
 wxString AttachmentPanel::attachmentLabel(const wxString& attachment, unsigned long long fileSize) {
     return wxString::Format("%-20s ~%s", attachment, Utils::fileSizeToString(fileSize));
 }
@@ -84,6 +89,10 @@ void AttachmentsContainer::clear() {
         x->Destroy();
     }
     _attachments.clear();
+}
+
+void AttachmentsContainer::refitSizer() {
+    SetSizerAndFit(_sizer);
 }
 
 void AttachmentsContainer::OnAttachmentClick(wxCommandEvent& e) {

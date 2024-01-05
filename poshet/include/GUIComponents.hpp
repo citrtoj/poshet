@@ -13,10 +13,7 @@ wxDECLARE_EVENT(ATTACHMENT_CONTAINER_CLICK_EVENT, wxCommandEvent);
 class AttachmentPanel : public wxPanel {
 public:
     AttachmentPanel(wxWindow* parent, int index, const wxString& attachmentName, unsigned long long fileSize, int MARGIN = 5);
-
-    void setIndex(int index) {
-        _index = index;
-    }
+    void setIndex(int index);
 
 protected:
     wxString attachmentLabel(const wxString& attachmentName, unsigned long long fileSize);
@@ -49,20 +46,13 @@ private:
 class AttachmentsContainer : public wxScrolledWindow {
 public:
     AttachmentsContainer(wxWindow* parent, long parentStyle, const wxString& attButtonName, int margin);
-
     void addAttachment(const wxString& attachmentName, unsigned long long fileSize);
-
     void removeAttachment(size_t idx);
-
     void clear();
-
-    void refitSizer() {
-        SetSizerAndFit(_sizer);
-    }
+    void refitSizer();
 
 private:
     void OnAttachmentClick(wxCommandEvent& e);
-
     wxScrolledWindow* _window;
     wxString _attButtonName;
     wxBoxSizer* _sizer;

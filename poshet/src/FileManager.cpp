@@ -69,11 +69,6 @@ std::string FileManager::mailbox(const std::string& mailboxName) {
     // creates mailbox if it can, returns mailbox path
     auto mailboxPath = joinToFullPath(joinToFullPath(_rootPath, _mailFolderName), mailboxName);
     createFolderOrCheckIfExists(mailboxPath);
-    // create Received and Sent folders
-    auto mailboxSentPath = joinToFullPath(mailboxPath, _sentFolder);
-    createFolderOrCheckIfExists(mailboxSentPath);
-    auto mailboxReceivedPath = joinToFullPath(mailboxPath, _receivedFolder);
-    createFolderOrCheckIfExists(mailboxReceivedPath);
     return mailboxPath;
 }
 
@@ -85,10 +80,10 @@ void FileManager::saveFile(const std::string& filePath, const std::string& rawDa
     outputFile << rawData;
 }
 
-void FileManager::saveMail(const std::string& mailboxName, FileManager::MailType type, const std::string& mailFilename, const std::string& rawMailData) {
+void FileManager::saveMail(const std::string& mailboxName, const std::string& mailFilename, const std::string& rawMailData) {
     // all the filemanager does is save files and get files, not its business to handle how to generate the filenames and everything
     auto mailboxPath = mailbox(mailboxName);
-    auto filePath = joinToFullPath(joinToFullPath(mailboxPath, _typeFolderNames.find(type)->second), mailFilename);
+    auto filePath = joinToFullPath(mailboxPath, mailFilename);
     try {
         saveFile(filePath, rawMailData);
     }
@@ -98,9 +93,9 @@ void FileManager::saveMail(const std::string& mailboxName, FileManager::MailType
     }
 }
 
-std::string FileManager::getMail(const std::string& mailboxName, FileManager::MailType type, const std::string& mailFilename) {
+std::string FileManager::getMail(const std::string& mailboxName, const std::string& mailFilename) {
     auto mailboxPath = mailbox(mailboxName);
-    auto filePath = joinToFullPath(joinToFullPath(mailboxPath, _typeFolderNames.find(type)->second), mailFilename);
+    auto filePath = joinToFullPath(mailboxPath, mailFilename);
     if (access(filePath.c_str(), F_OK) == -1) {
         throw FileManagerException("File " + filePath + " is not valid");
     }

@@ -1,7 +1,5 @@
 #include "Session.hpp"
 
-// --- subscriber-specific ---
-
 void Session::subscribe(SessionObserver* observer) {
     _observer = observer;
 }
@@ -10,13 +8,9 @@ void Session::notifyObserver() {
     _observer->handleSessionDataUpdate();
 }
 
-// --- ctor ---
-
 Session::Session(FileManager* manager) : _fileManager(manager) {
     _db.setPath(_fileManager->databasePath());
 }
-
-// --- internal methods ---
 
 void Session::saveOnePop3MailLocally(size_t index, size_t byteSize) {
     std::string uidl = "";
@@ -24,7 +18,7 @@ void Session::saveOnePop3MailLocally(size_t index, size_t byteSize) {
         uidl = _pop3.retrieveOneMailUIDL(index);
     }
     catch(ServerResponseException& e) {
-        // UIDL not supported by server
+        // UIDL not supported by server. leave string as is
     }
 
     auto plainData = _pop3.retrieveOneMail(index, byteSize);
@@ -37,27 +31,25 @@ void Session::saveOnePop3MailLocally(size_t index, size_t byteSize) {
     }
     auto hash = Utils::encodeToSHA256(plainData);
     auto fullMailId = id + "_" + hash;
-
     // save to fileManager, then to db
     // if this didn't fail, save all related info to db
     _db.addReceivedMail(fullMailId, _userData.dbId(), uidl, static_cast<unsigned long long>(timestamp));
     auto filename = _db.getFileNameOf(fullMailId);
-    _fileManager->saveMail(_userData.pop3Domain(), FileManager::MailType::RECEIVED, filename, mail.plainText());
+    _fileManager->saveMail(_userData.pop3Domain(), filename, mail.plainText());
 }
 
 void Session::getAllPop3AndSaveLocally(bool deleteOnSave) {
     if (_shouldRefreshConnection) {
         _pop3.resetConnection();
     }
-    
     auto rawMail = _pop3.retrieveAllMailMetadata();
     bool hasAnyBeenDeleted = false;
     for (const auto& rawMailData : rawMail) {
         try {
             saveOnePop3MailLocally(rawMailData.index, rawMailData.byteSize);
             if (deleteOnSave) {
-                hasAnyBeenDeleted = true;
                 _pop3.markMailForDeletion(rawMailData.index);
+                hasAnyBeenDeleted = true;
             }
         }
         catch (ServerException& e) {
@@ -82,8 +74,6 @@ std::vector<DBMailData> Session::getAllMailFromDatabase() {
     return _db.getReceivedMailOfUser(_userData.dbId());
 }
 
-// --- public methods ---
-
 void Session::setLoginData(const UserData& data) {
     _userData = data;
     std::cout << "[Session] Set data\n";
@@ -100,7 +90,7 @@ void Session::connectAndLoginToServers() {
 
         auto smtp = SMTPConnection();
         initSMTP(smtp);
-        // if it worked, then the login is valid; break
+        // if it worked, then the user data is valid; close conn
         smtp.closeConnection();
 
         _db.addUser(_userData.emailAddress(), _userData.pop3Domain());
@@ -141,7 +131,6 @@ void Session::sendMail(const std::string& from, const std::string& to, const std
     initSMTP(smtp);
     smtp.sendMail(from, to, rawBody);
     smtp.closeConnection();
-
     _isMailCacheDirty = true;
     _observer->handleSessionDataUpdate();
 }
@@ -149,11 +138,10 @@ void Session::sendMail(const std::string& from, const std::string& to, const std
 void Session::reloadMailFromDatabase() {
     _isMailCacheDirty = true;
     _mails.clear();
-    
     auto mail = getAllMailFromDatabase();
     _mails.reserve(mail.size());
     for (auto mailData : mail) {
-        auto x = _fileManager->getMail(_userData.pop3Domain(), FileManager::MailType::RECEIVED, mailData._mailFilename);
+        auto x = _fileManager->getMail(_userData.pop3Domain(), mailData._mailFilename);
         _mails.push_back(Mail(x, mailData._mailId, mailData._mailTag));
     }
 }
@@ -172,7 +160,6 @@ const std::vector<const Mail*>& Session::retrieveMail(const std::string& tag, bo
             throw;
         }
     }
-
     _mailsFilterCache.clear();
     for (const auto& mail : _mails) {
         if (mail.tag() == tag) {
@@ -215,8 +202,6 @@ void Session::deleteMail(ssize_t idx) {
     if (idx < 0) {
         throw Exception("No mail at given index");
     }
-
-    
     _db.deleteMail(_mailsFilterCache[idx]->mailId());
     reloadMailFromDatabase();
     _observer->handleSessionDataUpdate();

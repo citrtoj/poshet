@@ -11,7 +11,6 @@ find_package(OpenSSL REQUIRED)
 set(SOURCES
     src/main.cpp
 
-    src/Config.cpp
     src/Utils.cpp
     src/AppController.cpp
 

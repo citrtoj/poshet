@@ -19,7 +19,6 @@ protected:
     wxApp* _mainApp;
     Session* _session;
 
-    // GUIs
     LoginFrame* _loginFrame;
     DashboardFrame* _dashboardFrame;
 
@@ -61,7 +60,6 @@ protected:
     void onMailCreatorAddAttachment(wxCommandEvent& e);
     void onMailCreatorRemoveAttachment(wxCommandEvent& e);
 
-
 public:
     AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame* dashboardFrame);
     ~AppController();
@@ -69,8 +67,5 @@ public:
 public:
     // model observer methods
     void handleSessionDataUpdate() override;  
-
-    // the only time that the underlying data would change would be when attaching attachments, so it's fine that it's a single fxn
-    // the reply/forward-specific data is added to the user input when creating the actual frame
     void handleMailBuilderDataUpdate() override;
 };

@@ -9,7 +9,6 @@
 #include "Pop3Connection.hpp"
 #include "SmtpConnection.hpp"
 #include "DatabaseConnection.hpp"
-#include "Config.hpp"
 #include "FileManager.hpp"
 #include "UserData.hpp"
 #include "Mail.hpp"
@@ -22,7 +21,6 @@ public:
 };
 
 class Session {
-    //todo: see why pop3 resets so so so many times
 protected:
     SessionObserver* _observer;
     void notifyObserver();

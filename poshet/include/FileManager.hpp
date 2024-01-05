@@ -24,22 +24,7 @@
 #include "Utils.hpp"
 
 class FileManager {
-public:
-    enum MailType {
-        RECEIVED,
-        SENT
-    };
-
 private:
-    std::string _receivedFolder = "Received";
-    std::string _sentFolder = "Sent";
-
-    const std::unordered_map<MailType, const std::string&> _typeFolderNames = {
-        {MailType::RECEIVED, _receivedFolder},
-        {MailType::SENT, _sentFolder}
-    };
-    
-    // utility functions
     static std::string joinToFullPath(const std::string& root, const std::string& addon);
     static void createFolderOrCheckIfExists(const std::string& path);
     static constexpr int PERMISSIONS = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
@@ -68,8 +53,8 @@ public:
 
     void setRootLocation(const std::string& rootLocation);
     std::string databasePath() const;
-    void saveMail(const std::string& mailboxName, MailType type, const std::string& mailFilename, const std::string& rawMailData);
-    std::string getMail(const std::string& mailboxName, MailType type, const std::string& mailFilename);
+    void saveMail(const std::string& mailboxName, const std::string& mailFilename, const std::string& rawMailData);
+    std::string getMail(const std::string& mailboxName, const std::string& mailFilename);
 
     void saveAttachment(const std::string& filePath, const std::string& rawData, bool overwrite = false);
 };

@@ -16,8 +16,6 @@ protected:
 public:
     bool OnInit();
     int OnExit();
-    
     void OnClose(wxCloseEvent& e);
-
     void OnUnhandledException();
 };

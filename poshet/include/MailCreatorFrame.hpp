@@ -44,7 +44,6 @@ public:
     void toggleAttachments(wxCommandEvent& e);
     bool _isAttContainerShowing = false;
 
-    // wxWidgets event handlers
     void OnSend(wxCommandEvent& event);
     void OnAttach(wxCommandEvent& event);
     void OnRemove(wxCommandEvent& event);

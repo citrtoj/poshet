@@ -56,7 +56,6 @@ protected:
     void checkNoopThreadError() {
         if (_hasNoopThreadErrored.load()) {
             log("Threw SMTP NOOP error");
-            throw ServerException("Socket threw error on POP3 NOOP operation (connection restart recommended)");
         }
     }
 
@@ -78,6 +77,7 @@ public:
     void closeConnection() override;
     void quitConnection(); // acts as a commit for DELE commands
     void resetConnection();
+    void tryReconnecting();
 
     void login();
     void login(const std::string& user, const std::string& pass);

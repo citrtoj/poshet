@@ -105,8 +105,6 @@ public:
     static bool _isFSHandlerInit;
     static void initFSHandler();
 
-
-
     // external setters to be used by outside controllers
     void setTags(const std::vector<std::string>& tags);
     void setMailList(const std::vector<const Mail*>& mail);

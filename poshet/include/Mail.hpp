@@ -64,10 +64,6 @@ public:
     std::vector<AttachmentMetadata> attachmentMetadata() const;
 
     std::string attachmentDataAt(size_t idx) const;
-    //std::vector<AttachmentData> attachmentData() const;
-
-    // Attachment attachmentAt(size_t index) const;
-    // std::vector<Attachment> attachments() const;
 };
 
 
@@ -116,12 +112,11 @@ public:
         _plainText = plainText;
     }
 
-    // attachment utils
     void addAttachment(const std::string& attachmentName, const std::string& fileData, const std::string& contentType = "application/octet-stream");
     void removeAttachment(size_t idx);
     std::vector<AttachmentMetadata> attachments() const;
     
-    virtual std::string generateStarterBody(); // generates starting point for user input... basically what'll be put in the html
+    virtual std::string generateStarterBody(); // generates starting point for user input
     
     void addMIMEAttachment(vmime::messageBuilder& builder, const Attachment& attachment);
 
