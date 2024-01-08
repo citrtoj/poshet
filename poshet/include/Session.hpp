@@ -72,7 +72,7 @@ public:
 
     const std::vector<const Mail*>& retrieveMail(const std::string& tag = "", bool forceReload = false);
     const std::vector<const Mail*>& retrieveAllMail(bool forceReload = false);
-    const Mail& getMailAt(ssize_t idx); // uses currently displayed mail
+    const Mail& getMailAt(ssize_t idx);
     void deleteMail(ssize_t idx);
     void tagMail(ssize_t idx, const std::string& userInput);
 

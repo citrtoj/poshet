@@ -95,6 +95,15 @@ void SMTPConnection::closeConnection() {
     log("Closed connection");
 }
 
+void SMTPConnection::resetConnection() {
+    bool shouldLogin = (_state == State::TRANSACTION);
+    closeConnection();
+    connectToServer();
+    if (shouldLogin) {
+        login(_user, _pass);
+    }
+}
+
 void SMTPConnection::sendMail(const std::string& from, const std::string& to, const std::string& rawBody) {
     try {
         auto content = rawBody + "\r\n.";

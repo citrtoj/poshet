@@ -82,6 +82,8 @@ public:
     virtual void closeConnection() = 0;
     void checkIfConnectionAlive();
 
+    virtual void resetConnection() = 0;
+
     void log(const std::string& logMessage);
     ~ConnectionBase();
 };
@@ -99,4 +101,9 @@ public:
 class ServerResponseException : public ServerException {
 public:
     ServerResponseException(const std::string& message) : ServerException(message) {}
+};
+
+class IOException : public Exception {
+public:
+    IOException(const std::string& message) : Exception(message) {}
 };

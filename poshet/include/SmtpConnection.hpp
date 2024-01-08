@@ -51,6 +51,8 @@ public:
     void connectToServer() override;
     void closeConnection() override;
 
+    void resetConnection() override;
+
     void login();
     void login(const std::string& user, const std::string& pass);
 

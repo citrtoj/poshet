@@ -70,6 +70,16 @@ void AppController::getMailAndShow(bool force) {
         _dashboardFrame->setMailList(_currentMail);
         _dashboardFrame->setTags(tags);
     }
+    catch (IOException& e) {
+        showException(e.what());
+        try {
+            _session->resetConnections();
+        }
+        catch (Exception& e) {
+            showException(e.what());
+            closeApp();
+        }
+    }
     catch (Exception& e) {
         showException(e.what());
         closeApp();
@@ -184,8 +194,24 @@ void AppController::onDeleteMail(wxCommandEvent& e) {
     }
 
     auto selected = _dashboardFrame->selected();
-    _session->deleteMail(selected);
-    getMailAndShow();
+    try {
+         _session->deleteMail(selected);
+        getMailAndShow();
+    }
+    catch (IOException& e) {
+        showException(e.what());
+        try {
+            _session->resetConnections();
+        }
+        catch (Exception& e) {
+            showException(e.what());
+            closeApp();
+        }
+    }
+    catch (Exception& e) {
+        showException(e.what());
+        closeApp();
+    }
 }
 
 void AppController::onMailCreatorSend(wxCommandEvent& e) {
@@ -201,7 +227,19 @@ void AppController::onMailCreatorSend(wxCommandEvent& e) {
         auto from = _mailBuilder->fromEmailAddress();
         auto to = _mailBuilder->to();
         
-        _session->sendMail(from, to, mailBody);
+        try {
+            _session->sendMail(from, to, mailBody);
+        }
+        catch (IOException& e) {
+            showException(e.what());
+            try {
+                _session->resetConnections();
+            }
+            catch (Exception& e) {
+                showException(e.what());
+                closeApp();
+            }
+        }
         showInfo("Mail sent successfully");
         closeMailCreator();
     }
@@ -265,7 +303,13 @@ void AppController::onTagMail(wxCommandEvent& e) {
     std::string userInput = dialog.getInputString().ToStdString();
 
     _selectedMail = _dashboardFrame->selected();
-    _session->tagMail(_selectedMail, userInput);
+    try {
+        _session->tagMail(_selectedMail, userInput);
+    }
+    catch (Exception& e) {
+        showException(e.what());
+        closeApp();
+    }
     getMailAndShow();
 }
 
@@ -312,6 +356,7 @@ void AppController::onMailCreatorAddAttachment(wxCommandEvent& e) {
     }
     catch(Exception& e) {
         showException(e.what());
+        closeMailCreator();
     }
 }
 

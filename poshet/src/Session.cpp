@@ -31,8 +31,6 @@ void Session::saveOnePop3MailLocally(size_t index, size_t byteSize) {
     }
     auto hash = Utils::encodeToSHA256(plainData);
     auto fullMailId = id + "_" + hash;
-    // save to fileManager, then to db
-    // if this didn't fail, save all related info to db
     _db.addReceivedMail(fullMailId, _userData.dbId(), uidl, static_cast<unsigned long long>(timestamp));
     auto filename = _db.getFileNameOf(fullMailId);
     _fileManager->saveMail(_userData.pop3Domain(), filename, mail.plainText());

@@ -67,15 +67,10 @@ void POP3Connection::login(const std::string& user, const std::string& pass) {
 
 void POP3Connection::sendCommand(const std::string& command) {
     std::string tmpCommand = command + "\r\n";  //CRLF ending
-    try {
-        checkNoopThreadError();
-        int status = writeToSocket(tmpCommand.c_str(), tmpCommand.length());
-        if (status < 0) {
-            throw ConnectException("Error writing command to server");
-        }
-    }
-    catch(Exception& e) {
-        tryReconnecting();
+    checkNoopThreadError();
+    int status = writeToSocket(tmpCommand.c_str(), tmpCommand.length());
+    if (status < 0) {
+        throw ConnectException("Error writing command to server");
     }
 }
 
@@ -102,16 +97,13 @@ std::string POP3Connection::readLineResponse(bool raw) {
     char buffer[2] = {0, 0};
     while (not (buffer[0] == '\r' and buffer[1] == '\n')) {
         char singleCharBuffer;
-        try {
-            checkNoopThreadError();
-            int readCode = readFromSocket(&singleCharBuffer, sizeof(char));
-            if (readCode <= 0) {
-                throw ConnectException("Could not read from socket");
-            }
+
+        checkNoopThreadError();
+        int readCode = readFromSocket(&singleCharBuffer, sizeof(char));
+        if (readCode <= 0) {
+            throw ConnectException("Could not read from socket");
         }
-        catch(Exception& e) {
-            tryReconnecting();
-        }
+        
         buffer[0] = buffer[1];
         buffer[1] = singleCharBuffer;
         if (raw == SingleLineMessage::RAW or not (buffer[0] == '\r' and buffer[1] == '\n')) {
@@ -234,16 +226,13 @@ std::string POP3Connection::retrieveOneMail(size_t currentMailIndex, size_t byte
     char* buffer = new char[byteSize + 1];
 
     buffer[byteSize] = 0;
-    try {
-        checkNoopThreadError();
-        int readCode = readFromSocket(buffer, byteSize);
-        if (readCode <= 0) {
-            throw ConnectException("Could not read from socket");
-        }
+    
+    checkNoopThreadError();
+    int readCode = readFromSocket(buffer, byteSize);
+    if (readCode <= 0) {
+        throw ConnectException("Could not read from socket");
     }
-    catch(Exception& e) {
-        tryReconnecting();
-    }
+    
     readMultiLineResponse();
     std::string x = buffer;
 
@@ -288,15 +277,6 @@ void POP3Connection::resetConnection() {
     connectToServer();
     if (shouldLogin) {
         login(_user, _pass);
-    }
-}
-
-void POP3Connection::tryReconnecting() {
-    try {
-        resetConnection();
-    }
-    catch(Exception& e) {
-        throw ConnectException(std::string("Operation failed, and could not reconnect server after multiple attempts (") + e.what() + ")");
     }
 }
 

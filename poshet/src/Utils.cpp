@@ -2,8 +2,6 @@
 
 namespace Utils {
     ssize_t readLoop(int fd, void* buffer, size_t nbytes) {
-        // BIG TODO: MAKE IT PROCESS IT IN CHUNKS OF 512 BYTES AT A TIME
-
         // if returned number is positive: if equal to nbytes then succeeded writing, else it piped somewhere
         // if returned number is negative: returns -readSofar - 1 (to distinguish from error on first read)
         if (nbytes < 0 || buffer == NULL) {

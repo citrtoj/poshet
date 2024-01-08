@@ -140,7 +140,17 @@ ConnectionBase::~ConnectionBase() {
 }
 
 ssize_t ConnectionBase::readFromSocket(void* buffer, size_t nbytes) {
-    checkIfConnectionAlive();
+    try {
+        checkIfConnectionAlive();
+    }
+    catch (ConnectException& e) {
+        try {
+            resetConnection();
+        }
+        catch (...) {
+            throw ConnectException("Connection failed, could not reconnect");
+        }
+    }
     if (_isSSLEnabled) {
         return Utils::readLoopSSL(_ssl, buffer, nbytes);
     }
@@ -150,7 +160,17 @@ ssize_t ConnectionBase::readFromSocket(void* buffer, size_t nbytes) {
 }
 
 ssize_t ConnectionBase::writeToSocket(const void* buffer, size_t nbytes) {
-    checkIfConnectionAlive();
+    try {
+        checkIfConnectionAlive();
+    }
+    catch (ConnectException& e) {
+        try {
+            resetConnection();
+        }
+        catch (...) {
+            throw ConnectException("Connection failed, could not reconnect");
+        }
+    }
     if (_isSSLEnabled) {
         return Utils::writeLoopSSL(_ssl, buffer, nbytes);
     }
@@ -170,5 +190,4 @@ void ConnectionBase::checkIfConnectionAlive() {
     if (result == -1) {
         throw ConnectException("Connection dead");
     }
-    // else, connection is alive
 }
