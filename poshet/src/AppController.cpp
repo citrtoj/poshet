@@ -113,38 +113,53 @@ bool AppController::createMailCreatorFrame() {
     return true;
 }
 
+void AppController::initNewMailCreatorFrame() {
+    _mailBuilder = new MailBodyBuilder(_session->emailAddress(), _session->fullName());
+}
+
 void AppController::onNewMail(wxCommandEvent& e) {
     if (!createMailCreatorFrame()) {
         return;
     }
     try {
-        _mailBuilder = new MailBodyBuilder(_session->emailAddress(), _session->fullName());
+        initNewMailCreatorFrame();
     }
     catch (Exception& e) {
         showException(std::string("Could not initialize Mail Creator (") + e.what() + ").");
-        delete _mailBuilder;
-        _mailCreatorFrame->closeGracefully();
+        closeMailCreator();
     }
+}
+
+void AppController::initReplyMailCreatorFrame() {
+    const auto& mail = _session->getMailAt(_selectedMail);
+    _mailBuilder = new ReplyMailBodyBuilder(mail, _session->emailAddress(), _session->fullName());
+    _mailCreatorFrame->updateAttachments(_mailBuilder->attachments());
+    _mailCreatorFrame->setTo(_mailBuilder->to());
+    _mailCreatorFrame->setSubject(_mailBuilder->subject());
+    _mailCreatorFrame->setBody(_mailBuilder->generateStarterBody());
+    _mailCreatorFrame->setBodyCursorToBeginning();
 }
 
 void AppController::onReplyMail(wxCommandEvent& e) {
     if (!createMailCreatorFrame()) {
-    return;
+        return;
     }
     try {
-        const auto& mail = _session->getMailAt(_selectedMail);
-        _mailBuilder = new ReplyMailBodyBuilder(mail, _session->emailAddress(), _session->fullName());
-        _mailCreatorFrame->updateAttachments(_mailBuilder->attachments());
-        _mailCreatorFrame->setTo(_mailBuilder->to());
-        _mailCreatorFrame->setSubject(_mailBuilder->subject());
-        _mailCreatorFrame->setBody(_mailBuilder->generateStarterBody());
-        _mailCreatorFrame->setBodyCursorToBeginning();
+        initReplyMailCreatorFrame();
     }
     catch (Exception& e) {
         showException(std::string("Could not initialize Mail Creator (") + e.what() + ").");
-        delete _mailBuilder;
-        _mailCreatorFrame->closeGracefully();
+        closeMailCreator();
     }
+}
+
+void AppController::initForwardMailCreatorFrame() {
+    const auto& mail = _session->getMailAt(_selectedMail);
+    _mailBuilder = new ForwardMailBodyBuilder(mail, _session->emailAddress(), _session->fullName());
+    _mailCreatorFrame->updateAttachments(_mailBuilder->attachments());
+    _mailCreatorFrame->setSubject(_mailBuilder->subject());
+    _mailCreatorFrame->setBody(_mailBuilder->generateStarterBody());
+    _mailCreatorFrame->setBodyCursorToBeginning();
 }
 
 void AppController::onForwardMail(wxCommandEvent& e) {
@@ -152,17 +167,11 @@ void AppController::onForwardMail(wxCommandEvent& e) {
         return;
     }
     try {
-        const auto& mail = _session->getMailAt(_selectedMail);
-        _mailBuilder = new ForwardMailBodyBuilder(mail, _session->emailAddress(), _session->fullName());
-        _mailCreatorFrame->updateAttachments(_mailBuilder->attachments());
-        _mailCreatorFrame->setSubject(_mailBuilder->subject());
-        _mailCreatorFrame->setBody(_mailBuilder->generateStarterBody());
-        _mailCreatorFrame->setBodyCursorToBeginning();
+        initForwardMailCreatorFrame();
     }
     catch (Exception& e) {
         showException(std::string("Could not initialize Mail Creator (") + e.what() + ").");
-        delete _mailBuilder;
-        _mailCreatorFrame->closeGracefully();
+        closeMailCreator();
     }
 }
 
@@ -193,22 +202,26 @@ void AppController::onMailCreatorSend(wxCommandEvent& e) {
         auto to = _mailBuilder->to();
         
         _session->sendMail(from, to, mailBody);
-        _mailCreatorFrame->closeGracefully();
+        showInfo("Mail sent successfully");
+        closeMailCreator();
     }
     catch (Exception& e) {
         showException(e.what());
         closeMailCreator();
         return;
     }
-    showInfo("Mail sent successfully");
-    getMailAndShow(true);
 }
 
 void AppController::closeMailCreator() {
-    _mailCreatorFrame->Destroy();
-    _mailCreatorFrame = nullptr;
-    _isMailCreatorOpen = false;
-    delete _mailBuilder;
+    if (_isMailCreatorOpen) {
+        _mailCreatorFrame->Destroy();
+        _mailCreatorFrame = nullptr;
+        _isMailCreatorOpen = false;
+    }
+    if (_mailBuilder != nullptr) {
+        delete _mailBuilder;
+        _mailBuilder = nullptr;
+    }
 }
 
 void AppController::onMailCreatorClose(wxCloseEvent& e) {
@@ -310,6 +323,7 @@ void AppController::onMailCreatorRemoveAttachment(wxCommandEvent& e) {
 
 AppController::~AppController() {
     // destroy business-logic
+    closeMailCreator();
     delete _fileManager;
     delete _session;
 }

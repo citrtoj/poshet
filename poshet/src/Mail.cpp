@@ -150,15 +150,40 @@ const std::string& Mail::mailId() const {
     return _mailId;
 }
 
+std::vector<std::string> Mail::displayableFrom() const {
+    try {
+        // get from in mime format, return only mail if only mail, return both if both
+        auto vmimeVal = getHeaderValue("From");
+        auto vmimeMailbox = vmime::dynamic_pointer_cast<vmime::mailbox>(vmimeVal);
+        auto name = vmimeMailbox->getName().getConvertedText(_defaultCharset);
+        
+        std::vector<std::string> result = {};
+        if (!name.empty()) {
+            result.push_back(name);
+        }
+        auto email = vmimeMailbox->getEmail().toString();
+        if (!email.empty()) {
+            result.push_back(email);
+        }
+
+        return result;
+    }
+    catch(...) {
+        return {};
+    }
+}
+
+// --- MailBodyBuilder ---
+
+
 void MailBodyBuilder::addMIMEAttachment(vmime::messageBuilder& builder, const Attachment& attachment) {
     vmime::shared_ptr<vmime::stringContentHandler> x = vmime::make_shared<vmime::stringContentHandler>(attachment._data);
-    vmime::shared_ptr<vmime::contentHandler> y = std::dynamic_pointer_cast<vmime::stringContentHandler>(x);
+    vmime::shared_ptr<vmime::contentHandler> y = vmime::dynamic_pointer_cast<vmime::stringContentHandler>(x);
     vmime::shared_ptr <vmime::fileAttachment> a = vmime::make_shared <vmime::fileAttachment>(y, vmime::word(attachment._filename), vmime::mediaType("application/octet-stream"));
     builder.appendAttachment(a);
 }
 
 
-// --- MailBodyBuilder ---
 
 void MailBodyBuilder::addAttachment(const std::string& attachmentName, const std::string& fileData, const std::string& contentType) {
     _attachments.push_back({{

@@ -258,7 +258,13 @@ void DashboardFrame::setMailList(const std::vector<const Mail*>& mails) {
         item.SetId(index);
         _mailList->InsertItem(item);
 
-        for (int i = 0; i < _fields.size(); ++i) {
+        // insert From
+        auto displayableFrom = mail->displayableFrom();
+        std::string fromLabel = Utils::displayDisplayableHeader(displayableFrom);
+        _mailList->SetItem(index, 0, wxString::FromUTF8(fromLabel.c_str()));
+
+        // insert the rest
+        for (int i = 1; i < _fields.size(); ++i) {
             auto fieldValue = mail->getHeaderField(_fields[i], true);
             _mailList->SetItem(index, i, wxString::FromUTF8(fieldValue.c_str()));
         }
@@ -274,7 +280,11 @@ void DashboardFrame::setMailList(const std::vector<const Mail*>& mails) {
 
 void DashboardFrame::updateViewMailPanel(const Mail& mail) {
     initViewMailPanel();
-    _selectedMailFrom->SetLabel("From: " + mail.getHeaderField("From"));
+
+    auto displayableFrom = mail.displayableFrom();
+    std::string fromLabel = Utils::displayDisplayableHeader(displayableFrom);
+
+    _selectedMailFrom->SetLabel("From: " + fromLabel);
     _selectedMailTo->SetLabel("To: " + mail.getHeaderField("To"));
     _selectedMailSubject->SetLabel(wxString::FromUTF8(mail.getHeaderField("Subject", true).c_str()));
 
@@ -306,7 +316,7 @@ void DashboardFrame::updateViewMailPanel(const Mail& mail) {
             wxMemoryFSHandler::AddFile(filename, x._data.c_str(), x._data.length());
             _savedToFSHandler.push_back(filename);
         }
-        // dirty fix but I don't have time for anything better
+        // dirty fix but I don't have time for anything better. it's for gmail mail which is inherently utf-8 but god forbid it actually shows up well
         if (htmlText.find("<meta") == std::string::npos) {
             htmlText = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>" + htmlText;
         }

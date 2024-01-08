@@ -1,12 +1,12 @@
 #include "App.hpp"
 
 bool App::OnInit() {
+    // set locale to UTF-8
     try {
 		std::locale::global(std::locale(".UTF-8"));
 	} catch (std::exception &) {
-		std::setlocale(LC_ALL, "");
+		std::setlocale(LC_ALL, ".UTF-8");
 	}
-
     loginFrame = new LoginFrame("Login");
     dashboardFrame = new DashboardFrame("Dashboard");
     controller = new AppController(this, loginFrame, dashboardFrame);

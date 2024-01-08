@@ -104,7 +104,7 @@ void SMTPConnection::sendMail(const std::string& from, const std::string& to, co
         assertResponse(execCommand(content));
     }
     catch (ServerException& e) {
-        throw Exception(std::string("Server was unable to send mail (") + e.what() + ")");
+        throw Exception(std::string("Server unable to send mail (") + e.what() + ")");
         return;
     }
 }
@@ -133,19 +133,31 @@ void SMTPConnection::assertResponse(const std::string& response) {
     std::string serverMessage;
     std::getline(x, serverMessage);
 
+    serverMessage.erase(std::remove(serverMessage.begin(), serverMessage.end(), '\n'), serverMessage.end());
+    serverMessage.erase(std::remove(serverMessage.begin(), serverMessage.end(), '\r'), serverMessage.end());
+
+    auto appendServerMessage = [serverMessage](const std::string msgPrefix) {
+        return msgPrefix + "Server message: " + serverMessage;
+    };
+
     switch (buffer / 100) {
         case 2:
-            log("Note (server status code " + std::to_string(buffer) + "): " + serverMessage);
+            log(appendServerMessage(""));
             break;
         case 3:
-            log("Note (server status code " + std::to_string(buffer) + "): " + serverMessage);
+            log(appendServerMessage(""));
             break;
         case 4:
-            throw ServerResponseException(serverMessage);
+            throw ServerResponseException(appendServerMessage("Server-based error. "));
             break;
         case 5:
-            throw ServerResponseException("Bad command/command sequence");
-            break;
+            switch(buffer) {
+                case 552:
+                    throw ServerResponseException(appendServerMessage("Mail too big. "));
+                case 521:
+                    throw ServerResponseException(appendServerMessage("SMTP server does not permit sending of email. "));
+                default: throw ServerResponseException(appendServerMessage("Bad SMTP command. "));
+            }
         default:
             throw Exception("Invalid SMTP status code");
     }

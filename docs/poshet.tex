@@ -54,7 +54,7 @@ Comunicarea cu baza de date SQLite creată local se realizează cu ajutorul libr
 
 Pentru interfața grafică este utilizată librăria wxWidgets (în pofida altor librării similare precum Qt) datorită simplității sale, a structurii bazate pe OOP și în mod special a integrării sale facile cu Visual Studio Code și CMake.
 
-Pentru analizarea și transformarea mailurilor din format MIME\cite{ref_rfc_mime} într-un format afișabil în client, dar și pentru transpunerea input-ului utilizatorului din editorul WYSIWYG ("what you see is what you get") în format MIME, se utilizează o librărie externă (VMime). A fost aleasă o librărie externă destul de complexă pentru că standardul MIME este în sine complex; se dorește o soluție implementată cât se poate de conformă standardului MIME și testată riguros.
+Pentru analizarea și transformarea mailurilor din format MIME\cite{ref_rfc_mime} într-un format afișabil în client, dar și pentru transpunerea input-ului utilizatorului din fereastra Mail Creator în format MIME, se utilizează o librărie externă (VMime). A fost aleasă o librărie externă, complexă, pentru că standardul MIME este în sine complex; s-a dorit o soluție implementată cât se poate de conformă standardului MIME și testată riguros.
 
 
 
@@ -70,20 +70,20 @@ Proiectul folosește clase și OOP, având o structură inspirată de arhitectur
 \subsection{Detalii despre clasele programului}
 
 
-Principala clasă care face legătura între interfețele aplicației și logica din spate (comunicarea cu servere, cu baza de date, etc.) este AppController. Aceasta administrează și comunică cu instanțe ale interfețelor LoginFrame, DashboardFrame și MailCreatorFrame și o instanță a clasei Session.
+Principala clasă care face legătura între interfețele aplicației și logica din spate (comunicarea cu servere, cu baza de date, etc.) este AppController. Aceasta administrează și comunică cu instanțe ale interfețelor LoginFrame, DashboardFrame și MailCreatorFrame și instanțe ale claselor Session și MailBuilder (utilizat când MailCreatorFrame este deschis).
 
-Session este clasa care se ocupă de comunicarea cu resurse externe pentru a obține și furniza informații. Aceasta solicită și trimite informații către instanțe ale altor clase specializate, care realizează operații precum obținerea mailurilor noi, salvarea lor în baza de date, trimiterea unui mail nou, sau salvarea locală a unui atașament.
+Session este clasa care se ocupă de comunicarea cu resurse externe pentru a obține și furniza informații. Aceasta solicită și trimite informații către instanțe ale altor clase specializate precum FileManager, POP3Connection, SMTPConnection și DatabaseConnection, care realizează operații precum crearea unui mailbox (sau potrivirea cu un mailbox deja existent) pentru utilizatorul logat, obținerea mailurilor noi, salvarea lor în baza de date locală, trimiterea unui mail nou, sau salvarea locală a unui atașament dintr-un mail.
 
 În momentul primirii de notificări de la interfețele la care AppController este "abonat", AppController se ocupă de interacțiunea cu clasa Session pentru a obține informații și a le transmite către interfețe, care trebuie să folosească datele pentru a se actualiza și a le afișa către utilizator.
 
 Clasa AppController poate fi privită ca un mediator între interfețe și logica programului, interacționând cât mai puțin cu librăria grafică și nefiind implicat în comunicarea efectivă în rețea.
 
+Datele care aparțin unui mail sunt păstrate la runtime cu ajutorul clasei Mail, care conține metode prin care se poate procesa conținutul unui buffer ASCII (scris conform standardului MIME) și se pot obține informații precum headers, conținutul plain-text sau HTML, atașamente, etc. În momentul când se dorește afișarea conținutului mailului pe ecran, interfața DashboardFrame este responsabilă cu afișarea datelor mailului în viewMailPanel, utilizând elemente specializate ale wxWidgets precum wxTextCtrl pentru plain-text sau wxHTMLWindow pentru conținut HTML cu imagini inline.
+
 
 \subsection{Stocarea informațiilor}
 
-Datele care aparțin unui mail sunt păstrate cu ajutorul clasei Mail, care conține metode prin care se poate procesa conținutul unui buffer ASCII (scris conform standardului MIME) și se pot obține informații precum headers, date plain-text, atașamente, etc. În momentul când se dorește afișarea conținutului unui mail pe ecran, interfața DashboardFrame este responsabilă cu afișarea datelor mailului în viewMailPanel, utilizând elemente specializate ale wxWidgets precum wxRichTextCtrl (care permite afișarea "inline" de imagini sau alte fișiere multimedia).
-
-De asemenea, mailurile primite sunt stocate într-o bază de date locală, într-o tabelă \texttt{Mail} (legată de tabela \texttt{Users} printr-o relație de tip "one-to-many"). Pe lângă datele "raw" ale mailurilor sunt stocate și informații adiționale precum headers importante (To, Subject, etc.) sau un "tag" prin care utilizatorul a marcat respectivul mail în client pentru a își organiza inboxul.
+La momentul deschiderii programului, în același folder cu executabilul se crează folderul \texttt{.poshet}, unde sunt create folderul \texttt{mail} (unde sunt stocate conținuturile "raw" ale mailurilor) și baza de date SQLite \texttt{mail.db}, în care sunt stocate informații despre utilizatorul căruia îi aparține un mail,  filename-ul unde poate fi găsit în folderul amintit mai sus, sau tag-ul care i-a fost asignat de către utilizator mailului respectiv.
 
 
 \begin{figure}
@@ -112,9 +112,9 @@ Pentru obținerea mailurilor se folosește protocolul POP3\cite{ref_rfc_pop3}, i
 Ambele protocoale sunt de tip comandă-răspuns; așadar, în urma trimiterii comenzii se așteaptă răspuns afirmativ (sau un mesaj de eroare) de la server, informația fiind apoi transmisă la funcțiile care au solicitat-o.
 
 \subsection{Scenarii de utilizare}
-Poshet este menit să comunice cu un server POP3 ne-încriptat, cu autentificare plain-text, și cu un server SMTP fără autentificare. În timpul dezvoltării acestui proiect s-au folosit programele Dovecot și Postfix pentru a configura servere POP3 și respectiv SMTP pe \texttt{localhost}.
+% Poshet este menit să comunice cu un server POP3 ne-încriptat, cu autentificare plain-text, și cu un server SMTP fără autentificare. În timpul dezvoltării acestui proiect s-au folosit programele Dovecot și Postfix pentru a configura servere POP3 și respectiv SMTP pe \texttt{localhost}.
 
-Un client de acest tip poate fi folositor în situații precum testarea locală; unele procese pot fi configurate să trimită mail către serverul SMTP local (spre exemplu, pentru a simula trimiterea de mail către mai mulți utilizatori ai unui serviciu), iar administratorul le poate citi, verifica și organiza ușor din aplicație. De asemenea, prin conectarea la serverul SMTP local cu acest client se poate testa și verifica funcționarea conformă a serverului.
+% Un client de acest tip poate fi folositor în situații precum testarea locală; unele procese pot fi configurate să trimită mail către serverul SMTP local (spre exemplu, pentru a simula trimiterea de mail către mai mulți utilizatori ai unui serviciu), iar administratorul le poate citi, verifica și organiza ușor din aplicație. De asemenea, prin conectarea la serverul SMTP local cu acest client se poate testa și verifica funcționarea conformă a serverului.
 
 Utilizatorul se poate loga cu adresa de e-mail și parola, în urma cărora aplicația va încerca să intuiască parametri precum "domain name"-ul serverelor POP3 și SMTP, sau username-ul pentru mailbox-ul POP3. Dacă autentificarea sau conectarea eșuează, există posibilitatea de a le introduce manual, prin field-urile marcate cu "(Optional)".
 
@@ -204,7 +204,7 @@ Conexiunile cu serverele POP3 și SMTP sunt administrate de clasele POP3Connecti
 
 Clientul Poshet este în principal single-threaded, folosind mai multe fire de execuție doar pentru a menține active conexiunile POP3 și SMTP. O posibilă îmbunătățire ar fi adăugarea mai multor fire de execuție și modularizarea codului pentru a permite încărcarea mailurilor din inboxul POP3 "in the background" (pentru ca interfața să nu apară ca fiind "not responding" în timpul acestui proces), dar și pentru a putea întrerupe procesul dacă se dorește acest lucru.
 
-De asemenea, librăria wxWidgets are propriile limitări. Comparativ cu alte librării precum Qt, widget-ul \texttt{wxRichTextCtrl} nu permite importarea fișierelor HTML, ceea ce limitează anumite abilități precum "Reply" și "Forward" la a funcționa doar în format plaintext. O îmbunătățire ar putea fi portarea proiectului la o altă librărie cu un editor WYSIWYG, precum Qt, sau dezvoltarea unui propriu "handler" bazat pe wxWidgets care să permită importarea HTML.
+De asemenea, librăria wxWidgets are propriile limitări. Comparativ cu alte librării precum Qt, widget-ul \texttt{wxRichTextCtrl} nu permite importarea fișierelor HTML, ceea ce limitează anumite abilități precum "Reply" și "Forward" la a funcționa în format plaintext. O îmbunătățire ar putea fi portarea proiectului la o altă librărie grafică cu un editor HTML de tip WYSIWYG ("what you see is what you get") precum Qt, sau dezvoltarea unui propriu "handler" bazat pe wxWidgets care să permită importarea HTML.
 %
 % ---- Bibliography ----
 %

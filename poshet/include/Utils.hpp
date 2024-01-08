@@ -21,6 +21,8 @@
 #include <openssl/bio.h>
 
 namespace Utils {
+    static constexpr unsigned long IO_LIMIT = 512;
+
     ssize_t readLoop(int fd, void* buffer, size_t nbytes);
     ssize_t recvLoop(int fd, void* buffer, size_t nbytes, int flags = 0);
     ssize_t readLoopSSL(SSL* ssl, void* buffer, size_t nbytes);
@@ -33,4 +35,6 @@ namespace Utils {
     std::string encodeToBase64(const std::string& input);
     std::string fileSizeToString(long double fileSize);
     std::time_t mailDateToUnixTimestamp(const std::string& dateString);
+
+    std::string displayDisplayableHeader(const std::vector<std::string>& vec);
 }

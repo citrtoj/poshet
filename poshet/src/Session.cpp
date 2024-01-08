@@ -131,6 +131,10 @@ void Session::sendMail(const std::string& from, const std::string& to, const std
     initSMTP(smtp);
     smtp.sendMail(from, to, rawBody);
     smtp.closeConnection();
+
+    getAllPop3AndSaveLocally();
+    reloadMailFromDatabase();
+
     _isMailCacheDirty = true;
     _observer->handleSessionDataUpdate();
 }

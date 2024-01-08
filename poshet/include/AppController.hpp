@@ -14,32 +14,37 @@
 #include "Exceptions.hpp"
 
 class AppController : public wxEvtHandler, public SessionObserver, public MailBodyBuilderObserver {
-
 protected:
     wxApp* _mainApp;
-    Session* _session;
+    Session* _session = nullptr;
 
-    LoginFrame* _loginFrame;
-    DashboardFrame* _dashboardFrame;
+    LoginFrame* _loginFrame = nullptr;
+    DashboardFrame* _dashboardFrame = nullptr;
 
     bool _isMailCreatorOpen = false;
-    MailBodyBuilder* _mailBuilder;
-    MailCreatorFrame* _mailCreatorFrame;
+    MailBodyBuilder* _mailBuilder = nullptr;
+    MailCreatorFrame* _mailCreatorFrame = nullptr;
     bool createMailCreatorFrame();
+    void initNewMailCreatorFrame();
+    void initReplyMailCreatorFrame();
+    void initForwardMailCreatorFrame();
+    void onNewMail(wxCommandEvent& e);
+    void onReplyMail(wxCommandEvent& e);
+    void onForwardMail(wxCommandEvent& e);
 
-    FileManager* _fileManager;
+    void closeMailCreator();
+
+    FileManager* _fileManager = nullptr;
     
-    std::vector<const Mail*> _currentMail;
+    std::vector<const Mail*> _currentMail = {};
     ssize_t _selectedMail = -1;
 
-    // display an error, wxWidgets style
     void showInfo(const std::string& msg);
     void showException(const std::string& msg);
 
     void closeApp();
 
     void login();
-    void closeMailCreator();
     void getMailAndShow(bool force = false);
     
     void onCloseApp(wxCloseEvent& e);
@@ -48,10 +53,7 @@ protected:
     void onRefreshMailList(wxCommandEvent& e);
     void onViewMailWithTag(wxCommandEvent& e);
     void onViewAllMail(wxCommandEvent& e);
-    void onNewMail(wxCommandEvent& e);
     void onTagMail(wxCommandEvent& e);
-    void onReplyMail(wxCommandEvent& e);
-    void onForwardMail(wxCommandEvent& e);
     void onDeleteMail(wxCommandEvent& e);
     void onAttachmentDownload(wxCommandEvent& e);
 
@@ -63,9 +65,7 @@ protected:
 public:
     AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame* dashboardFrame);
     ~AppController();
-
-public:
-    // model observer methods
+    
     void handleSessionDataUpdate() override;  
     void handleMailBuilderDataUpdate() override;
 };

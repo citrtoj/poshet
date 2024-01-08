@@ -39,6 +39,8 @@ protected:
     void parsePlainText();
 
     const vmime::htmlTextPart& getHTMLPart() const;
+    
+    vmime::charset _defaultCharset = "utf-8";
 
 public:
     bool _isMimeMessageInit;
@@ -64,6 +66,8 @@ public:
     std::vector<AttachmentMetadata> attachmentMetadata() const;
 
     std::string attachmentDataAt(size_t idx) const;
+
+    std::vector<std::string> displayableFrom() const;
 };
 
 

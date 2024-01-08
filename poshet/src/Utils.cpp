@@ -2,6 +2,8 @@
 
 namespace Utils {
     ssize_t readLoop(int fd, void* buffer, size_t nbytes) {
+        // BIG TODO: MAKE IT PROCESS IT IN CHUNKS OF 512 BYTES AT A TIME
+
         // if returned number is positive: if equal to nbytes then succeeded writing, else it piped somewhere
         // if returned number is negative: returns -readSofar - 1 (to distinguish from error on first read)
         if (nbytes < 0 || buffer == NULL) {
@@ -9,7 +11,8 @@ namespace Utils {
         }
         int readSoFar = 0;
         while (nbytes - readSoFar > 0) {
-            int readCode = read(fd, (uint8_t*)buffer + readSoFar, nbytes - readSoFar);
+            int bytesAmountToRead = std::min(nbytes - readSoFar, IO_LIMIT);
+            int readCode = read(fd, (uint8_t*)buffer + readSoFar, bytesAmountToRead);
             if (readCode < 1) {
                 if (readCode == 0) {
                     return readSoFar;
@@ -28,7 +31,8 @@ namespace Utils {
         }
         int readSoFar = 0;
         while (nbytes - readSoFar > 0) {
-            int readCode = recv(fd, (uint8_t*)buffer + readSoFar, nbytes - readSoFar, flags);
+            int bytesAmountToRead = std::min(nbytes - readSoFar, IO_LIMIT);
+            int readCode = recv(fd, (uint8_t*)buffer + readSoFar, bytesAmountToRead, flags);
             if (readCode < 1) {
                 if (readCode == 0) {
                     return readSoFar;
@@ -49,7 +53,8 @@ namespace Utils {
         }
         int writtenSoFar = 0;
         while (nbytes - writtenSoFar > 0) {
-            int writeCode = write(fd, (uint8_t*)buffer + writtenSoFar, nbytes - writtenSoFar);
+            int bytesAmountToWrite = std::min(nbytes - writtenSoFar, IO_LIMIT);
+            int writeCode = write(fd, (uint8_t*)buffer + writtenSoFar, bytesAmountToWrite);
             if (writeCode < 1) {
                 if (writeCode == 0) {
                     return writtenSoFar;
@@ -69,7 +74,8 @@ namespace Utils {
         }
         int writtenSoFar = 0;
         while (nbytes - writtenSoFar > 0) {
-            int writeCode = send(fd, (uint8_t*)buffer + writtenSoFar, nbytes - writtenSoFar, flags);
+            int bytesAmountToWrite = std::min(nbytes - writtenSoFar, IO_LIMIT);
+            int writeCode = send(fd, (uint8_t*)buffer + writtenSoFar, bytesAmountToWrite, flags);
             if (writeCode < 1) {
                 if (writeCode == 0) {
                     return writtenSoFar;
@@ -89,7 +95,8 @@ namespace Utils {
         }
         int readSoFar = 0;
         while (nbytes - readSoFar > 0) {
-            int readCode = SSL_read(ssl, (uint8_t*)buffer + readSoFar, nbytes - readSoFar);
+            int bytesAmountToRead = std::min(nbytes - readSoFar, IO_LIMIT);
+            int readCode = SSL_read(ssl, (uint8_t*)buffer + readSoFar, bytesAmountToRead);
             if (readCode < 1) {
                 if (readCode == 0) {
                     return readSoFar;
@@ -109,7 +116,8 @@ namespace Utils {
         }
         int writtenSoFar = 0;
         while (nbytes - writtenSoFar > 0) {
-            int writeCode = SSL_write(ssl, (uint8_t*)buffer + writtenSoFar, nbytes - writtenSoFar);
+            int bytesAmountToWrite = std::min(nbytes - writtenSoFar, IO_LIMIT);
+            int writeCode = SSL_write(ssl, (uint8_t*)buffer + writtenSoFar, bytesAmountToWrite);
             if (writeCode < 1) {
                 if (writeCode == 0) {
                     return writtenSoFar;
@@ -204,6 +212,17 @@ namespace Utils {
         std::string result(bptr->data, bptr->length);
         BIO_free_all(bio);
         return result;
+    }
+
+    std::string displayDisplayableHeader(const std::vector<std::string>& vec) {
+        std::string label = "";
+        if (vec.size() != 0) {
+            label += vec[0];
+            if (vec.size() > 1) {
+                label += " (" + vec[1] + ")";
+            }
+        }
+        return label;
     }
 }
 
