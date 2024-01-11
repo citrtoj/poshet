@@ -1,9 +1,12 @@
+
+
 % This is samplepaper.tex, a sample chapter demonstrating the
 % LLNCS macro package for Springer Computer Science proceedings;
 % Version 2.20 of 2017/10/04
 %
 \documentclass[runningheads]{llncs}
 %
+\usepackage[romanian]{babel}
 \usepackage{graphicx}
 % Used for displaying a sample figure. If possible, figure files should
 % be included in EPS format.
@@ -67,23 +70,21 @@ Proiectul folosește clase și OOP, având o structură inspirată de arhitectur
 
 
 
-\subsection{Detalii despre clasele programului}
+\subsection{Detalii despre arhitectură}
 
 
-Principala clasă care face legătura între interfețele aplicației și logica din spate (comunicarea cu servere, cu baza de date, etc.) este AppController. Aceasta administrează și comunică cu instanțe ale interfețelor LoginFrame, DashboardFrame și MailCreatorFrame și instanțe ale claselor Session și MailBuilder (utilizat când MailCreatorFrame este deschis).
+Principala clasă care face legătura între interfețele aplicației și logica din spate (comunicarea cu servere, cu baza de date, etc.) este AppController. Aceasta administrează și comunică cu instanțe ale interfețelor LoginFrame, DashboardFrame și MailCreatorFrame și instanțe ale claselor Session și MailBuilder (utilizat când MailCreatorFrame este deschis). Clasa AppController poate fi privită ca un mediator între interfețe și logica programului, delegând operațiuni claselor specializate și trimițându-le interfețelor.
 
-Session este clasa care se ocupă de comunicarea cu resurse externe pentru a obține și furniza informații. Aceasta solicită și trimite informații către instanțe ale altor clase specializate precum FileManager, POP3Connection, SMTPConnection și DatabaseConnection, care realizează operații precum crearea unui mailbox (sau potrivirea cu un mailbox deja existent) pentru utilizatorul logat, obținerea mailurilor noi, salvarea lor în baza de date locală, trimiterea unui mail nou, sau salvarea locală a unui atașament dintr-un mail.
+Session este clasa care se ocupă de comunicarea cu resurse externe pentru a obține și furniza informații. Aceasta solicită și trimite informații către instanțe ale altor clase precum FileManager, POP3Connection, SMTPConnection și DatabaseConnection, care realizează operații precum: crearea unui mailbox (sau potrivirea cu un mailbox deja existent) pentru utilizatorul conectat, obținerea mailurilor noi, salvarea lor în baza de date locală și în fișierele corespunzătoare, trimiterea unui mail nou, sau salvarea locală a unui atașament dintr-un mail.
 
 În momentul primirii de notificări de la interfețele la care AppController este "abonat", AppController se ocupă de interacțiunea cu clasa Session pentru a obține informații și a le transmite către interfețe, care trebuie să folosească datele pentru a se actualiza și a le afișa către utilizator.
-
-Clasa AppController poate fi privită ca un mediator între interfețe și logica programului, interacționând cât mai puțin cu librăria grafică și nefiind implicat în comunicarea efectivă în rețea.
 
 Datele care aparțin unui mail sunt păstrate la runtime cu ajutorul clasei Mail, care conține metode prin care se poate procesa conținutul unui buffer ASCII (scris conform standardului MIME) și se pot obține informații precum headers, conținutul plain-text sau HTML, atașamente, etc. În momentul când se dorește afișarea conținutului mailului pe ecran, interfața DashboardFrame este responsabilă cu afișarea datelor mailului în viewMailPanel, utilizând elemente specializate ale wxWidgets precum wxTextCtrl pentru plain-text sau wxHTMLWindow pentru conținut HTML cu imagini inline.
 
 
 \subsection{Stocarea informațiilor}
 
-La momentul deschiderii programului, în același folder cu executabilul se crează folderul \texttt{.poshet}, unde sunt create folderul \texttt{mail} (unde sunt stocate conținuturile "raw" ale mailurilor) și baza de date SQLite \texttt{mail.db}, în care sunt stocate informații despre utilizatorul căruia îi aparține un mail,  filename-ul unde poate fi găsit în folderul amintit mai sus, sau tag-ul care i-a fost asignat de către utilizator mailului respectiv.
+La momentul deschiderii programului, în același folder cu executabilul se crează folderul \texttt{.poshet}, unde sunt create folderul \texttt{mail} (unde sunt stocate conținuturile "raw" ale mailurilor, în fișiere individuale) și baza de date SQLite \texttt{mail.db}, în care sunt stocate informații despre utilizatorul căruia îi aparține un mail,  filename-ul unde poate fi găsit în folderul amintit mai sus, sau tag-ul care i-a fost asignat de către utilizator mailului respectiv.
 
 
 \begin{figure}
@@ -112,7 +113,7 @@ Pentru obținerea mailurilor se folosește protocolul POP3\cite{ref_rfc_pop3}, i
 Ambele protocoale sunt de tip comandă-răspuns; așadar, în urma trimiterii comenzii se așteaptă răspuns afirmativ (sau un mesaj de eroare) de la server, informația fiind apoi transmisă la funcțiile care au solicitat-o.
 
 \subsection{Scenarii de utilizare}
-% Poshet este menit să comunice cu un server POP3 ne-încriptat, cu autentificare plain-text, și cu un server SMTP fără autentificare. În timpul dezvoltării acestui proiect s-au folosit programele Dovecot și Postfix pentru a configura servere POP3 și respectiv SMTP pe \texttt{localhost}.
+Poshet este menit să comunice cu un server POP3 (printr-o conexiune ori ne-încriptată, ori încriptată prin SSL, cu autentificare plain-text prin comenzile \texttt{USER} și \texttt{PASS}), și cu un server SMTP (cu SSL sau nu, cu autentificare de tip \texttt{AUTH LOGIN} sau fără autentificare). Proiectul a fost testat atât pe mașina locală, cu adrese \texttt{@localhost} (cu un server Dovecot atât cu SSL, cât și fără, și un server Postfix, fără SSL, fără autentificare), dar și cu o adresă personală Yahoo (cu serverele \texttt{pop.mail.yahoo.com:995} și \texttt{smtp.mail.yahoo.com:465}).
 
 % Un client de acest tip poate fi folositor în situații precum testarea locală; unele procese pot fi configurate să trimită mail către serverul SMTP local (spre exemplu, pentru a simula trimiterea de mail către mai mulți utilizatori ai unui serviciu), iar administratorul le poate citi, verifica și organiza ușor din aplicație. De asemenea, prin conectarea la serverul SMTP local cu acest client se poate testa și verifica funcționarea conformă a serverului.
 
@@ -145,55 +146,48 @@ Ulterior, va fi afișată fereastra de tip "dashboard", care va afișa lista cur
 
 \subsection{Aspecte interesante legate de implementare}
 
-\subsubsection{Utilizarea sistemului de "subscribers".} Pentru a evita dependența circulară între clasa AppController și clasele de interfață, dar și pentru a minimiza interacțiunea cu AppController prin modalități specifice librăriei wxWidgets, se utilizează conceptul de "subscribers".
+%\subsubsection{Utilizarea sistemului de "subscribers".} Pentru a evita dependența circulară între clasa AppController și clasele de interfață, dar și pentru a minimiza interacțiunea cu AppController prin modalități specifice librăriei wxWidgets, se utilizează conceptul de "subscribers".
 
-AppController implementează simultan trei clase pur virtuale: LoginFrameSubscriber, DashboardFrameSubscriber și MailCreatorFrameSubscriber. În momentul creerii LoginFrame, DashboardFrame și respectiv MailCreatorFrame, AppController apelează metodele publice \texttt{subscribe} ale acestora, iar fiecare instanță de interfață memorează o referință la AppController sub forma unui pointer de tipul "subscriber" corespunzător. Fiindcă interfețele în sine sunt administrate de către AppController, nu există riscul ca una dintre interfețe să apeleze o metodă în timp ce "subscriber"-ul său să fie un pointer invalid.
-
-
-\begin{figure}
-    \centering
-    \includegraphics[width=\textwidth]{subscribers.png}
-    \caption{Declararea claselor pur-virtuale de tip "subscriber" în \texttt{FrameSubscribers.hpp}.}
-    \label{fig:subscribers}
-\end{figure}
+%AppController implementează simultan trei clase pur virtuale: LoginFrameSubscriber, DashboardFrameSubscriber și MailCreatorFrameSubscriber. În momentul creerii LoginFrame, DashboardFrame și respectiv MailCreatorFrame, AppController apelează metodele publice \texttt{subscribe} ale acestora, iar fiecare instanță de interfață memorează o referință la AppController sub forma unui pointer de tipul "subscriber" corespunzător. Fiindcă interfețele în sine sunt administrate de către AppController, nu există riscul ca una dintre interfețe să apeleze o metodă în timp ce "subscriber"-ul său să fie un pointer invalid.
 
 
-\begin{figure}
-    \centering
-    \includegraphics[width={230px}]{subscriberMember.png}
-    \caption{Definirea membrului \texttt{\_subscriber} în \texttt{DashboardFrame.hpp}.}
-    \label{fig:subscriberMember}
-\end{figure}
-
-\newpage
-
-În wxWidgets, interacțiunea utilizatorului cu o interfață este semnalată acesteia prin intermediul unor \texttt{wxEvent}-uri. Clasele de interfață ale Poshet conțin "event handlers" pentru acestea, implementate conform cerințelor librăriei, care la rândul lor apelează funcții ale "subscriber"-ului implementate în AppController, precum \texttt{onRefreshMailList()}, \texttt{onCloseApp()} sau \texttt{onMailSend()}.
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=\textwidth]{subscribers.png}
+%     \caption{Declararea claselor pur-virtuale de tip "subscriber" în \texttt{FrameSubscribers.hpp}.}
+%     \label{fig:subscribers}
+% \end{figure}
 
 
+% \begin{figure}
+%     \centering
+%     \includegraphics[width={230px}]{subscriberMember.png}
+%     \caption{Definirea membrului \texttt{\_subscriber} în \texttt{DashboardFrame.hpp}.}
+%     \label{fig:subscriberMember}
+% \end{figure}
 
-\begin{figure}
-    \centering
-    \includegraphics[width=\textwidth]{subscriberFxns.png}
-    \caption{Exemple de "event handlers" care apelează funcțiile "subscriber"-ului său, în \texttt{DashboardFrame.cpp}.}
-    \label{fig:subscriberFxns}
-\end{figure}
+% \newpage
+
+% În wxWidgets, interacțiunea utilizatorului cu o interfață este semnalată acesteia prin intermediul unor \texttt{wxEvent}-uri. Clasele de interfață ale Poshet conțin "event handlers" pentru acestea, implementate conform cerințelor librăriei, care la rândul lor apelează funcții ale "subscriber"-ului implementate în AppController, precum \texttt{onRefreshMailList()}, \texttt{onCloseApp()} sau \texttt{onMailSend()}.
+
+
+
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=\textwidth]{subscriberFxns.png}
+%     \caption{Exemple de "event handlers" care apelează funcțiile "subscriber"-ului său, în \texttt{DashboardFrame.cpp}.}
+%     \label{fig:subscriberFxns}
+% \end{figure}
 
 \subsubsection{Administrarea conexiunilor POP3 și SMTP.}
 
 Conexiunile cu serverele POP3 și SMTP sunt administrate de clasele POP3Connection și SMTPConnection, care asigură comunicarea corectă cu acestea conform protocoalelor corespunzătoare. 
 
-În general, după o anumită perioadă de inactivitate configurată de către administratorii serverelor, acestea pot încheia conexiunea. Acest fapt nu este o problemă pentru SMTPConnection, fiindcă o conexiune de acest tip este deschisă doar în momentul în care este necesară trimiterea unui mail, și închisă imediat după. În schimb, conexiunea POP3 este una persistentă. O particularitate interesantă a clasei POP3Connection este folosirea unui \texttt{std::thread} pentru a menține conexiunea activă: acesta trimite la un anumit interval repetat de timp, conform protocolului POP3, o operație de tip "no-op", prin care să semnaleze activitate fără a realiza o operație propriu-zisă.
+În general, după o anumită perioadă de inactivitate configurată de către administratorii serverelor, acestea pot încheia conexiunea. Acest fapt nu este o problemă pentru SMTPConnection, fiindcă o conexiune SMTP nu trebuie să fie persistentă. În program, o conexiune SMTP este deschisă doar la logare (pentru a verifica corectitudinea datelor de logare) și în momentul în care este necesară trimiterea unui mail, fiind închisă imediat după. În schimb, conexiunea POP3 a fost proiectată în așa fel încât să poată fi persistentă, acomodând pentru un timp mai lung de procesare a unui mail după obținerea sa de la server. O particularitate interesantă a clasei POP3Connection este folosirea unui \texttt{std::thread} pentru a menține conexiunea activă: acesta trimite la un anumit interval repetat de timp, conform protocolului POP3, o operație de tip "no-op", prin care să semnaleze activitate fără a realiza o operație propriu-zisă.
 
 În POP3Connection există membrul \texttt{std::thread \_noopThread}, și o metodă \texttt{keepAlive()} care este executată de către acest thread. Pentru ca "no-op"-urile trimise de acest thread să nu interfereze cu procesul comandă-răspuns se folosește un \texttt{\_commandMutex}, folosit în funcția \texttt{execCommand} care este apelată atât de comenzi reale, cât și de comanda "no-op". De asemenea, mutexul \texttt{\_stateMutex} este utilizat, printre altele, pentru a actualiza și verifica în mod sigur statusul curent al conexiunii.
 
 Dacă apare o eroare (închiderea conexiunii sau time-out) în timp ce se dorește trimiterea unui "no-op", thread-ul își încheie execuția. Thread-ul principal va reverifica existența unei conexiuni active când va încerca să comunice la rândul ei cu serverul POP3, și va încerca reconexiunea.
-
-\begin{figure}
-    \centering
-    \includegraphics[width={200px}]{noopThread.png}
-    \caption{Declararea \texttt{\_noopThread} și a altor membri ajutători în \texttt{POP3Connection.hpp}.}
-    \label{fig:noopThread}
-\end{figure}
 
 \begin{figure}
     \centering
@@ -204,7 +198,7 @@ Dacă apare o eroare (închiderea conexiunii sau time-out) în timp ce se doreș
 
 \section{Concluzii}
 
-Clientul Poshet este în principal single-threaded, folosind mai multe fire de execuție doar pentru a menține active conexiunile POP3 și SMTP. O posibilă îmbunătățire ar fi adăugarea mai multor fire de execuție și modularizarea codului pentru a permite încărcarea mailurilor din inboxul POP3 "in the background" (pentru ca interfața să nu apară ca fiind "not responding" în timpul acestui proces), dar și pentru a putea întrerupe procesul dacă se dorește acest lucru.
+Clientul Poshet este în principal single-threaded, folosind mai multe fire de execuție doar pentru a menține activă conexiunea POP3. O îmbunătățire posibilă ar fi adăugarea mai multor fire de execuție și modularizarea codului pentru a permite încărcarea mailurilor din inboxul POP3 "in the background" (pentru ca interfața să nu apară ca fiind "not responding" în timpul acestui proces), dar și pentru a putea întrerupe procesul dacă se dorește acest lucru.
 
 De asemenea, librăria wxWidgets are propriile limitări. Comparativ cu alte librării precum Qt, widget-ul \texttt{wxRichTextCtrl} nu permite importarea fișierelor HTML, ceea ce limitează anumite abilități precum "Reply" și "Forward" la a funcționa în format plaintext. O îmbunătățire ar putea fi portarea proiectului la o altă librărie grafică cu un editor HTML de tip WYSIWYG ("what you see is what you get") precum Qt, sau dezvoltarea unui propriu "handler" bazat pe wxWidgets care să permită importarea HTML.
 %
@@ -216,7 +210,6 @@ De asemenea, librăria wxWidgets are propriile limitări. Comparativ cu alte lib
 % \bibliographystyle{splncs04}
 % \bibliography{mybibliography}
 
-\renewcommand\refname{Referințe bibliografice}
 \begin{thebibliography}{8}
 \bibitem{ref_rfc_pop3}
 RFC 1939, \url{https://www.ietf.org/rfc/rfc1939.txt}. Accesat cel mai recent pe 14 Dec 2023
