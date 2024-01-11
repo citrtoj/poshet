@@ -9,12 +9,14 @@ AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame*
         _fileManager = new FileManager();
         _session = new Session(_fileManager);
         _usersManager = new UsersManager(_fileManager);
+        _session->subscribe(this);
+        updateUserFrame();
     }
     catch (Exception& e) {
         showException(e.what());
+        throw e;
     }
 
-    _session->subscribe(this);
 
     _loginFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onLoginClose, this);
     _dashboardFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onCloseApp, this);
@@ -38,7 +40,6 @@ AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame*
     _usersFrame->Bind(DELETE_USER, &AppController::onUsersDelete, this);
     _usersFrame->Bind(EDIT_USER, &AppController::onUsersEdit, this);
 
-    updateUserFrame();
 }
 
 void AppController::updateUserFrame() {
@@ -64,9 +65,9 @@ void AppController::login() {
         _session->closeConnections();
         _session->setLoginData(selectedUserData());
         _session->connectAndLoginToServers();
-        getMailAndShow(true);
         _usersFrame->Hide();
         _loginFrame->Hide();
+        getMailAndShow(true);
     }
     catch (Exception& e) {
         showException(e.what());

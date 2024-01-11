@@ -7,13 +7,19 @@ bool App::OnInit() {
 	} catch (std::exception &) {
 		std::setlocale(LC_ALL, ".UTF-8");
 	}
-    loginFrame = new LoginFrame("Edit user info");
-    dashboardFrame = new DashboardFrame("Dashboard");
-    usersFrame = new UsersFrame("All mailboxes");
-    controller = new AppController(this, loginFrame, dashboardFrame, usersFrame);
-    Bind(wxEVT_CLOSE_WINDOW, &App::OnClose, this);
-    ::wxInitAllImageHandlers();
-    return true;
+    try {
+        loginFrame = new LoginFrame("Edit user info");
+        dashboardFrame = new DashboardFrame("Dashboard");
+        usersFrame = new UsersFrame("All mailboxes");
+        controller = new AppController(this, loginFrame, dashboardFrame, usersFrame);
+        Bind(wxEVT_CLOSE_WINDOW, &App::OnClose, this);
+        ::wxInitAllImageHandlers();
+        return true;
+    }
+    catch(...) {
+        this->Exit();
+        return false;
+    }
 }
 
 int App::OnExit() {
