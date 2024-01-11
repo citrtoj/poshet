@@ -202,8 +202,8 @@ void Session::deleteMail(ssize_t idx) {
         throw Exception("No mail at given index");
     }
     const Mail* mail = _mailsFilterCache[idx];
-    _db.deleteMail(mail->mailId());
     auto mailData = _db.getMailInfo(mail->mailId());
+    _db.deleteMail(mail->mailId());
     _fileManager->deleteMail(_userData.pop3Domain(), mailData._mailFilename);
     reloadMailFromDatabase();
     _observer->handleSessionDataUpdate();

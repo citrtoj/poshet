@@ -73,7 +73,7 @@ Proiectul folosește clase și OOP, având o structură inspirată de arhitectur
 \subsection{Detalii despre arhitectură}
 
 
-Principala clasă care face legătura între interfețele aplicației și logica din spate (comunicarea cu servere, cu baza de date, etc.) este AppController. Aceasta administrează și comunică cu instanțe ale interfețelor LoginFrame, DashboardFrame și MailCreatorFrame și instanțe ale claselor Session și MailBuilder (utilizat când MailCreatorFrame este deschis). Clasa AppController poate fi privită ca un mediator între interfețe și logica programului, delegând operațiuni claselor specializate și trimițându-le interfețelor.
+Principala clasă care face legătura între interfețele aplicației și logica din spate (comunicarea cu servere, cu baza de date, etc.) este AppController. Aceasta administrează și comunică cu instanțe ale interfețelor UsersFrame, LoginFrame, DashboardFrame și MailCreatorFrame, și instanțe ale claselor Session, FileManager, UsersManager și MailBuilder (utilizat când MailCreatorFrame este deschis). Clasa AppController poate fi privită ca un mediator între interfețe și logica programului, delegând operațiuni claselor specializate și trimițându-le interfețelor.
 
 Session este clasa care se ocupă de comunicarea cu resurse externe pentru a obține și furniza informații. Aceasta solicită și trimite informații către instanțe ale altor clase precum FileManager, POP3Connection, SMTPConnection și DatabaseConnection, care realizează operații precum: crearea unui mailbox (sau potrivirea cu un mailbox deja existent) pentru utilizatorul conectat, obținerea mailurilor noi, salvarea lor în baza de date locală și în fișierele corespunzătoare, trimiterea unui mail nou, sau salvarea locală a unui atașament dintr-un mail.
 
@@ -84,16 +84,16 @@ Datele care aparțin unui mail sunt păstrate la runtime cu ajutorul clasei Mail
 
 \subsection{Stocarea informațiilor}
 
-La momentul deschiderii programului, în același folder cu executabilul se crează folderul \texttt{.poshet}, unde sunt create folderul \texttt{mail} (unde sunt stocate conținuturile "raw" ale mailurilor, în fișiere individuale) și baza de date SQLite \texttt{mail.db}, în care sunt stocate informații despre utilizatorul căruia îi aparține un mail,  filename-ul unde poate fi găsit în folderul amintit mai sus, sau tag-ul care i-a fost asignat de către utilizator mailului respectiv.
+La momentul deschiderii programului, în același folder cu executabilul se crează folderul \texttt{.poshet}, unde sunt create folderul \texttt{mail} (unde sunt stocate conținuturile "raw" ale mailurilor, în fișiere individuale) și baza de date SQLite \texttt{mail.db} cu tabelele \texttt{mail} în care sunt stocate informații despre utilizatorul căruia îi aparține un mail, filename-ul unde poate fi găsit în folderul amintit mai sus, sau tag-ul care i-a fost asignat de către utilizator mailului respectiv, și \texttt{users} cu informațiile și setările utilizatorilor.
 
 
 \begin{figure}
-\includegraphics[width=\textwidth]{halfDiagram1.png}
+\includegraphics[width=\textwidth]{POSHET1.png}
 \caption{Diagrama secvențială a aplicației, partea 1: aici sunt ilustrate mecanismele de logare, afișare a mailurilor primite, și închidere a aplicației.} \label{firsthalf}
 \end{figure}
 
 \begin{figure}
-\includegraphics[width=\textwidth]{halfDiagram2.png}
+\includegraphics[width=\textwidth]{POSHET2.png}
 \caption{Diagrama secvențială a aplicației, partea 2: aici sunt ilustrate mecanismele de trimitere de mail nou și organizare de mail primit.} \label{secondhalf}
 \end{figure}
 
@@ -115,24 +115,31 @@ Ambele protocoale sunt de tip comandă-răspuns; așadar, în urma trimiterii co
 \subsection{Scenarii de utilizare}
 Poshet este menit să comunice cu un server POP3 (printr-o conexiune ori ne-încriptată, ori încriptată prin SSL, cu autentificare plain-text prin comenzile \texttt{USER} și \texttt{PASS}), și cu un server SMTP (cu SSL sau nu, cu autentificare de tip \texttt{AUTH LOGIN} sau fără autentificare). Proiectul a fost testat atât pe mașina locală, cu adrese \texttt{@localhost} (cu un server Dovecot atât cu SSL, cât și fără, și un server Postfix, fără SSL, fără autentificare), dar și cu o adresă personală Yahoo (cu serverele \texttt{pop.mail.yahoo.com:995} și \texttt{smtp.mail.yahoo.com:465}).
 
-% Un client de acest tip poate fi folositor în situații precum testarea locală; unele procese pot fi configurate să trimită mail către serverul SMTP local (spre exemplu, pentru a simula trimiterea de mail către mai mulți utilizatori ai unui serviciu), iar administratorul le poate citi, verifica și organiza ușor din aplicație. De asemenea, prin conectarea la serverul SMTP local cu acest client se poate testa și verifica funcționarea conformă a serverului.
+Un client de acest tip poate fi utilizat pentru a citi mail atât de pe adrese locale, pe \texttt{localhost}, dar și de pe adrese de la furnizori care permit modalitățile de conectare și autentificare amintite mai sus.
 
-Utilizatorul se poate loga cu adresa de e-mail și parola, în urma cărora aplicația va încerca să intuiască parametri precum "domain name"-ul serverelor POP3 și SMTP, sau username-ul pentru mailbox-ul POP3. Dacă autentificarea sau conectarea eșuează, există posibilitatea de a le introduce manual, prin field-urile marcate cu "(Optional)".
+Când se adaugă un mailbox nou, se pot introduce doar adresa de email și parola, în urma cărora aplicația va încerca să intuiască parametri precum "domain name"-ul serverelor POP3 și SMTP, sau username-ul pentru mailbox-ul POP3. Dacă autentificarea sau conectarea eșuează, există posibilitatea de a le introduce manual, prin field-urile marcate cu "(Optional)". Informațiile sunt apoi salvate local.
 
-Ulterior, va fi afișată fereastra de tip "dashboard", care va afișa lista curentă de mailuri. Dacă este selectat vreunul, se afișează conținutul și detaliile acestuia în partea dreaptă a ecranului. În partea stângă a ecranului se regăsesc și alte elemente, precum butonul \texttt{Refresh mail list}, butonul \texttt{New message} prin care este inițializat procesul de trimitere a unui mail nou, sau o listă de directoare în care pot fi organizate mailurile din inbox.
+După logare va fi afișată fereastra de tip "dashboard", care va afișa lista curentă de mailuri. Dacă este selectat vreunul, se afișează conținutul și detaliile acestuia în partea dreaptă a ecranului. În partea stângă a ferestrei se regăsesc și alte elemente, precum butoane de trimitere de mail nou, reîmprospătare, sau vizualizarea mailurilor cu un anumit tag.
 
 \begin{figure}
     \centering
-    \includegraphics[width={300px}]{poshetLogin.png}
-    \caption{Fereastra "Login to Poshet".}
-    \label{fig:poshetlogin}
+    \includegraphics[width={300px}]{allMailboxes.png}
+    \caption{Fereastra "All mailboxes".}
+    \label{fig:allMailboxes}
 \end{figure}
 
 \begin{figure}
     \centering
-    \includegraphics[width=\textwidth]{poshetDashboard.png}
-    \caption{Fereastra de tip "dashboard", "Poshet". Aici, aceasta afișează conținutul "raw", neprocesat, al mailului selectat.}
-    \label{fig:poshetDashboard}
+    \includegraphics[width={300px}]{editUserInfo.png}
+    \caption{Fereastra "Edit user info".}
+    \label{fig:editUserInfo}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{dashboard.png}
+    \caption{Fereastra "Dashboard".}
+    \label{fig:dashboard}
 \end{figure}
 
 \newpage
