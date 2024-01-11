@@ -1,8 +1,9 @@
 #include "AppController.hpp"
-AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame* dashboardFrame) :
+AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame* dashboardFrame, UsersFrame* usersFrame) :
     _mainApp(app),
     _loginFrame(loginFrame),
-    _dashboardFrame(dashboardFrame)
+    _dashboardFrame(dashboardFrame),
+    _usersFrame(usersFrame)
 {
     try {   
         _fileManager = new FileManager();
@@ -16,8 +17,9 @@ AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame*
 
     _loginFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onCloseApp, this);
     _dashboardFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onCloseApp, this);
+    _usersFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onCloseApp, this);
 
-    _loginFrame->Bind(LOGIN_SUBMIT, &AppController::onLoginSubmit, this);
+    // _loginFrame->Bind(LOGIN_SUBMIT, &AppController::onLoginSubmit, this);
 
     _dashboardFrame->Bind(REFRESH_MAIL_LIST, &AppController::onRefreshMailList, this);
     _dashboardFrame->Bind(VIEW_MAIL_WITH_TAG, &AppController::onViewMailWithTag, this);
@@ -31,7 +33,15 @@ AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame*
     _dashboardFrame->Bind(FORWARD_MAIL, &AppController::onForwardMail, this);
     _dashboardFrame->Bind(DELETE_MAIL, &AppController::onDeleteMail, this);
 
-    _loginFrame->Show(true);
+    // _loginFrame->Show(true);
+    getUsers();
+    _usersFrame->Show();
+}
+
+void AppController::getUsers() {
+    auto db = DatabaseConnection(_fileManager->databasePath());
+    _users = db.getAllUsersData();
+    _usersFrame->setUsers(_users);
 }
 
 void AppController::showInfo(const std::string& msg) {
@@ -372,6 +382,7 @@ AppController::~AppController() {
     closeMailCreator();
     delete _fileManager;
     delete _session;
+    delete _usersManager;
 }
 
 void AppController::handleSessionDataUpdate() {

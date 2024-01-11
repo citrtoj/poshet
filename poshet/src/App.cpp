@@ -9,7 +9,8 @@ bool App::OnInit() {
 	}
     loginFrame = new LoginFrame("Login");
     dashboardFrame = new DashboardFrame("Dashboard");
-    controller = new AppController(this, loginFrame, dashboardFrame);
+    usersFrame = new UsersFrame("Open mailbox");
+    controller = new AppController(this, loginFrame, dashboardFrame, usersFrame);
     Bind(wxEVT_CLOSE_WINDOW, &App::OnClose, this);
     ::wxInitAllImageHandlers();
     return true;
@@ -19,6 +20,7 @@ int App::OnExit() {
     delete controller;
     loginFrame->Destroy();
     dashboardFrame->Destroy();
+    usersFrame->Destroy();
     return 0;
 }
 

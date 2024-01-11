@@ -89,8 +89,8 @@ void Session::connectAndLoginToServers() {
         // if it worked, then the user data is valid; close conn
         smtp.closeConnection();
 
-        _db.addUser(_userData.emailAddress(), _userData.pop3Domain());
-        _userData.setDbId(_db.getUser(_userData.emailAddress(), _userData.pop3Domain()));
+        _db.addUser(_userData);
+        _userData.setDbId(_db.getUserId(_userData.emailAddress(), _userData.pop3Domain()));
     }
     catch (Exception& e) {
         throw;

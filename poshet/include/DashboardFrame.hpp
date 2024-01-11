@@ -39,7 +39,6 @@ protected:
     static const int MARGIN = 5;
 
     const std::vector<std::string> _fields = {
-        // they have to be actual fields that would be found in a mail header
         "From", "Subject", "Date"
     };
 
@@ -110,10 +109,9 @@ public:
     void setTags(const std::vector<std::string>& tags);
     void setMailList(const std::vector<const Mail*>& mail);
     void updateViewMailPanel(const Mail& mail);
+    void showMessage(const std::string& msg);
 
     // external getters
     long selected() const;
-
     std::string tagAt(size_t idx);
-    void showMessage(const std::string& msg);
 };

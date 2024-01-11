@@ -69,6 +69,9 @@ const std::string& UserData::pop3Domain() const {
 const std::string& UserData::smtpDomain() const {
     return _smtpDomain;
 }
+const std::string& UserData::smtpUsername() const {
+    return _smtpUsername;
+}
 
 void UserData::setDbId(const std::string& dbId) {
     _dbId = dbId;

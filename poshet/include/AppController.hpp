@@ -9,17 +9,31 @@
 #include "LoginFrame.hpp"
 #include "DashboardFrame.hpp"
 #include "MailCreatorFrame.hpp"
+#include "UsersFrame.hpp"
 #include "Session.hpp"
 #include "FileManager.hpp"
+#include "UsersManager.hpp"
 #include "Exceptions.hpp"
 
 class AppController : public wxEvtHandler, public SessionObserver, public MailBodyBuilderObserver {
 protected:
     wxApp* _mainApp;
     Session* _session = nullptr;
+    UsersManager* _usersManager = nullptr;
 
+    UsersFrame* _usersFrame = nullptr;
     LoginFrame* _loginFrame = nullptr;
     DashboardFrame* _dashboardFrame = nullptr;
+
+    std::vector<UserData> _users;
+    ssize_t _selectedUser;
+    UserData& selectedUserData() {
+        return _users[_selectedUser];
+    }
+    const UserData& selectedUserData() const {
+        return _users[_selectedUser];
+    }
+    void getUsers();
 
     bool _isMailCreatorOpen = false;
     MailBodyBuilder* _mailBuilder = nullptr;
@@ -63,7 +77,7 @@ protected:
     void onMailCreatorRemoveAttachment(wxCommandEvent& e);
 
 public:
-    AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame* dashboardFrame);
+    AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame* dashboardFrame, UsersFrame* usersFrame);
     ~AppController();
     
     void handleSessionDataUpdate() override;  

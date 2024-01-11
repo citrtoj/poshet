@@ -222,5 +222,63 @@ namespace Utils {
         }
         return label;
     }
+
+    std::string generateUUID() {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        static std::uniform_int_distribution<> dis(0, 15);
+        static std::uniform_int_distribution<> dis2(8, 11);
+        const char* hex_chars = "0123456789abcdef";
+        std::stringstream ss;
+        int i;
+        ss << std::hex;
+        for (i = 0; i < 8; i++) {
+            ss << dis(gen);
+        }
+        ss << "-";
+        for (i = 0; i < 4; i++) {
+            ss << dis(gen);
+        }
+        ss << "-4";
+        for (i = 0; i < 3; i++) {
+            ss << dis(gen);
+        }
+        ss << "-";
+        ss << dis2(gen);
+        for (i = 0; i < 3; i++) {
+            ss << dis(gen);
+        }
+        ss << "-";
+        for (i = 0; i < 12; i++) {
+            ss << dis(gen);
+        };
+        return ss.str();
+    }
+    
+    std::string hexEncode(const std::string &input) {
+        std::ostringstream encoded;
+        encoded << std::hex << std::setfill('0');
+
+        for (unsigned char c : input) {
+            encoded << std::setw(2) << static_cast<unsigned int>(c);
+        }
+
+        return encoded.str();
+    }
+    
+    std::string hexDecode(const std::string &input) {
+        std::string decoded;
+        decoded.reserve(input.length() / 2);
+
+        for (std::size_t i = 0; i < input.length(); i += 2) {
+            std::istringstream iss(input.substr(i, 2));
+            unsigned int value;
+            iss >> std::hex >> value;
+
+            decoded.push_back(static_cast<char>(value));
+        }
+
+        return decoded;
+    }
 }
 

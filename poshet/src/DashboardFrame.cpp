@@ -49,7 +49,7 @@ DashboardFrame::DashboardFrame(const wxString& title) :
 
     _splitter = new wxSplitterWindow(this, wxID_ANY, wxDefaultPosition, wxSize(1200, 800));
 
-    _mailList = new wxListView(_splitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_SINGLE_SEL | wxBORDER_SUNKEN);
+    _mailList = new wxListView(_splitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_SINGLE_SEL);
     
     for (int i = 0; i < _fields.size(); ++i) {
         _mailList->InsertColumn(i, _fields[i]);

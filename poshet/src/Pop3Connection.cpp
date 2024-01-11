@@ -163,7 +163,7 @@ void POP3Connection::keepAlive() {
 }
 
 void POP3Connection::closeConnection() {
-    log("Closing connection...");
+    log("Destructing instance...");
     if (_state == DISCONNECTED) {
         log("No need to close connection, already disconnected");
         return;

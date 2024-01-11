@@ -14,6 +14,9 @@ class UserData {
 private:
     static std::array<std::string, 2> splitEmailAddress(const std::string& address);
 
+   
+
+public:
     std::string _emailAddress,
                 _fullName,
                 _password;
@@ -30,9 +33,6 @@ private:
     std::string _smtpUsername;
 
     std::string _dbId = "";
-
-public:
-    static constexpr int MIN_ARGS = 5;
     
     UserData() {}
     UserData(
@@ -58,6 +58,7 @@ public:
     const std::string& pop3Username() const;
     const std::string& pop3Domain() const;
     const std::string& smtpDomain() const;
+    const std::string& smtpUsername() const;
 
     bool pop3SSL() const {
         return _pop3SSL;

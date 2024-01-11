@@ -17,6 +17,7 @@ set(SOURCES
     src/Mail.cpp
     src/Session.cpp
     src/UserData.cpp
+    src/UsersManager.cpp
     src/FileManager.cpp
     src/ConnectionBase.cpp
     src/SmtpConnection.cpp
@@ -28,6 +29,7 @@ set(SOURCES
     src/DashboardFrame.cpp
     src/GUIComponents.cpp
     src/MailCreatorFrame.cpp
+    src/UsersFrame.cpp
 )
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
