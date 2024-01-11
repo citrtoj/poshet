@@ -39,7 +39,6 @@ protected:
     static const int MARGIN = 5;
 
     const std::vector<std::string> _fields = {
-        // they have to be actual fields that would be found in a mail header
         "From", "Subject", "Date"
     };
 
@@ -106,14 +105,12 @@ public:
     static bool _isFSHandlerInit;
     static void initFSHandler();
 
-    // external setters to be used by outside controllers
     void setTags(const std::vector<std::string>& tags);
     void setMailList(const std::vector<const Mail*>& mail);
     void updateViewMailPanel(const Mail& mail);
-
+    void showMessage(const std::string& msg);
+    void setTitleAddr(const std::string& addr);
     // external getters
     long selected() const;
-
     std::string tagAt(size_t idx);
-    void showMessage(const std::string& msg);
 };

@@ -1,12 +1,14 @@
 #include "AppController.hpp"
-AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame* dashboardFrame) :
+AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame* dashboardFrame, UsersFrame* usersFrame) :
     _mainApp(app),
     _loginFrame(loginFrame),
-    _dashboardFrame(dashboardFrame)
+    _dashboardFrame(dashboardFrame),
+    _usersFrame(usersFrame)
 {
     try {   
         _fileManager = new FileManager();
         _session = new Session(_fileManager);
+        _usersManager = new UsersManager(_fileManager);
     }
     catch (Exception& e) {
         showException(e.what());
@@ -14,10 +16,10 @@ AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame*
 
     _session->subscribe(this);
 
-    _loginFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onCloseApp, this);
+    _loginFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onLoginClose, this);
     _dashboardFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onCloseApp, this);
+    _usersFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onCloseApp, this);
 
-    _loginFrame->Bind(LOGIN_SUBMIT, &AppController::onLoginSubmit, this);
 
     _dashboardFrame->Bind(REFRESH_MAIL_LIST, &AppController::onRefreshMailList, this);
     _dashboardFrame->Bind(VIEW_MAIL_WITH_TAG, &AppController::onViewMailWithTag, this);
@@ -31,7 +33,17 @@ AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame*
     _dashboardFrame->Bind(FORWARD_MAIL, &AppController::onForwardMail, this);
     _dashboardFrame->Bind(DELETE_MAIL, &AppController::onDeleteMail, this);
 
-    _loginFrame->Show(true);
+    _usersFrame->Bind(LOGIN_USER, &AppController::onLogin, this);
+    _usersFrame->Bind(ADD_USER, &AppController::onUsersAdd, this);
+    _usersFrame->Bind(DELETE_USER, &AppController::onUsersDelete, this);
+    _usersFrame->Bind(EDIT_USER, &AppController::onUsersEdit, this);
+
+    updateUserFrame();
+}
+
+void AppController::updateUserFrame() {
+    _usersFrame->setUsers(_usersManager->users());
+    _usersFrame->Show();
 }
 
 void AppController::showInfo(const std::string& msg) {
@@ -49,9 +61,11 @@ void AppController::closeApp() {
 
 void AppController::login() {
     try {
-        _session->setLoginData(_loginFrame->userInput());
+        _session->closeConnections();
+        _session->setLoginData(selectedUserData());
         _session->connectAndLoginToServers();
         getMailAndShow(true);
+        _usersFrame->Hide();
         _loginFrame->Hide();
     }
     catch (Exception& e) {
@@ -64,6 +78,7 @@ void AppController::login() {
 void AppController::getMailAndShow(bool force) {
     try {
         _dashboardFrame->Show();
+        _dashboardFrame->setTitleAddr(_session->emailAddress());
         _dashboardFrame->showMessage("Retrieving mail from database and POP3 mailbox");
         _currentMail = _session->retrieveAllMail(force);
         _dashboardFrame->showMessage("Retrieving mail tags");
@@ -88,13 +103,11 @@ void AppController::getMailAndShow(bool force) {
     }
 }
 
-// --- wxWidgets UI listeners ---
-
 void AppController::onCloseApp(wxCloseEvent& e) {
     closeApp();
 }
 
-void AppController::onLoginSubmit(wxCommandEvent& e) {
+void AppController::onLogin(wxCommandEvent& e) {
     login();
 }
 
@@ -370,8 +383,9 @@ void AppController::onMailCreatorRemoveAttachment(wxCommandEvent& e) {
 AppController::~AppController() {
     // destroy business-logic
     closeMailCreator();
-    delete _fileManager;
     delete _session;
+    delete _usersManager;
+    delete _fileManager;
 }
 
 void AppController::handleSessionDataUpdate() {
@@ -384,4 +398,63 @@ void AppController::handleMailBuilderDataUpdate() {
         throw Exception("Mail creator uninitialized");
     }
     _mailCreatorFrame->updateAttachments(_mailBuilder->attachments());
+}
+
+void AppController::onUsersAdd(wxCommandEvent& e) {
+    _loginFrame->Unbind(LOGIN_SUBMIT, &AppController::onLoginAdd, this);
+    _loginFrame->Unbind(LOGIN_SUBMIT, &AppController::onLoginEdit, this);
+    _loginFrame->Bind(LOGIN_SUBMIT, &AppController::onLoginAdd, this);
+    _loginFrame->clear();
+    _loginFrame->Show();
+    _usersFrame->Hide();
+}
+
+void AppController::onUsersEdit(wxCommandEvent& e) {
+    _loginFrame->Unbind(LOGIN_SUBMIT, &AppController::onLoginAdd, this);
+    _loginFrame->Unbind(LOGIN_SUBMIT, &AppController::onLoginEdit, this);
+    _loginFrame->Bind(LOGIN_SUBMIT, &AppController::onLoginEdit, this);
+    _loginFrame->Show();
+    _loginFrame->setInput(selectedUserData());
+    _usersFrame->Hide();
+}
+
+void AppController::onUsersDelete(wxCommandEvent& e) {
+    try {
+        _usersManager->deleteUser(selectedUserData());
+    }
+    catch (Exception& e) {
+        showException(e.what());
+    }
+    updateUserFrame();
+}
+
+void AppController::onLoginClose(wxCloseEvent& e) {
+    _loginFrame->Hide();
+    updateUserFrame();
+}
+
+void AppController::onLoginAdd(wxCommandEvent& e) {
+    try {
+        auto data = _loginFrame->userInput();
+        _usersManager->addUser(data);
+    }
+    catch (Exception& e) {
+        showException(e.what());
+    }
+    _loginFrame->Hide();
+    updateUserFrame();
+}
+
+void AppController::onLoginEdit(wxCommandEvent& e) {
+    try {
+        auto data = _loginFrame->userInput();
+        data.setDbId(selectedUserData().dbId());
+        _usersManager->addUser(data, true);
+    }
+    catch (Exception& e) {
+        showException(e.what());
+    }
+    
+    _loginFrame->Hide();
+    updateUserFrame();
 }

@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
+#include <random>
 
 #include <openssl/evp.h>
 #include <openssl/sha.h>
@@ -37,4 +38,9 @@ namespace Utils {
     std::time_t mailDateToUnixTimestamp(const std::string& dateString);
 
     std::string displayDisplayableHeader(const std::vector<std::string>& vec);
+
+    std::string generateUUID();
+
+    std::string hexEncode(const std::string&);
+    std::string hexDecode(const std::string&);
 }

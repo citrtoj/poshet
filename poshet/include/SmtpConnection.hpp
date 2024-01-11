@@ -11,7 +11,6 @@
 #include <atomic>
 #include <functional>
 
-#include "Utils.hpp"
 #include "ConnectionBase.hpp"
 
 class SMTPConnection : public ConnectionBase {

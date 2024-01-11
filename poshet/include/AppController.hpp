@@ -9,17 +9,33 @@
 #include "LoginFrame.hpp"
 #include "DashboardFrame.hpp"
 #include "MailCreatorFrame.hpp"
+#include "UsersFrame.hpp"
 #include "Session.hpp"
 #include "FileManager.hpp"
 #include "Exceptions.hpp"
+#include "UsersManager.hpp"
 
 class AppController : public wxEvtHandler, public SessionObserver, public MailBodyBuilderObserver {
 protected:
     wxApp* _mainApp;
     Session* _session = nullptr;
+    UsersManager* _usersManager = nullptr;
 
+    UsersFrame* _usersFrame = nullptr;
     LoginFrame* _loginFrame = nullptr;
     DashboardFrame* _dashboardFrame = nullptr;
+
+    ssize_t _selectedUser = -1;
+
+    void getSelectedUser() {
+        _selectedUser = _usersFrame->selected();
+    }
+
+    const UserData& selectedUserData() {
+        _selectedUser = _usersFrame->selected();
+        return _usersManager->users()[_selectedUser];
+    }
+    void updateUserFrame();
 
     bool _isMailCreatorOpen = false;
     MailBodyBuilder* _mailBuilder = nullptr;
@@ -48,7 +64,16 @@ protected:
     void getMailAndShow(bool force = false);
     
     void onCloseApp(wxCloseEvent& e);
-    void onLoginSubmit(wxCommandEvent& e);
+
+    void onUsersAdd(wxCommandEvent& e);
+    void onUsersEdit(wxCommandEvent& e);
+    void onUsersDelete(wxCommandEvent& e);
+
+    void onLoginAdd(wxCommandEvent& e);
+    void onLoginEdit(wxCommandEvent& e);
+    void onLogin(wxCommandEvent& e);
+    void onLoginClose(wxCloseEvent& e);
+
     void onSelectMail(wxCommandEvent& e);
     void onRefreshMailList(wxCommandEvent& e);
     void onViewMailWithTag(wxCommandEvent& e);
@@ -62,8 +87,9 @@ protected:
     void onMailCreatorAddAttachment(wxCommandEvent& e);
     void onMailCreatorRemoveAttachment(wxCommandEvent& e);
 
+
 public:
-    AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame* dashboardFrame);
+    AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame* dashboardFrame, UsersFrame* usersFrame);
     ~AppController();
     
     void handleSessionDataUpdate() override;  

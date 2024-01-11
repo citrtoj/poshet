@@ -26,6 +26,11 @@ protected:
     bool _isDbOpened = false;
     sqlite3* _db;
     void openDb();
+
+
+    static int userDataCallback(void* userData, int columnCount, char** columnValues, char** columnNames);
+    static int allUsersDataCallback(void* userData, int columnCount, char** columnValues, char** columnNames);
+
 public:
     DatabaseConnection();
     DatabaseConnection(const std::string& dbPath);
@@ -34,11 +39,15 @@ public:
     void setPath(const std::string& dbPath);
     void init(); // opens db, creates tables if they don't exist
 
-    void addUser(const std::string& mailAddress, const std::string& incomingServer);
-    std::string getUser(const std::string& mailAddress, const std::string& incomingServer);
+    void addUser(const UserData& data, bool replace = false);
+    UserData getUserData(const std::string& userId);
+    std::vector<std::string> getAllUserIds();
+    std::string getUserId(const std::string& mailAddress, const std::string& incomingServer);
+    std::vector<UserData> getAllUsersData();
 
     void addReceivedMail(const std::string& mailId, const std::string& userId, const std::string& uidl, unsigned long long date, const std::string tag = "");
     std::vector<DBMailData> getReceivedMailOfUser(const std::string& id, const std::string& tag = "");
+    DBMailData getMailInfo(const std::string& mailId);
 
     std::string getFileNameOf(const std::string mailId);
 
@@ -47,6 +56,7 @@ public:
     std::vector<std::string> getMailTags(const std::string& userId) const;
 
     void deleteMail(const std::string& mailId);
+    void deleteUser(const std::string& userId);
 };
 
 class DatabaseException : public Exception {

@@ -7,9 +7,10 @@ bool App::OnInit() {
 	} catch (std::exception &) {
 		std::setlocale(LC_ALL, ".UTF-8");
 	}
-    loginFrame = new LoginFrame("Login");
+    loginFrame = new LoginFrame("Edit user info");
     dashboardFrame = new DashboardFrame("Dashboard");
-    controller = new AppController(this, loginFrame, dashboardFrame);
+    usersFrame = new UsersFrame("All mailboxes");
+    controller = new AppController(this, loginFrame, dashboardFrame, usersFrame);
     Bind(wxEVT_CLOSE_WINDOW, &App::OnClose, this);
     ::wxInitAllImageHandlers();
     return true;
@@ -17,8 +18,9 @@ bool App::OnInit() {
 
 int App::OnExit() {
     delete controller;
-    loginFrame->Destroy();
-    dashboardFrame->Destroy();
+    loginFrame->Close();
+    dashboardFrame->Close();
+    usersFrame->Close();
     return 0;
 }
 

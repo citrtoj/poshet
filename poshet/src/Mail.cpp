@@ -267,8 +267,8 @@ ReplyMailBodyBuilder::ReplyMailBodyBuilder(const Mail& mail, const std::string& 
 
 std::string ReplyMailBodyBuilder::generateStarterBody() {
     std::string starter =
-        "\n\n"
-        "On " + _referenceDate + ", " + _from->getEmail().toString() + " said: \n\n";
+        "\n\n\n"
+        "On " + _referenceDate + ", " + _to + " said: \n\n";
     std::istringstream stream(_referenceText);
     std::string line = "";
     while (std::getline(stream, line)) {
