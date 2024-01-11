@@ -60,7 +60,7 @@ void DatabaseConnection::init() {
     initTables();
 }
 
-void DatabaseConnection::addUser(const UserData& data) {
+void DatabaseConnection::addUser(const UserData& data, bool replace) {
     // create quoted and hex-encoded database-ready stuff
     auto stringHexEncode = [](const std::string& input) {
         return "'" + Utils::hexEncode(input) + "'";
@@ -78,9 +78,10 @@ void DatabaseConnection::addUser(const UserData& data) {
     auto smtpPort = stringHexEncode(data.smtpPort());
     auto smtpUsername = stringHexEncode(data.smtpUsername());
 
-    auto userId = "'" + Utils::generateUUID() + "'";
-    std::string query = "INSERT OR IGNORE INTO users"
-    "(user_id, mail_address, full_name, password, pop3_ssl, incoming_server, incoming_port, pop3_username, smtp_ssl, smtp_domain, smtp_port, smtp_auth, smtp_user) VALUES ("
+    auto userId = "'" + (replace ? data.dbId() : Utils::generateUUID())  + "'";
+
+    std::string queryPrefix = "INSERT OR REPLACE INTO users";
+    std::string queryBody = "(user_id, mail_address, full_name, password, pop3_ssl, incoming_server, incoming_port, pop3_username, smtp_ssl, smtp_domain, smtp_port, smtp_auth, smtp_user) VALUES ("
     + userId + ", "
     + emailAddress + ", "
     + fullName + ", "
@@ -95,6 +96,7 @@ void DatabaseConnection::addUser(const UserData& data) {
     + std::to_string(data.smtpAuth()) + ", "
     + smtpUsername
     + ");";
+    std::string query = queryPrefix + queryBody;
 
     int code = sqlite3_exec(_db, query.c_str(), nullptr, nullptr, nullptr);
     if (code) {
@@ -275,6 +277,34 @@ void DatabaseConnection::addReceivedMail(const std::string& mailId, const std::s
     }
 }
 
+DBMailData DatabaseConnection::getMailInfo(const std::string& mailId) {
+    DBMailData result;
+    std::string query = "SELECT mail_id, tag FROM received_mail m WHERE m.mail_id = '" + mailId + "' ";
+
+    sqlite3_stmt *stmt;
+
+    if (sqlite3_prepare_v2(_db, query.c_str(), -1, &stmt, NULL) != SQLITE_OK) {
+        throw DatabaseException(std::string("Can't prepare statement: ") + sqlite3_errmsg(_db));
+    }
+    bool any = false;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        any = true;
+        auto mailId = sqlite3_column_text(stmt, 0);
+        auto mailTag = sqlite3_column_text(stmt, 1);
+        
+        result = {
+            (const char*)(mailId),
+            mailTag != nullptr ? (const char*) mailTag : "",
+            (const char*)(mailId)
+        };
+    }
+    if (!any) {
+        throw DatabaseException("No mail found with given index");
+    }
+    sqlite3_finalize(stmt);
+    return result;
+}
+
 std::vector<DBMailData> DatabaseConnection::getReceivedMailOfUser(const std::string& id, const std::string& tag) {
     std::vector<DBMailData> result;
     std::string query = "SELECT mail_id, tag FROM received_mail m join users u on m.user_id = u.user_id WHERE m.user_id = '" + id + "' ";
@@ -345,6 +375,14 @@ void DatabaseConnection::deleteMail(const std::string& mailId) {
     std::string query = "DELETE FROM received_mail where mail_id = '" + mailId + "';";
     int code = sqlite3_exec(_db, query.c_str(), nullptr, nullptr, nullptr);
     if (code) {
-        throw DatabaseException(std::string("Could not add mail to database: ") + sqlite3_errmsg(_db));
+        throw DatabaseException(std::string("Could not delete mail from database: ") + sqlite3_errmsg(_db));
+    }
+}
+
+void DatabaseConnection::deleteUser(const std::string& userId) {
+    std::string query = "DELETE FROM users where user_id = '" + userId + "';";
+    int code = sqlite3_exec(_db, query.c_str(), nullptr, nullptr, nullptr);
+    if (code) {
+        throw DatabaseException(std::string("Could not delete user from database: ") + sqlite3_errmsg(_db));
     }
 }

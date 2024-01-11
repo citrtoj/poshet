@@ -18,6 +18,7 @@ set(SOURCES
     src/Session.cpp
     src/UserData.cpp
     src/FileManager.cpp
+    src/UsersManager.cpp
     src/ConnectionBase.cpp
     src/SmtpConnection.cpp
     src/Pop3Connection.cpp

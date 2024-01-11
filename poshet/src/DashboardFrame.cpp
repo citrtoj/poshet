@@ -386,3 +386,8 @@ std::string DashboardFrame::tagAt(size_t idx) {
 void DashboardFrame::showMessage(const std::string& msg) {
     SetStatusText(msg);
 }
+
+void DashboardFrame::setTitleAddr(const std::string& addr) {
+    std::string title = "Dashboard: " + addr;
+    SetTitle(wxString::FromUTF8(title.c_str()));
+}

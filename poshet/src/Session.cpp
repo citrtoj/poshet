@@ -89,7 +89,6 @@ void Session::connectAndLoginToServers() {
         // if it worked, then the user data is valid; close conn
         smtp.closeConnection();
 
-        _db.addUser(_userData);
         _userData.setDbId(_db.getUserId(_userData.emailAddress(), _userData.pop3Domain()));
     }
     catch (Exception& e) {
@@ -202,7 +201,10 @@ void Session::deleteMail(ssize_t idx) {
     if (idx < 0) {
         throw Exception("No mail at given index");
     }
-    _db.deleteMail(_mailsFilterCache[idx]->mailId());
+    const Mail* mail = _mailsFilterCache[idx];
+    _db.deleteMail(mail->mailId());
+    auto mailData = _db.getMailInfo(mail->mailId());
+    _fileManager->deleteMail(_userData.pop3Domain(), mailData._mailFilename);
     reloadMailFromDatabase();
     _observer->handleSessionDataUpdate();
 }

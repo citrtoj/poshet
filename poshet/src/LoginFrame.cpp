@@ -77,15 +77,30 @@ void LoginFrame::setInput(const UserData& data) {
     _fullName->SetValue(wxString::FromUTF8(data.fullName().c_str()));
     _emailAddress->SetValue(wxString::FromUTF8(data.emailAddress().c_str()));
     _password->SetValue(wxString::FromUTF8(data.password().c_str()));
-    _pop3SSL->SetValue(data.pop3SSL());
     _pop3Domain->SetValue(wxString::FromUTF8(data.pop3Domain().c_str()));
     _pop3Port->SetValue(wxString::FromUTF8(data.pop3Port().c_str()));
     _pop3Username->SetValue(wxString::FromUTF8(data.pop3Username().c_str()));
-    _smtpSSL->SetValue(data.smtpSSL());
     _smtpDomain->SetValue(wxString::FromUTF8(data.smtpDomain().c_str()));
     _smtpPort->SetValue(wxString::FromUTF8(data.smtpPort().c_str()));
-    _smtpAuth->SetValue(data.smtpAuth());
     _smtpUsername->SetValue(wxString::FromUTF8(data.smtpUsername().c_str()));
+    _pop3SSL->SetValue(data.pop3SSL());
+    _smtpSSL->SetValue(data.smtpSSL());
+    _smtpAuth->SetValue(data.smtpAuth());
+}
+
+void LoginFrame::clear() {
+    _fullName->SetValue("");
+    _emailAddress->SetValue("");
+    _password->SetValue("");
+    _pop3Domain->SetValue("");
+    _pop3Port->SetValue("");
+    _pop3Username->SetValue("");
+    _smtpDomain->SetValue("");
+    _smtpPort->SetValue("");
+    _smtpUsername->SetValue("");
+    _pop3SSL->SetValue(false);
+    _smtpSSL->SetValue(false);
+    _smtpAuth->SetValue(false);
 }
 
 void LoginFrame::OnLogin(wxCommandEvent& event) {
@@ -100,15 +115,15 @@ UserData LoginFrame::userInput() {
         _password->GetValue().ToUTF8().data(),
 
         _pop3SSL->GetValue(),
-        _pop3Domain->GetValue().ToStdString(),
-        _pop3Port->GetValue().ToStdString(),
-        _pop3Username->GetValue().ToStdString(),
+        _pop3Domain->GetValue().ToUTF8().data(),
+        _pop3Port->GetValue().ToUTF8().data(),
+        _pop3Username->GetValue().ToUTF8().data(),
 
         _smtpSSL->GetValue(),
-        _smtpDomain->GetValue().ToStdString(),
-        _smtpPort->GetValue().ToStdString(),
+        _smtpDomain->GetValue().ToUTF8().data(),
+        _smtpPort->GetValue().ToUTF8().data(),
         _smtpAuth->GetValue(),
-        _smtpUsername->GetValue().ToStdString()
+        _smtpUsername->GetValue().ToUTF8().data()
     );
 }
 

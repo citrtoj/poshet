@@ -123,3 +123,18 @@ std::string FileManager::readFile(const std::string& filePath) {
         throw FileManagerException("Error opening file " + filePath);
     }
 }
+
+void FileManager::deleteFile(const std::string& filePath) {
+    if (remove(filePath.c_str()) != 0) {
+        throw FileManagerException("Error deleting file");
+    }
+}
+
+void FileManager::deleteMail(const std::string& mailboxName, const std::string& mailFilename) {
+    auto mailboxPath = mailbox(mailboxName);
+    auto filePath = joinToFullPath(mailboxPath, mailFilename);
+    if (access(filePath.c_str(), F_OK) == -1) {
+        return;
+    }
+    deleteFile(filePath);
+}

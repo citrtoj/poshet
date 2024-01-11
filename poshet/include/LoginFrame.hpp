@@ -49,6 +49,7 @@ public:
     void setTitle(const std::string& msg);
 
     void setInput(const UserData& data);
+    void clear();
     
     void showError(const std::string& errorString);
     void showMessage(const std::string& msg);

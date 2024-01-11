@@ -50,11 +50,13 @@ public:
     FileManager(const std::string& rootLocation);
 
     std::string readFile(const std::string& filePath);
+    void deleteFile(const std::string& filePath);
 
     void setRootLocation(const std::string& rootLocation);
     std::string databasePath() const;
     void saveMail(const std::string& mailboxName, const std::string& mailFilename, const std::string& rawMailData);
     std::string getMail(const std::string& mailboxName, const std::string& mailFilename);
+    void deleteMail(const std::string& mailboxName, const std::string& mailFilename);
 
     void saveAttachment(const std::string& filePath, const std::string& rawData, bool overwrite = false);
 };
