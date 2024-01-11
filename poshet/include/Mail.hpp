@@ -150,6 +150,8 @@ public:
     virtual std::string generateStarterBody() override;
 protected:
     std::string _referenceText;
+    std::string _referenceTo;
+    std::string _referenceFrom;
     vmime::shared_ptr<vmime::headerFieldValue> _referenceId = nullptr;
     vmime::shared_ptr<vmime::headerFieldValue> _referenceReplyTo = nullptr;
     vmime::shared_ptr<vmime::headerFieldValue> _referenceReferences = nullptr;

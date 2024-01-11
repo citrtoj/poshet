@@ -246,6 +246,9 @@ ReplyMailBodyBuilder::ReplyMailBodyBuilder(const Mail& mail, const std::string& 
         _referenceSubject = mail.getHeaderField("Subject");
         _referenceDate = mail.getHeaderField("Date");
 
+        _referenceFrom = mail.getHeaderField("From");
+        _referenceTo = mail.getHeaderField("To");
+
         auto vmimeTo = vmime::dynamic_pointer_cast<vmime::mailbox>(mail.getHeaderValue("From"));
         _to = vmimeTo->getEmail().toString();
 
@@ -329,6 +332,8 @@ std::string ForwardMailBodyBuilder::generateStarterBody() {
         "--- FORWARDED MESSAGE ---\n"
         "Subject: " + _referenceSubject + "\n"
         "Date: " + _referenceDate + "\n"
+        "From: " + _referenceFrom + "\n"
+        "To: " + _referenceTo + "\n"
         "\n\n" 
         ;
     starter += _referenceText;
