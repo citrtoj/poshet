@@ -173,10 +173,10 @@ std::vector<std::string> Mail::displayableFrom() const {
     }
 }
 
-// --- MailBodyBuilder ---
+// --- MailBuilder ---
 
 
-void MailBodyBuilder::addMIMEAttachment(vmime::messageBuilder& builder, const Attachment& attachment) {
+void MailBuilder::addMIMEAttachment(vmime::messageBuilder& builder, const Attachment& attachment) {
     vmime::shared_ptr<vmime::stringContentHandler> x = vmime::make_shared<vmime::stringContentHandler>(attachment._data);
     vmime::shared_ptr<vmime::contentHandler> y = vmime::dynamic_pointer_cast<vmime::stringContentHandler>(x);
     vmime::shared_ptr <vmime::fileAttachment> a = vmime::make_shared <vmime::fileAttachment>(y, vmime::word(attachment._filename), vmime::mediaType("application/octet-stream"));
@@ -185,21 +185,21 @@ void MailBodyBuilder::addMIMEAttachment(vmime::messageBuilder& builder, const At
 
 
 
-void MailBodyBuilder::addAttachment(const std::string& attachmentName, const std::string& fileData, const std::string& contentType) {
+void MailBuilder::addAttachment(const std::string& attachmentName, const std::string& fileData, const std::string& contentType) {
     _attachments.push_back({{
             attachmentName, contentType, static_cast<double>(fileData.length())
         }, fileData
     });
 }
 
-void MailBodyBuilder::removeAttachment(size_t idx) {
+void MailBuilder::removeAttachment(size_t idx) {
     if (idx >= _attachments.size()) {
-        throw MailException("Invalid MailBodyBuilder attachment idx: " + std::to_string(idx));
+        throw MailException("Invalid MailBuilder attachment idx: " + std::to_string(idx));
     }
     _attachments.erase(_attachments.begin() + idx);
 }
 
-std::vector<AttachmentMetadata> MailBodyBuilder::attachments() const {
+std::vector<AttachmentMetadata> MailBuilder::attachments() const {
     std::vector<AttachmentMetadata> result;
     for (const auto& att : _attachments) {
         result.push_back(static_cast<AttachmentMetadata>(att));
@@ -207,7 +207,7 @@ std::vector<AttachmentMetadata> MailBodyBuilder::attachments() const {
     return result;
 }
 
-std::string MailBodyBuilder::generateMIMEMessage() {
+std::string MailBuilder::generateMIMEMessage() {
     vmime::messageBuilder builder;
     for (auto& att : _attachments) {
         addMIMEAttachment(builder, att);
@@ -230,14 +230,14 @@ std::string MailBodyBuilder::generateMIMEMessage() {
     return text;
 }
 
-std::string MailBodyBuilder::generateStarterBody() {
+std::string MailBuilder::generateStarterBody() {
     return ""; // no starter here :)
 }
 
 
-// --- ReplyMailBodyBuilder ---
+// --- ReplyMailBuilder ---
 
-ReplyMailBodyBuilder::ReplyMailBodyBuilder(const Mail& mail, const std::string& fromEmailAddress, const std::string& name) : MailBodyBuilder(fromEmailAddress, name) {
+ReplyMailBuilder::ReplyMailBuilder(const Mail& mail, const std::string& fromEmailAddress, const std::string& name) : MailBuilder(fromEmailAddress, name) {
     try {
         _referenceText = mail.getPlainTextPart();
         _referenceId = mail.getHeaderValue("Message-Id");
@@ -264,11 +264,11 @@ ReplyMailBodyBuilder::ReplyMailBodyBuilder(const Mail& mail, const std::string& 
         }
     }
     catch(MailException& e) {
-        throw MailException(std::string("Could not construct ReplyMailBodyBuilder (") + e.what() + ")");
+        throw MailException(std::string("Could not construct ReplyMailBuilder (") + e.what() + ")");
     }
 }
 
-std::string ReplyMailBodyBuilder::generateStarterBody() {
+std::string ReplyMailBuilder::generateStarterBody() {
     std::string starter =
         "\n\n\n"
         "On " + _referenceDate + ", " + _to + " said: \n\n";
@@ -281,7 +281,7 @@ std::string ReplyMailBodyBuilder::generateStarterBody() {
 }
 
 
-std::string ReplyMailBodyBuilder::generateMIMEMessage() {
+std::string ReplyMailBuilder::generateMIMEMessage() {
     vmime::messageBuilder builder;
     for (auto& att : _attachments) {
         addMIMEAttachment(builder, att);
@@ -316,17 +316,17 @@ std::string ReplyMailBodyBuilder::generateMIMEMessage() {
     return text;
 }
 
-ForwardMailBodyBuilder::ForwardMailBodyBuilder(const Mail& mail, const std::string& fromEmailAddress, const std::string& name)  : ReplyMailBodyBuilder(mail, fromEmailAddress, name) {
+ForwardMailBuilder::ForwardMailBuilder(const Mail& mail, const std::string& fromEmailAddress, const std::string& name)  : ReplyMailBuilder(mail, fromEmailAddress, name) {
     try {
         _subject = "Fwd: " + _referenceSubject;
         _to = "";
     }
     catch(MailException& e) {
-        throw MailException(std::string("Could not construct ForwardMailBodyBuilder (") + e.what() + ")");
+        throw MailException(std::string("Could not construct ForwardMailBuilder (") + e.what() + ")");
     }
 }
 
-std::string ForwardMailBodyBuilder::generateStarterBody() {
+std::string ForwardMailBuilder::generateStarterBody() {
     std::string starter =
         "\n\n"
         "--- FORWARDED MESSAGE ---\n"

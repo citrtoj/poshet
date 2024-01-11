@@ -15,7 +15,7 @@
 #include "Exceptions.hpp"
 #include "UsersManager.hpp"
 
-class AppController : public wxEvtHandler, public SessionObserver, public MailBodyBuilderObserver {
+class AppController : public wxEvtHandler, public SessionObserver, public MailBuilderObserver {
 protected:
     wxApp* _mainApp;
     Session* _session = nullptr;
@@ -38,7 +38,7 @@ protected:
     void updateUserFrame();
 
     bool _isMailCreatorOpen = false;
-    MailBodyBuilder* _mailBuilder = nullptr;
+    MailBuilder* _mailBuilder = nullptr;
     MailCreatorFrame* _mailCreatorFrame = nullptr;
     bool createMailCreatorFrame();
     void initNewMailCreatorFrame();

@@ -139,7 +139,7 @@ bool AppController::createMailCreatorFrame() {
 }
 
 void AppController::initNewMailCreatorFrame() {
-    _mailBuilder = new MailBodyBuilder(_session->emailAddress(), _session->fullName());
+    _mailBuilder = new MailBuilder(_session->emailAddress(), _session->fullName());
 }
 
 void AppController::onNewMail(wxCommandEvent& e) {
@@ -157,7 +157,7 @@ void AppController::onNewMail(wxCommandEvent& e) {
 
 void AppController::initReplyMailCreatorFrame() {
     const auto& mail = _session->getMailAt(_selectedMail);
-    _mailBuilder = new ReplyMailBodyBuilder(mail, _session->emailAddress(), _session->fullName());
+    _mailBuilder = new ReplyMailBuilder(mail, _session->emailAddress(), _session->fullName());
     _mailCreatorFrame->updateAttachments(_mailBuilder->attachments());
     _mailCreatorFrame->setTo(_mailBuilder->to());
     _mailCreatorFrame->setSubject(_mailBuilder->subject());
@@ -180,7 +180,7 @@ void AppController::onReplyMail(wxCommandEvent& e) {
 
 void AppController::initForwardMailCreatorFrame() {
     const auto& mail = _session->getMailAt(_selectedMail);
-    _mailBuilder = new ForwardMailBodyBuilder(mail, _session->emailAddress(), _session->fullName());
+    _mailBuilder = new ForwardMailBuilder(mail, _session->emailAddress(), _session->fullName());
     _mailCreatorFrame->updateAttachments(_mailBuilder->attachments());
     _mailCreatorFrame->setSubject(_mailBuilder->subject());
     _mailCreatorFrame->setBody(_mailBuilder->generateStarterBody());

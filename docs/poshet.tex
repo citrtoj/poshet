@@ -55,10 +55,11 @@ Comunicarea în rețea cu serverele POP3 și SMTP se realizează prin intermediu
 
 Comunicarea cu baza de date SQLite creată local se realizează cu ajutorul librăriei SQLite3. În comparație cu alternative precum XML, o bază de date concretă permite interogări mai complexe și o organizare mai ușoară a mailurilor dintr-un inbox.
 
-Pentru interfața grafică este utilizată librăria wxWidgets (în pofida altor librării similare precum Qt) datorită simplității sale, a structurii bazate pe OOP și în mod special a integrării sale facile cu Visual Studio Code și CMake.
+Pentru interfața grafică este utilizată librăria wxWidgets (în ciuda altor librării precum Qt) datorită simplității sale, a structurii bazate pe OOP și în mod special a integrării sale facile cu Visual Studio Code și CMake.
 
-Pentru analizarea și transformarea mailurilor din format MIME\cite{ref_rfc_mime} într-un format afișabil în client, dar și pentru transpunerea input-ului utilizatorului din fereastra Mail Creator în format MIME, se utilizează o librărie externă (VMime). A fost aleasă o librărie externă, complexă, pentru că standardul MIME este în sine complex; s-a dorit o soluție implementată cât se poate de conformă standardului MIME și testată riguros.
+Pentru analizarea și transformarea mailurilor din format MIME\cite{ref_rfc_mime} într-un format afișabil în client, dar și pentru transpunerea input-ului utilizatorului din fereastra Mail Creator în format MIME, se utilizează o librărie externă, VMime.
 
+Pentru încriptarea SSL, opțională, a conexiunilor POP3 și SMTP se utilizează librăria OpenSSL.
 
 
 \section{Structura aplicației}
@@ -142,49 +143,18 @@ După logare va fi afișată fereastra de tip "dashboard", care va afișa lista 
     \label{fig:dashboard}
 \end{figure}
 
-\newpage
-
 \begin{figure}
     \centering
-    \includegraphics[width=\textwidth]{poshetSend.png}
+    \includegraphics[width=\textwidth]{newMail.png}
     \caption{Fereastra de tip "New mail".}
-    \label{fig:poshetend}
+    \label{fig:newmail}
 \end{figure}
+
+\newpage
 
 \subsection{Aspecte interesante legate de implementare}
 
-%\subsubsection{Utilizarea sistemului de "subscribers".} Pentru a evita dependența circulară între clasa AppController și clasele de interfață, dar și pentru a minimiza interacțiunea cu AppController prin modalități specifice librăriei wxWidgets, se utilizează conceptul de "subscribers".
-
-%AppController implementează simultan trei clase pur virtuale: LoginFrameSubscriber, DashboardFrameSubscriber și MailCreatorFrameSubscriber. În momentul creerii LoginFrame, DashboardFrame și respectiv MailCreatorFrame, AppController apelează metodele publice \texttt{subscribe} ale acestora, iar fiecare instanță de interfață memorează o referință la AppController sub forma unui pointer de tipul "subscriber" corespunzător. Fiindcă interfețele în sine sunt administrate de către AppController, nu există riscul ca una dintre interfețe să apeleze o metodă în timp ce "subscriber"-ul său să fie un pointer invalid.
-
-
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=\textwidth]{subscribers.png}
-%     \caption{Declararea claselor pur-virtuale de tip "subscriber" în \texttt{FrameSubscribers.hpp}.}
-%     \label{fig:subscribers}
-% \end{figure}
-
-
-% \begin{figure}
-%     \centering
-%     \includegraphics[width={230px}]{subscriberMember.png}
-%     \caption{Definirea membrului \texttt{\_subscriber} în \texttt{DashboardFrame.hpp}.}
-%     \label{fig:subscriberMember}
-% \end{figure}
-
-% \newpage
-
-% În wxWidgets, interacțiunea utilizatorului cu o interfață este semnalată acesteia prin intermediul unor \texttt{wxEvent}-uri. Clasele de interfață ale Poshet conțin "event handlers" pentru acestea, implementate conform cerințelor librăriei, care la rândul lor apelează funcții ale "subscriber"-ului implementate în AppController, precum \texttt{onRefreshMailList()}, \texttt{onCloseApp()} sau \texttt{onMailSend()}.
-
-
-
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=\textwidth]{subscriberFxns.png}
-%     \caption{Exemple de "event handlers" care apelează funcțiile "subscriber"-ului său, în \texttt{DashboardFrame.cpp}.}
-%     \label{fig:subscriberFxns}
-% \end{figure}
+\subsubsection*{"ConnectionBase".} Atât conexiunea POP3, cât și cea SMTP, folosesc socket-uri TCP, cu sau fără încriptare SSL. Pentru a face implementarea acestora mai ușoară a fost creată clasa de bază \texttt{ConnectionBase}, care reprezintă un wrapper peste un socket, cu propriile metode I/O în funcție de anumite setări. Clasele \texttt{SMTPConnection} și \texttt{POP3Connection} sunt derivate ale acestei clase.
 
 \subsubsection{Administrarea conexiunilor POP3 și SMTP.}
 
@@ -198,14 +168,33 @@ Dacă apare o eroare (închiderea conexiunii sau time-out) în timp ce se doreș
 
 \begin{figure}
     \centering
+    \includegraphics[width=\textwidth]{connectionBase.png}
+    \caption{Declararea clasei \texttt{ConnectionBase}.}
+    \label{fig:connectionBase}
+\end{figure}
+
+\begin{figure}
+    \centering
     \includegraphics[width=\textwidth]{keepAlive.png}
     \caption{Definiția \texttt{keepAlive()} în \texttt{POP3Connection.cpp}.}
     \label{fig:keepalive}
 \end{figure}
 
+\newpage
+
+\subsubsection{Notificarea între clase.} AppController este notificat când au loc modificări atât la nivel de interfață, cât și la nivel de "business-logic".
+
+Pentru a putea informa legat de input-ul utilizatorului, clasele de interfață au propriile \texttt{wxEvent}-uri, iar AppController se "abonează" la interfețe prin funcția \texttt{Bind()} specifică wxWidgets. În cazul claselor de tip business-logic, AppController implementează anumite interfațe specifice și se abonează la instanțele Session sau MailBuilder pe care le administrează.
+
+
+
 \section{Concluzii}
 
 Clientul Poshet este în principal single-threaded, folosind mai multe fire de execuție doar pentru a menține activă conexiunea POP3. O îmbunătățire posibilă ar fi adăugarea mai multor fire de execuție și modularizarea codului pentru a permite încărcarea mailurilor din inboxul POP3 "in the background" (pentru ca interfața să nu apară ca fiind "not responding" în timpul acestui proces), dar și pentru a putea întrerupe procesul dacă se dorește acest lucru.
+
+Clientul șterge toate mailurile POP3 de pe server imediat după salvarea lor locală. O îmbunătățire ar putea fi adăugarea unei setări care să permită ștergerea mai târzie a mailurilor de pe server, spre exemplu la o zi sau o săptămână după ce au fost salvate.
+
+Clientul poate vizualiza mailuri cu imagini inline, dar nu le poate și trimite. O îmbunătățire la trimiterea de mail nou ar putea fi posibilitatea de adăugare de imagini inline în mail, similar cu alți clienți de mail cunoscuți.
 
 De asemenea, librăria wxWidgets are propriile limitări. Comparativ cu alte librării precum Qt, widget-ul \texttt{wxRichTextCtrl} nu permite importarea fișierelor HTML, ceea ce limitează anumite abilități precum "Reply" și "Forward" la a funcționa în format plaintext. O îmbunătățire ar putea fi portarea proiectului la o altă librărie grafică cu un editor HTML de tip WYSIWYG ("what you see is what you get") precum Qt, sau dezvoltarea unui propriu "handler" bazat pe wxWidgets care să permită importarea HTML.
 %

@@ -76,17 +76,17 @@ public:
 
 
 
-class MailBodyBuilder {
+class MailBuilder {
 protected:
     virtual void setFrom(const std::string& emailAddress, const std::string& name = "") {
         _from = vmime::make_shared<vmime::mailbox>(vmime::text(name, vmime::charset("utf-8")), vmime::emailAddress(emailAddress));
     }
 public:
-    MailBodyBuilder(const std::string& fromEmailAddress, const std::string& name = "") {
+    MailBuilder(const std::string& fromEmailAddress, const std::string& name = "") {
         setFrom(fromEmailAddress, name);
     }
 
-    ~MailBodyBuilder() {}
+    ~MailBuilder() {}
 
     virtual std::string from() const {
         return _from->generate();
@@ -142,9 +142,9 @@ protected:
 
 
 
-class ReplyMailBodyBuilder : public MailBodyBuilder {
+class ReplyMailBuilder : public MailBuilder {
 public:
-    ReplyMailBodyBuilder(const Mail& mail, const std::string& fromEmailAddress, const std::string& name = "");
+    ReplyMailBuilder(const Mail& mail, const std::string& fromEmailAddress, const std::string& name = "");
 
     virtual std::string generateMIMEMessage() override; 
     virtual std::string generateStarterBody() override;
@@ -159,14 +159,14 @@ protected:
     std::string _referenceDate;
 };
 
-class ForwardMailBodyBuilder : public ReplyMailBodyBuilder {
+class ForwardMailBuilder : public ReplyMailBuilder {
 public:
-    ForwardMailBodyBuilder(const Mail& mail, const std::string& fromEmailAddress, const std::string& name = "");
+    ForwardMailBuilder(const Mail& mail, const std::string& fromEmailAddress, const std::string& name = "");
 
     virtual std::string generateStarterBody() override;
 };
 
-class MailBodyBuilderObserver {
+class MailBuilderObserver {
     virtual void handleMailBuilderDataUpdate() = 0;
 };
 
