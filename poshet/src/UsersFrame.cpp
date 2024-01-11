@@ -69,6 +69,12 @@ void UsersFrame::OnEditUserInfo(wxCommandEvent& event) {
 }
 
 void UsersFrame::OnDeleteUser(wxCommandEvent& event) {
+    wxMessageDialog dialog(nullptr, "Are you sure you want to delete this user and all the mail in its mailbox?", "Delete Confirmation", wxYES_NO | wxICON_QUESTION);
+    int result = dialog.ShowModal();
+    if (result != wxID_YES) {
+        return;
+    }
+
     if (_userListCtrl->GetFirstSelected() == wxNOT_FOUND) {
         return;
     }

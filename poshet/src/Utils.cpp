@@ -191,8 +191,7 @@ namespace Utils {
         char sign;
         int timezoneOffset;
         ss >> sign >> timezoneOffset;
-        int offsetInSeconds = (sign == '+') ? timezoneOffset * 3600 : -timezoneOffset * 3600;
-
+        int offsetInSeconds = (sign == '+') ? timezoneOffset * 36 : -timezoneOffset * 36;
         std::time_t timestamp = std::mktime(&timeStruct) - offsetInSeconds;
         return timestamp;
 

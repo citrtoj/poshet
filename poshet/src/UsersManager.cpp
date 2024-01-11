@@ -29,7 +29,6 @@ void UsersManager::deleteUser(const UserData& data) {
     for (const auto& mail : userMail) {
         db.deleteMail(mail._mailId);
         _fileManager->deleteMail(data.pop3Domain(), mail._mailFilename);
-        // filename delete file
     }
     db.deleteUser(data.dbId());
 }

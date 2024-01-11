@@ -43,7 +43,7 @@ void DatabaseConnection::initTables() {
            "smtp_port TEXT, "
            "smtp_auth BOOL, "
            "smtp_user TEXT, "
-           "UNIQUE (mail_address, incoming_server));");
+           "UNIQUE (user_id));");
     int code = sqlite3_exec(_db, mailsTableQuery.c_str(), nullptr, nullptr, nullptr);
     if (code) {
         throw DatabaseException("Could not create database table: users");

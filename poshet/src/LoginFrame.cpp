@@ -49,7 +49,7 @@ LoginFrame::LoginFrame(const wxString& title) :
 
     inputsSizer->Add(twoColumnHorizSizer, 0, wxEXPAND);
 
-    _loginButton = new wxButton(panel, wxID_ANY, "Login");
+    _loginButton = new wxButton(panel, wxID_ANY, "Save user info");
     inputsSizer->Add(_loginButton, 0, wxALL | wxALIGN_CENTER_HORIZONTAL, MARGIN);
 
     auto horizontalSizer = new wxBoxSizer(wxHORIZONTAL);
