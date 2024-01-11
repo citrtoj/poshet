@@ -114,13 +114,15 @@ Pentru obținerea mailurilor se folosește protocolul POP3\cite{ref_rfc_pop3}, i
 Ambele protocoale sunt de tip comandă-răspuns; așadar, în urma trimiterii comenzii se așteaptă răspuns afirmativ (sau un mesaj de eroare) de la server, informația fiind apoi transmisă la funcțiile care au solicitat-o.
 
 \subsection{Scenarii de utilizare}
-Poshet este menit să comunice cu un server POP3 (printr-o conexiune ori ne-încriptată, ori încriptată prin SSL, cu autentificare plain-text prin comenzile \texttt{USER} și \texttt{PASS}), și cu un server SMTP (cu SSL sau nu, cu autentificare de tip \texttt{AUTH LOGIN} sau fără autentificare). Proiectul a fost testat atât pe mașina locală, cu adrese \texttt{@localhost} (cu un server Dovecot atât cu SSL, cât și fără, și un server Postfix, fără SSL, fără autentificare), dar și cu o adresă personală Yahoo (cu serverele \texttt{pop.mail.yahoo.com:995} și \texttt{smtp.mail.yahoo.com:465}).
+Poshet este menit să comunice cu un server POP3 (printr-o conexiune ori ne-încriptată, ori încriptată prin SSL, cu autentificare plain-text prin comenzile \texttt{USER} și \texttt{PASS}), și cu un server SMTP (cu SSL sau nu, cu autentificare de tip \texttt{AUTH LOGIN} sau fără autentificare). Proiectul a fost testat atât cu adrese \texttt{@localhost} (cu un server Dovecot atât cu SSL, cât și fără, și un server Postfix, fără SSL, fără autentificare), dar și cu o adresă personală Yahoo (cu serverele \texttt{pop.mail.yahoo.com:995} și \texttt{smtp.mail.yahoo.com:465}, cu autentificare SMTP de tip \texttt{AUTH LOGIN}).
 
 Un client de acest tip poate fi utilizat pentru a citi mail atât de pe adrese locale, pe \texttt{localhost}, dar și de pe adrese de la furnizori care permit modalitățile de conectare și autentificare amintite mai sus.
 
-Când se adaugă un mailbox nou, se pot introduce doar adresa de email și parola, în urma cărora aplicația va încerca să intuiască parametri precum "domain name"-ul serverelor POP3 și SMTP, sau username-ul pentru mailbox-ul POP3. Dacă autentificarea sau conectarea eșuează, există posibilitatea de a le introduce manual, prin field-urile marcate cu "(Optional)". Informațiile sunt apoi salvate local.
+Când se adaugă un mailbox nou (sau se editează unul existent) este suficient să se introducă o adresă de email și o parolă, în urma cărora aplicația va încerca să intuiască parametri precum domain name-ul serverelor POP3 și SMTP, sau username-ul pentru mailbox-ul POP3. Dacă autentificarea sau conectarea eșuează, există și posibilitatea de a le introduce manual, prin field-urile marcate cu "(Optional)". Informațiile sunt verificate pe rețea și apoi salvate local, în baza de date, iar utilizatorul poate ulterior alege mailbox-ul pe care dorește să îl acceseze.
 
-După logare va fi afișată fereastra de tip "dashboard", care va afișa lista curentă de mailuri. Dacă este selectat vreunul, se afișează conținutul și detaliile acestuia în partea dreaptă a ecranului. În partea stângă a ferestrei se regăsesc și alte elemente, precum butoane de trimitere de mail nou, reîmprospătare, sau vizualizarea mailurilor cu un anumit tag.
+După logare va fi afișată fereastra de tip "dashboard", care va afișa lista curentă de mailuri. Dacă este selectat vreunul, se afișează conținutul și detaliile acestuia în partea dreaptă a ecranului, precum și atașamentele sale. În partea stângă a ferestrei se regăsesc și alte elemente, precum butoane de trimitere de mail nou, reîmprospătare, sau vizualizarea mailurilor cu un anumit tag.
+
+În fereastra de creare de mail-uri se poate introduce doar plaintext (de altfel, și reply-urile/forward-urile sunt inițializate folosind doar plaintext-ul mail-urilor la care se face referință). Se pot adăuga și șterge, de asemenea, și atașamente. În final, când se trimite un mail, se deschide o conexiune SMTP, se trimite mail-ul, după care conexiunea SMTP este închisă, iar conexiunea POP3 reîmprospătată.
 
 \begin{figure}
     \centering
@@ -169,7 +171,7 @@ Dacă apare o eroare (închiderea remote a conexiunii, sau timeout) în timp ce 
 
 \subsubsection{Notificarea între clase.} AppController este notificat când au loc modificări atât la nivel de interfață, cât și la nivel de "business-logic".
 
-Pentru a putea informa legat de input-ul utilizatorului, clasele de interfață au propriile \texttt{wxEvent}-uri, iar AppController se "abonează" la interfețe prin funcția \texttt{Bind()} specifică wxWidgets. În cazul claselor de tip business-logic, AppController implementează anumite interfațe specifice și se abonează la instanțele Session sau MailBuilder pe care le administrează.
+Pentru a putea informa legat de input-ul utilizatorului, clasele de interfață grafică își definesc propriile ID-uri pentru \texttt{wxEvent}-uri personalizate pentru diversele abilități ale programului. AppController se "abonează" apoi la interfețele grafice, ascultând pentru diversele evenimente, prin funcția \texttt{Bind()} specifică wxWidgets. În cazul claselor de tip business-logic, care ar trebui să fie cât mai separate de interfața grafică, AppController implementează unele interfețe (clase pur virtuale) și se poate abona la instanțele Session sau MailBuilder pe care le administrează.
 
 
 \begin{figure}
@@ -188,15 +190,15 @@ Pentru a putea informa legat de input-ul utilizatorului, clasele de interfață 
 
 \begin{figure}
     \centering
-    \includegraphics[width=\textwidth]{wxEvents.png}
-    \caption{\texttt{wxEvent}-urile custom declarate în \texttt{DashboardFrame.hpp}.}
+    \includegraphics[width=\textwidth]{binding.png}
+    \caption{Legarea \texttt{AppController} de principalele interfețe grafice ale programului.}
     \label{fig:wxEvents}
 \end{figure}
 
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{appControllerSubscribe.png}
-    \caption{Parte din definiția \texttt{AppController}, care implementează clase virtuale, de tip "Observer".}
+    \caption{Parte din definiția \texttt{AppController}, care implementează interfețe pur virtuale de tip "Observer", putându-se astfel "abona" la \texttt{Session} sau \texttt{MailBuilder}.}
     \label{fig:subscribers}
 \end{figure}
 
