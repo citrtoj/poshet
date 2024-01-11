@@ -76,7 +76,7 @@ Proiectul folosește clase și OOP, având o structură inspirată de arhitectur
 
 Principala clasă care face legătura între interfețele aplicației și logica din spate (comunicarea cu servere, cu baza de date, etc.) este AppController. Aceasta administrează și comunică cu instanțe ale interfețelor UsersFrame, LoginFrame, DashboardFrame și MailCreatorFrame, și instanțe ale claselor Session, FileManager, UsersManager și MailBuilder (utilizat când MailCreatorFrame este deschis). Clasa AppController poate fi privită ca un mediator între interfețe și logica programului, delegând operațiuni claselor specializate și trimițându-le interfețelor.
 
-Session este clasa care se ocupă de comunicarea cu resurse externe pentru a obține și furniza informații. Aceasta solicită și trimite informații către instanțe ale altor clase precum FileManager, POP3Connection, SMTPConnection și DatabaseConnection, care realizează operații precum: crearea unui mailbox (sau potrivirea cu un mailbox deja existent) pentru utilizatorul conectat, obținerea mailurilor noi, salvarea lor în baza de date locală și în fișierele corespunzătoare, trimiterea unui mail nou, sau salvarea locală a unui atașament dintr-un mail.
+Session este clasa care se ocupă de comunicarea cu resurse externe pentru a obține și furniza informații. Aceasta solicită și trimite informații către instanțe ale altor clase precum FileManager, POP3Connection, SMTPConnection sau DatabaseConnection, care realizează operații precum: crearea unui mailbox (sau potrivirea cu un mailbox deja existent) pentru utilizatorul conectat, obținerea mailurilor noi, salvarea lor în baza de date locală și în fișierele corespunzătoare, trimiterea unui mail nou, sau salvarea locală a unui atașament dintr-un mail.
 
 În momentul primirii de notificări de la interfețele la care AppController este "abonat", AppController se ocupă de interacțiunea cu clasa Session pentru a obține informații și a le transmite către interfețe, care trebuie să folosească datele pentru a se actualiza și a le afișa către utilizator.
 
@@ -164,7 +164,13 @@ Conexiunile cu serverele POP3 și SMTP sunt administrate de clasele POP3Connecti
 
 În POP3Connection există membrul \texttt{std::thread \_noopThread}, și o metodă \texttt{keepAlive()} care este executată de către acest thread. Pentru ca "no-op"-urile trimise de acest thread să nu interfereze cu procesul comandă-răspuns se folosește un \texttt{\_commandMutex}, folosit în funcția \texttt{execCommand} care este apelată atât de comenzi reale, cât și de comanda "no-op". De asemenea, mutexul \texttt{\_stateMutex} este utilizat, printre altele, pentru a actualiza și verifica în mod sigur statusul curent al conexiunii.
 
-Dacă apare o eroare (închiderea conexiunii sau time-out) în timp ce se dorește trimiterea unui "no-op", thread-ul își încheie execuția. Thread-ul principal va reverifica existența unei conexiuni active când va încerca să comunice la rândul ei cu serverul POP3, și va încerca reconexiunea.
+Dacă apare o eroare (închiderea remote a conexiunii, sau timeout) în timp ce se dorește trimiterea unui "no-op", thread-ul își încheie execuția. Thread-ul principal va reverifica existența unei conexiuni active când va încerca să comunice la rândul ei cu serverul POP3, și va încerca reconexiunea.
+
+
+\subsubsection{Notificarea între clase.} AppController este notificat când au loc modificări atât la nivel de interfață, cât și la nivel de "business-logic".
+
+Pentru a putea informa legat de input-ul utilizatorului, clasele de interfață au propriile \texttt{wxEvent}-uri, iar AppController se "abonează" la interfețe prin funcția \texttt{Bind()} specifică wxWidgets. În cazul claselor de tip business-logic, AppController implementează anumite interfațe specifice și se abonează la instanțele Session sau MailBuilder pe care le administrează.
+
 
 \begin{figure}
     \centering
@@ -180,13 +186,21 @@ Dacă apare o eroare (închiderea conexiunii sau time-out) în timp ce se doreș
     \label{fig:keepalive}
 \end{figure}
 
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{wxEvents.png}
+    \caption{\texttt{wxEvent}-urile custom declarate în \texttt{DashboardFrame.hpp}.}
+    \label{fig:wxEvents}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{appControllerSubscribe.png}
+    \caption{Parte din definiția \texttt{AppController}, care implementează clase virtuale, de tip "Observer".}
+    \label{fig:subscribers}
+\end{figure}
+
 \newpage
-
-\subsubsection{Notificarea între clase.} AppController este notificat când au loc modificări atât la nivel de interfață, cât și la nivel de "business-logic".
-
-Pentru a putea informa legat de input-ul utilizatorului, clasele de interfață au propriile \texttt{wxEvent}-uri, iar AppController se "abonează" la interfețe prin funcția \texttt{Bind()} specifică wxWidgets. În cazul claselor de tip business-logic, AppController implementează anumite interfațe specifice și se abonează la instanțele Session sau MailBuilder pe care le administrează.
-
-
 
 \section{Concluzii}
 

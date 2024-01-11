@@ -16,6 +16,13 @@
 #include "UsersManager.hpp"
 
 class AppController : public wxEvtHandler, public SessionObserver, public MailBuilderObserver {
+public:
+    AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame* dashboardFrame, UsersFrame* usersFrame);
+    ~AppController();
+    
+    void handleSessionDataUpdate() override;  
+    void handleMailBuilderDataUpdate() override;
+
 protected:
     wxApp* _mainApp;
     Session* _session = nullptr;
@@ -86,12 +93,4 @@ protected:
     void onMailCreatorClose(wxCloseEvent& e);
     void onMailCreatorAddAttachment(wxCommandEvent& e);
     void onMailCreatorRemoveAttachment(wxCommandEvent& e);
-
-
-public:
-    AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame* dashboardFrame, UsersFrame* usersFrame);
-    ~AppController();
-    
-    void handleSessionDataUpdate() override;  
-    void handleMailBuilderDataUpdate() override;
 };
