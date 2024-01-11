@@ -1,4 +1,3 @@
-// UserManagementApp.hpp
 #pragma once
 
 #include <wx/wx.h>

@@ -8,4 +8,4 @@ install:
 	sudo apt install openssl
 
 build:
-	cd poshet && cmake -S . -B build && cd build && make && mv ./poshet ../../Poshet
+	+ cd poshet && cmake -S . -B build && cd build && make && mv ./poshet ../../Poshet

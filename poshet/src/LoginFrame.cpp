@@ -73,6 +73,21 @@ LoginFrame::LoginFrame(const wxString& title) :
     this->Bind(wxEVT_TEXT_ENTER, &LoginFrame::OnLogin, this);
 }
 
+void LoginFrame::setInput(const UserData& data) {
+    _fullName->SetValue(wxString::FromUTF8(data.fullName().c_str()));
+    _emailAddress->SetValue(wxString::FromUTF8(data.emailAddress().c_str()));
+    _password->SetValue(wxString::FromUTF8(data.password().c_str()));
+    _pop3SSL->SetValue(data.pop3SSL());
+    _pop3Domain->SetValue(wxString::FromUTF8(data.pop3Domain().c_str()));
+    _pop3Port->SetValue(wxString::FromUTF8(data.pop3Port().c_str()));
+    _pop3Username->SetValue(wxString::FromUTF8(data.pop3Username().c_str()));
+    _smtpSSL->SetValue(data.smtpSSL());
+    _smtpDomain->SetValue(wxString::FromUTF8(data.smtpDomain().c_str()));
+    _smtpPort->SetValue(wxString::FromUTF8(data.smtpPort().c_str()));
+    _smtpAuth->SetValue(data.smtpAuth());
+    _smtpUsername->SetValue(wxString::FromUTF8(data.smtpUsername().c_str()));
+}
+
 void LoginFrame::OnLogin(wxCommandEvent& event) {
     wxCommandEvent newEvent(LOGIN_SUBMIT);
     wxPostEvent(GetEventHandler(), newEvent);

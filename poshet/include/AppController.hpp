@@ -12,21 +12,19 @@
 #include "UsersFrame.hpp"
 #include "Session.hpp"
 #include "FileManager.hpp"
-#include "UsersManager.hpp"
 #include "Exceptions.hpp"
 
 class AppController : public wxEvtHandler, public SessionObserver, public MailBodyBuilderObserver {
 protected:
     wxApp* _mainApp;
     Session* _session = nullptr;
-    UsersManager* _usersManager = nullptr;
 
     UsersFrame* _usersFrame = nullptr;
     LoginFrame* _loginFrame = nullptr;
     DashboardFrame* _dashboardFrame = nullptr;
 
     std::vector<UserData> _users;
-    ssize_t _selectedUser;
+    ssize_t _selectedUser = -1;
     UserData& selectedUserData() {
         return _users[_selectedUser];
     }
@@ -75,6 +73,13 @@ protected:
     void onMailCreatorClose(wxCloseEvent& e);
     void onMailCreatorAddAttachment(wxCommandEvent& e);
     void onMailCreatorRemoveAttachment(wxCommandEvent& e);
+
+    void onUsersAdd(wxCommandEvent& e);
+    void onUsersEdit(wxCommandEvent& e);
+
+    // void onLoginAdd(wxCommandEvent& e);
+    // void onLoginEdit(wxCommandEvent& e);
+
 
 public:
     AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame* dashboardFrame, UsersFrame* usersFrame);

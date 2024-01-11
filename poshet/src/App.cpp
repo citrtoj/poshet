@@ -18,9 +18,9 @@ bool App::OnInit() {
 
 int App::OnExit() {
     delete controller;
-    loginFrame->Destroy();
-    dashboardFrame->Destroy();
-    usersFrame->Destroy();
+    loginFrame->Close();
+    dashboardFrame->Close();
+    usersFrame->Close();
     return 0;
 }
 

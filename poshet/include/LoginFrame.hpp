@@ -35,6 +35,7 @@ protected:
     wxTextCtrl *_smtpDomain, *_smtpPort;
     wxCheckBox *_smtpAuth;
     wxTextCtrl *_smtpUsername;
+    
     wxButton* _loginButton;
     wxStatusBar* _statusBar;
     static const int MARGIN = 5;
@@ -46,6 +47,8 @@ public:
     UserData userInput();
 
     void setTitle(const std::string& msg);
+
+    void setInput(const UserData& data);
     
     void showError(const std::string& errorString);
     void showMessage(const std::string& msg);

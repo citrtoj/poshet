@@ -15,7 +15,7 @@ AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame*
 
     _session->subscribe(this);
 
-    _loginFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onCloseApp, this);
+    //_loginFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onCloseApp, this);
     _dashboardFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onCloseApp, this);
     _usersFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onCloseApp, this);
 
@@ -34,6 +34,11 @@ AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame*
     _dashboardFrame->Bind(DELETE_MAIL, &AppController::onDeleteMail, this);
 
     // _loginFrame->Show(true);
+
+    _usersFrame->Bind(ADD_USER, &AppController::onUsersAdd, this);
+    //_usersFrame->Bind(DELETE_USER, &AppController::onUsers, this);
+    _usersFrame->Bind(EDIT_USER, &AppController::onUsersEdit, this);
+
     getUsers();
     _usersFrame->Show();
 }
@@ -382,7 +387,6 @@ AppController::~AppController() {
     closeMailCreator();
     delete _fileManager;
     delete _session;
-    delete _usersManager;
 }
 
 void AppController::handleSessionDataUpdate() {
@@ -395,4 +399,19 @@ void AppController::handleMailBuilderDataUpdate() {
         throw Exception("Mail creator uninitialized");
     }
     _mailCreatorFrame->updateAttachments(_mailBuilder->attachments());
+}
+
+void AppController::onUsersAdd(wxCommandEvent& e) {
+    // _loginFrame->Unbind(LOGIN_SUBMIT, &AppController::onLoginAdd, this);
+    // _loginFrame->Unbind(LOGIN_SUBMIT, &AppController::onLoginEdit, this);
+    // _loginFrame->Bind(LOGIN_SUBMIT, &AppController::onLoginAdd, this);
+    _loginFrame->Show();
+}
+
+void AppController::onUsersEdit(wxCommandEvent& e) {
+    // _loginFrame->Unbind(LOGIN_SUBMIT, &AppController::onLoginAdd, this);
+    // _loginFrame->Unbind(LOGIN_SUBMIT, &AppController::onLoginEdit, this);
+    // _loginFrame->Bind(LOGIN_SUBMIT, &AppController::onLoginEdit, this);
+    _loginFrame->Show();
+    //_loginFrame->setInput(selectedUserData());
 }

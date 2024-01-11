@@ -61,16 +61,25 @@ void UsersFrame::OnAddUser(wxCommandEvent& event) {
 }
 
 void UsersFrame::OnEditUserInfo(wxCommandEvent& event) {
+    if (_userListCtrl->GetFirstSelected() == wxNOT_FOUND) {
+        return;
+    }
     wxCommandEvent newEvent(EDIT_USER);
     wxPostEvent(GetEventHandler(), newEvent);
 }
 
 void UsersFrame::OnDeleteUser(wxCommandEvent& event) {
+    if (_userListCtrl->GetFirstSelected() == wxNOT_FOUND) {
+        return;
+    }
     wxCommandEvent newEvent(DELETE_USER);
     wxPostEvent(GetEventHandler(), newEvent);
 }
 
 void UsersFrame::OnLoginUser(wxCommandEvent& event) {
+    if (_userListCtrl->GetFirstSelected() == wxNOT_FOUND) {
+        return;
+    }
     wxCommandEvent newEvent(LOGIN_USER);
     wxPostEvent(GetEventHandler(), newEvent);
 }
