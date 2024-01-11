@@ -321,7 +321,6 @@ void DashboardFrame::updateViewMailPanel(const Mail& mail) {
             wxMemoryFSHandler::AddFile(filename, x._data.c_str(), x._data.length());
             _savedToFSHandler.push_back(filename);
         }
-        // dirty fix but I don't have time for anything better. it's for gmail mail which is inherently utf-8 but god forbid it actually shows up well
         if (htmlText.find("<meta") == std::string::npos) {
             htmlText = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>" + htmlText;
         }
