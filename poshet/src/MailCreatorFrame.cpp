@@ -78,15 +78,15 @@ void MailCreatorFrame::OnRemove(wxCommandEvent& event) {
 // --- getters ---
 
 std::string MailCreatorFrame::to() const {
-    return _toInput->GetValue().ToStdString();
+    return _toInput->GetValue().ToUTF8().data();
 }
 
 std::string MailCreatorFrame::subject() const {
-    return _subjectInput->GetValue().ToStdString();
+    return _subjectInput->GetValue().ToUTF8().data();
 }
 
 std::string MailCreatorFrame::body() const {
-    return _contentsCtrl->GetValue().ToStdString();
+    return _contentsCtrl->GetValue().ToUTF8().data();
 }
 
 // --- setters ---

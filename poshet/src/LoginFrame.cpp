@@ -76,7 +76,6 @@ LoginFrame::LoginFrame(const wxString& title) :
 void LoginFrame::OnLogin(wxCommandEvent& event) {
     wxCommandEvent newEvent(LOGIN_SUBMIT);
     wxPostEvent(GetEventHandler(), newEvent);
-    //_subscriber->onLoginSubmit();
 }
 
 UserData LoginFrame::userInput() {
@@ -102,7 +101,16 @@ wxButton* LoginFrame::loginButton() {
     return _loginButton;
 }
 
+void LoginFrame::setTitle(const std::string& msg) {
+    SetTitle(msg);
+    loginButton()->SetLabel(msg);
+}
+
 void LoginFrame::showError(const std::string& errorString) {
-    _statusBar->SetStatusText(errorString);
+    SetStatusText(errorString);
     wxMessageBox(errorString, "Error", wxOK | wxICON_ERROR);
+}
+
+void LoginFrame::showMessage(const std::string& msg) {
+    SetStatusText(msg);
 }

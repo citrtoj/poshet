@@ -38,11 +38,15 @@ protected:
     wxButton* _loginButton;
     wxStatusBar* _statusBar;
     static const int MARGIN = 5;
+    wxButton* loginButton();
     void OnLogin(wxCommandEvent& event);
 
 public:
     LoginFrame(const wxString& title);
     UserData userInput();
-    wxButton* loginButton();
+
+    void setTitle(const std::string& msg);
+    
     void showError(const std::string& errorString);
+    void showMessage(const std::string& msg);
 };

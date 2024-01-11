@@ -26,6 +26,9 @@ DashboardFrame::DashboardFrame(const wxString& title) :
     initFSHandler();
     Bind(wxEVT_SPLITTER_SASH_POS_CHANGED, &DashboardFrame::OnViewMailResize, this);
 
+    auto statusBar = CreateStatusBar();
+    SetStatusText("Ready");
+
     _sidebarPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(200, 600), wxBORDER_SUNKEN);
     auto sidebarPanelBoxSizer = new wxBoxSizer(wxVERTICAL);
     _newMailBtn = new wxButton(_sidebarPanel, wxID_ANY, "New Mail");
@@ -78,8 +81,8 @@ void DashboardFrame::initViewMailPanel() {
 
     //headers sizer -- with To and Subject
     auto mailHeadersSizer = new wxBoxSizer(wxVERTICAL);
-    _selectedMailFrom = new wxStaticText(_viewMailPanel, wxID_ANY, "Dummy From", wxDefaultPosition, {0, -1}, wxST_NO_AUTORESIZE | wxST_ELLIPSIZE_END);
-    _selectedMailTo = new wxStaticText(_viewMailPanel, wxID_ANY, "Dummy To", wxDefaultPosition, {0, -1}, wxST_NO_AUTORESIZE | wxST_ELLIPSIZE_END);
+    _selectedMailFrom = new wxStaticText(_viewMailPanel, wxID_ANY, "", wxDefaultPosition, {0, -1}, wxST_NO_AUTORESIZE | wxST_ELLIPSIZE_END);
+    _selectedMailTo = new wxStaticText(_viewMailPanel, wxID_ANY, "", wxDefaultPosition, {0, -1}, wxST_NO_AUTORESIZE | wxST_ELLIPSIZE_END);
     mailHeadersSizer->Add(_selectedMailFrom, 0, wxEXPAND | wxALL, MARGIN);
     mailHeadersSizer->Add(_selectedMailTo, 0, wxEXPAND | wxBOTTOM | wxLEFT | wxRIGHT, MARGIN);
 
@@ -200,12 +203,14 @@ void DashboardFrame::OnViewTag(wxCommandEvent& e) {
     //newEvent.SetInt(i);
     newEvent.SetString(tag);
     wxPostEvent(GetEventHandler(), newEvent);
+    SetStatusText("Viewing mail with tag: " + tag);
 }
 
 void DashboardFrame::OnViewAllMail(wxCommandEvent& e) {
     wxCommandEvent newEvent(VIEW_ALL_MAIL);
     wxPostEvent(GetEventHandler(), newEvent);
     _tagList->SetSelection(wxNOT_FOUND);
+    SetStatusText("Viewing all mail");
 }
 
 void DashboardFrame::OnNewMail(wxCommandEvent& e) {
@@ -364,13 +369,11 @@ void DashboardFrame::resetTags() {
         }
         else {
             _tagList->Insert(_displayUntaggedAs, i);
-            //_tagList->SetSelection(i);
         }
     }
 }
 
 void DashboardFrame::setTags(const std::vector<std::string>& tags) {
-    //_tagList->SetSelection(wxNOT_FOUND); //unselect tag
     _tags = tags;
     std::sort(_tags.begin(), _tags.end());
     resetTags();
@@ -378,4 +381,8 @@ void DashboardFrame::setTags(const std::vector<std::string>& tags) {
 
 std::string DashboardFrame::tagAt(size_t idx) {
     return _tags[idx];
+}
+
+void DashboardFrame::showMessage(const std::string& msg) {
+    SetStatusText(msg);
 }

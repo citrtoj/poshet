@@ -14,7 +14,6 @@ AppController::AppController(wxApp* app, LoginFrame* loginFrame, DashboardFrame*
 
     _session->subscribe(this);
 
-    // close-window binds
     _loginFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onCloseApp, this);
     _dashboardFrame->Bind(wxEVT_CLOSE_WINDOW, &AppController::onCloseApp, this);
 
@@ -65,10 +64,13 @@ void AppController::login() {
 void AppController::getMailAndShow(bool force) {
     try {
         _dashboardFrame->Show();
+        _dashboardFrame->showMessage("Retrieving mail from database and POP3 mailbox");
         _currentMail = _session->retrieveAllMail(force);
+        _dashboardFrame->showMessage("Retrieving mail tags");
         auto tags = _session->mailTags();
         _dashboardFrame->setMailList(_currentMail);
         _dashboardFrame->setTags(tags);
+        _dashboardFrame->showMessage("Ready");
     }
     catch (IOException& e) {
         showException(e.what());
@@ -342,7 +344,6 @@ void AppController::onMailCreatorAddAttachment(wxCommandEvent& e) {
             _("All files (*.*)|*.*"), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
         if (openFileDialog.ShowModal() == wxID_CANCEL) {
-            // User canceled the dialog
             wxMessageBox(_("Operation canceled."), _("Info"), wxOK | wxICON_INFORMATION);
             return;
         }

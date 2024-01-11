@@ -251,7 +251,6 @@ std::vector<RawMailMetadata> POP3Connection::retrieveAllMailMetadata() {
     std::string firstLine;
     std::getline(responseStream, firstLine);
     std::istringstream firstLineStream(firstLine);
-    // add some sort of sanity check, perhaps, in case there's not even a number
     firstLineStream >> buffer;
     
     int index, byteSize;

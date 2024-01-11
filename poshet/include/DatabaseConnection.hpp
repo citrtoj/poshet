@@ -10,6 +10,7 @@
 
 #include "Utils.hpp"
 #include "Exceptions.hpp"
+#include "UserData.hpp"
 
 struct DBMailData {
     std::string _mailId, _mailTag, _mailFilename;

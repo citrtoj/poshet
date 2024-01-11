@@ -99,6 +99,7 @@ protected:
 
     void resetTags();
 
+
 public:
     DashboardFrame(const wxString& title);
 
@@ -114,5 +115,5 @@ public:
     long selected() const;
 
     std::string tagAt(size_t idx);
-    
+    void showMessage(const std::string& msg);
 };
