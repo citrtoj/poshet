@@ -84,6 +84,7 @@ void ConnectionBase::closeSocket() {
     }
     _isSSLInit = false;
     _isSSLConnected = false;
+    shutdown(_socket, SHUT_RDWR);
     close(_socket);
     _isSocketConnected = false;
     _isSocketOpen = false;
