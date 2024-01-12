@@ -100,10 +100,11 @@ void ConnectionBase::connectSocket() {
     struct addrinfo *result, *resultIt;
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;
+    hints.ai_family = AF_INET; // enforce IPv4
+    hints.ai_socktype = SOCK_STREAM; // enforce TCP
     int status = getaddrinfo(_host.c_str(), _port.c_str(), &hints, &result);
     if (status != 0) {
-        throw ConnectException("Could not resolve address of server (" + _host + ":" + _port + ")");
+        throw ConnectException("Could not resolve address of server (" + _host + ":" + _port + "): status code " + std::string(gai_strerror(status)));
     }
     for (resultIt = result; resultIt != NULL; resultIt = resultIt->ai_next) {
         try {
