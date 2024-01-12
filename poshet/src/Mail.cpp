@@ -97,7 +97,7 @@ std::vector<InlineAttachmentData> Mail::getInlineHTMLAttachments() const {
     return result;
 }
 
-std::string Mail::getPlainTextPart() const {
+std::string Mail::getPlainTextPartText() const {
     for (size_t i = 0 ; i < _messageParser->getTextPartCount() ; ++i) {
         const vmime::textPart& part = *_messageParser->getTextPartAt(i);
         if (part.getType().getSubType() == vmime::mediaTypes::TEXT_PLAIN) {
@@ -239,7 +239,10 @@ std::string MailBuilder::generateStarterBody() {
 
 ReplyMailBuilder::ReplyMailBuilder(const Mail& mail, const std::string& fromEmailAddress, const std::string& name) : MailBuilder(fromEmailAddress, name) {
     try {
-        _referenceText = mail.getPlainTextPart();
+        _referenceText = mail.getPlainTextPartText();
+        
+        // todo: get attachments...?
+
         _referenceId = mail.getHeaderValue("Message-Id");
         _referenceReplyTo = mail.getHeaderValue("In-Reply-To");
         _referenceReferences = mail.getHeaderValue("References");
@@ -257,10 +260,16 @@ ReplyMailBuilder::ReplyMailBuilder(const Mail& mail, const std::string& fromEmai
         auto attachments = mail.attachmentMetadata();
         for (int i = 0; i < attachments.size(); ++i) {
             auto data = mail.attachmentDataAt(i);
-            _attachments.push_back({
-                attachments[i]._filename, attachments[i]._contentType, static_cast<double>(data.length()),
-                data
-            });
+            addAttachment(attachments[i]._filename, data, attachments[i]._contentType);
+        }
+        try {
+            auto inlineAtts = mail.getInlineHTMLAttachments();
+            for (const auto& att : inlineAtts) {
+                addAttachment("[INLINE] " + att._id, att._data);
+            }
+        }
+        catch(Exception& e) {
+            // no point handling. it means there's no attachments
         }
     }
     catch(MailException& e) {

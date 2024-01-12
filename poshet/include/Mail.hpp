@@ -60,7 +60,7 @@ public:
 
     std::string getHTMLText() const;
     std::vector<InlineAttachmentData> getInlineHTMLAttachments() const;
-    std::string getPlainTextPart() const;
+    std::string getPlainTextPartText() const;
 
     AttachmentMetadata attachmentMetadataAt(size_t idx) const;
     std::vector<AttachmentMetadata> attachmentMetadata() const;

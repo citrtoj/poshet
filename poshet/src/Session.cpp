@@ -34,6 +34,7 @@ void Session::saveOnePop3MailLocally(size_t index, size_t byteSize) {
     _db.addReceivedMail(fullMailId, _userData.dbId(), uidl, static_cast<unsigned long long>(timestamp));
     auto filename = _db.getFileNameOf(fullMailId);
     _fileManager->saveMail(_userData.pop3Domain(), filename, mail.plainText());
+    std::cout << "[Session] Saved mail with ID " + fullMailId << "\n";
 }
 
 void Session::getAllPop3AndSaveLocally(bool deleteOnSave) {

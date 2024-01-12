@@ -339,7 +339,7 @@ void DashboardFrame::updateViewMailPanel(const Mail& mail) {
     }
     catch (MailException& e) {
         try {
-            auto plainText = mail.getPlainTextPart();
+            auto plainText = mail.getPlainTextPartText();
             wxString x = wxString::FromUTF8(plainText.c_str());
             _plainTextDisplayer->SetValue(x);
             _plainTextDisplayer->Show();
