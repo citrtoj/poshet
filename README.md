@@ -5,6 +5,8 @@
     Poshet is a GUI client, written in C++ using wxWidgets, for the POP3 (mail retrieval) and SMTP (mail sending) services. Its features include: SSL encryption, viewing and organization of received mail (including HTML mail), sending of new plaintext mail with attachments, and replying to (or forwarding) received mail (in plaintext form, keeping attachments).
 </p>
 
+![dashboard](docs/dashboard.png)
+
 
 ### Supported servers:
 - POP3 (with/without SSL enabled, with obligatory USER/PASS logging in)
